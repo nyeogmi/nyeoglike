@@ -2,7 +2,7 @@ from ds.code_registry import ref, ref_unnamed, ref_named
 from ds.grid import Grid
 from ds.vecs import V2, R2
 from typing import NamedTuple, Optional, Union
-from .palette import PALETTE, N_COLORS
+from .palette import Colors, Color
 import threading
 from contextlib import contextmanager
 
@@ -14,8 +14,8 @@ class Cell(NamedTuple):
 
     @classmethod
     def new(cls, bg: int, fg: int, character: str):
-        assert isinstance(bg, int) and 0 <= bg < N_COLORS
-        assert isinstance(fg, int) and 0 <= fg < N_COLORS
+        assert isinstance(bg, int) and 0 <= bg < Colors.N
+        assert isinstance(fg, int) and 0 <= fg < Colors.N
         assert isinstance(character, str)
         assert len(character) == 1
         # assert character in string.printable
@@ -59,8 +59,8 @@ class Screen(object):
 @ref
 def default_cell(v2: V2) -> Cell:
     return Cell.new(
-        bg=0,
-        fg=7,
+        bg=Colors.TermBG.color,
+        fg=Colors.TermFG.color,
         character=" "
     )
 
@@ -89,8 +89,8 @@ class Drawer(object):
         self._offset = offset
         self._xy = cursor
 
-        self._fg = None
-        self._bg = None
+        self._fg: Optional[Color] = None
+        self._bg: Optional[Color] = None
 
     @property
     def bounds(self):
@@ -102,13 +102,13 @@ class Drawer(object):
         d._bg = self._bg
         return d
 
-    def fg(self, fg: Optional[int]) -> "Drawer":
-        assert fg is None or (isinstance(fg, int) and 0 <= fg < N_COLORS)
+    def fg(self, fg: Optional[Color]) -> "Drawer":
+        assert fg is None or isinstance(fg, Color)
         self._fg = fg
         return self
 
-    def bg(self, bg: Optional[int]) -> "Drawer":
-        assert bg is None or (isinstance(bg, int) and 0 <= bg < N_COLORS)
+    def bg(self, bg: Optional[Color]) -> "Drawer":
+        assert bg is None or isinstance(bg, Color)
         self._bg = bg
         return self
 
@@ -290,9 +290,9 @@ class Drawer(object):
         assert isinstance(old, Cell)
         assert isinstance(new_char, str) and len(new_char) == 1
 
-        return Cell(
-            bg=self._bg if self._bg is not None else old.bg,
-            fg=self._fg if self._fg is not None else old.fg,
+        return Cell.new(
+            bg=self._bg.color if self._bg is not None else old.bg,
+            fg=self._fg.color if self._fg is not None else old.fg,
             character=new_char
         )
 

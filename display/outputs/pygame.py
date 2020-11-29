@@ -7,13 +7,13 @@ import os.path
 import time
 
 from typing import Optional
-from ..palette import N_COLORS, PALETTE
+from ..palette import Colors
 
 #  N_TILES = 256
 
 class Font(object):
     def __init__(self, font_images, tile_size: V2, res_in_tiles: V2):
-        assert isinstance(font_images, list) and len(font_images) == N_COLORS
+        assert isinstance(font_images, list) and len(font_images) == Colors.N
         assert isinstance(tile_size, V2)
         assert isinstance(res_in_tiles, V2)
 
@@ -40,14 +40,15 @@ class Font(object):
 
         #  assert width_in_tiles * height_in_tiles == N_TILES
 
-        font_images = [font_image.convert_alpha() for i in range(N_COLORS)]
-        for i in range(N_COLORS):
-            font_images[i].fill((*PALETTE[i], 255), special_flags=pygame.BLEND_MULT)
+        font_images = [font_image.convert_alpha() for i in range(Colors.N)]
+        for i in range(Colors.N):
+            font_images[i].fill((*Colors.SWATCH[i], 255), special_flags=pygame.BLEND_MULT)
 
         return Font(font_images, tile_size, V2.new(width_in_tiles, height_in_tiles))
 
     def draw(self, screen, xy: V2, bg: int, fg: int, character: str):
-        assert 0 <= fg < N_COLORS
+        assert 0 <= bg < Colors.N
+        assert 0 <= fg < Colors.N
         assert len(character) == 1
 
         # TODO: Use the right code page for an old machine: http://nerdlypleasures.blogspot.com/2015/04/ibm-character-fonts.html
@@ -59,7 +60,7 @@ class Font(object):
 
             src = [*xy0_src, *self._tile_size]
             dest = [*xy0_dest, *self._tile_size]
-            screen.fill(PALETTE[bg], dest)
+            screen.fill(Colors.SWATCH[bg], dest)
             screen.blit(self._font_images[fg], dest, area=src)
 
 
@@ -78,7 +79,7 @@ def start(interactor: Interactor):
         screen = interactor.view()
 
         with screen.lock():
-            pygame_screen.fill(PALETTE[0])
+            pygame_screen.fill(Colors.SWATCH[Colors.TermBG.color])
             for xy in screen.bounds:
                 cell = screen[xy]
                 font.draw(pygame_screen, xy, cell.bg, cell.fg, cell.character)

@@ -1,3 +1,4 @@
+from display import Color, Colors
 from typing import NamedTuple, Optional, runtime_checkable, Tuple, Union
 from enum import Enum
 
@@ -10,14 +11,14 @@ class Resource(Enum):
     Snack = 3
     Furniture = 4
 
-    def display(self) -> Tuple[int, str]:
-        if self == Resource.Money: return 5, "$"
-        if self == Resource.Blood: return 1, "'"
-        if self == Resource.Spark: return 10, "*"
+    def display(self) -> Tuple[Color, str]:
+        if self == Resource.Money: return Colors.ResourceGeneric, "$"
+        if self == Resource.Blood: return Colors.BloodRed, "'"
+        if self == Resource.Spark: return Colors.BrightGreen, "*"
 
-        if self == Resource.Snack: return 5, "%"
-        if self == Resource.Furniture: return 5, "\xe9"
-        return 12, "?"
+        if self == Resource.Snack: return Colors.ResourceGeneric, "%"
+        if self == Resource.Furniture: return Colors.ResourceGeneric, "\xe9"
+        return Colors.DarkGray, "?"
 
 
 class Contribution(NamedTuple):
@@ -34,15 +35,15 @@ class Contribution(NamedTuple):
 class Profile(NamedTuple):
     name: str
     icon: str  # a string or a double-wide
-    bg: Optional[int]
-    fg: Optional[int]
+    bg: Optional[Color]
+    fg: Optional[Color]
 
     @classmethod
     def new(cls, name: str, icon: str, bg: Optional[int] = None, fg: Optional[int] = None):
         assert isinstance(name, str)
         assert isinstance(icon, str) and len(icon) == 1
-        assert bg is None or isinstance(bg, int)
-        assert fg is None or isinstance(fg, int)
+        assert bg is None or isinstance(bg, Color)
+        assert fg is None or isinstance(fg, Color)
         return Profile(name, icon, bg, fg)
 
 

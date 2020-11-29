@@ -1,4 +1,4 @@
-from display import DoubleWide, Key, Keycodes, Screen, IO
+from display import Color, Colors, DoubleWide, Key, Keycodes, Screen, IO
 from typing import List, NamedTuple, Optional
 
 from ds.vecs import V2
@@ -90,7 +90,7 @@ def sitemode(io: IO, world: World):
             # draw grid
             draw_world = io.draw().goto(0, 0).box(80, 30).zeroed()
 
-            draw_world.bg(0).fg(7).fillc(" ")  # base color
+            draw_world.bg(Colors.TermBG).fg(Colors.TermFG).fillc(" ")  # base color
             camera_xy0 = world.camera_xy - V2.new(19, 14)
             camera_xy1 = world.camera_xy + V2.new(20 + 1, 15 + 1)  # exclusive bound
 
@@ -110,16 +110,16 @@ def sitemode(io: IO, world: World):
 
                 # draw bg. (TODO: Better pattern?)
                 bg_streak_ix = ((x // 4 + y * 2 + x // 16 + y // 12) % 18)
-                if bg_streak_ix < 1: bg = 5
-                elif bg_streak_ix < 4: bg = 4
-                else: bg = 0
+                if bg_streak_ix < 1: bg = Colors.Streak2
+                elif bg_streak_ix < 4: bg = Colors.Streak1
+                else: bg = Colors.WorldBG
 
-                draw_tile = draw_world.goto(viewport_xy).bg(bg).fg(7)
+                draw_tile = draw_world.goto(viewport_xy).bg(bg).fg(Colors.WorldFG)
                 draw_tile.copy().putdw(DoubleWide.Blank)
 
                 if world_xy in world.level.blocks:
                     # full block
-                    draw_tile.copy().bg(0).fg(7).puts("\xdb\xdb", wrap=False)
+                    draw_tile.copy().bg(Colors.WorldBG).fg(Colors.WorldFG).puts("\xdb\xdb", wrap=False)
 
                 for item in world.level.items.get(world_xy, []):
                     profile = item.profile
@@ -140,12 +140,12 @@ def sitemode(io: IO, world: World):
                     interest = world.interest[npc]
                     # npc_sites
                     if npc == target_handle:
-                        draw_tile.copy().bg(interest.color()).fg(0).putdw(DoubleWide.At)
+                        draw_tile.copy().bg(interest.color()).fg(Colors.WorldBG).putdw(DoubleWide.At)
                     else:
-                        draw_tile.copy().bg(0).fg(interest.color()).putdw(DoubleWide.At)
+                        draw_tile.copy().bg(Colors.WorldBG).fg(interest.color()).putdw(DoubleWide.At)
 
                 if world_xy == world.player_xy:
-                    draw_tile.copy().fg(15).putdw(DoubleWide.Bat)
+                    draw_tile.copy().fg(Colors.Player).putdw(DoubleWide.Bat)
 
                 # TODO: Draw bushes in a knight's move pattern
 
@@ -153,20 +153,20 @@ def sitemode(io: IO, world: World):
             if tooltip_xy is not None and tooltip_lst:
                 draw_tooltips = io.draw().goto(tooltip_xy)
                 for i, tip in enumerate(tooltip_lst):
-                    draw_tooltips.goto(tooltip_xy + V2.new(0, i)).fg(15).puts(tip)
+                    draw_tooltips.goto(tooltip_xy + V2.new(0, i)).fg(Colors.TermFGBold).puts(tip)
 
             # Draw targeted user
             if target_handle is not None:
                 target = world.npcs.get(target_handle)
                 interest = world.interest[target_handle]
                 draw_npc_ui = io.draw().goto(30, 2).box(76, 6).zeroed()
-                draw_npc_ui.bg(0).fg(7)
+                draw_npc_ui.bg(Colors.TermBG).fg(Colors.TermFG)
                 box = draw_npc_ui.copy().expand(2, 1).fillc(" ").fg(interest.color()).etch(double=False) # box
-                box.zeroed().goto(2, 0).fg(15).puts(target.name)
+                box.zeroed().goto(2, 0).fg(Colors.TermFGBold).puts(target.name)
                 if interest != Interest.No:
-                    box.zeroed().goto(2 + len(target.name) + 1, 0).fg(7).puts("({})".format(interest.name))
+                    box.zeroed().goto(2 + len(target.name) + 1, 0).fg(Colors.TermFG).puts("({})".format(interest.name))
 
-                box.zeroed().goto(48 - len("A - Mark"), 0).fg(15).puts("A - Mark")
+                box.zeroed().goto(48 - len("A - Mark"), 0).fg(Colors.TermFGBold).puts("A - Mark")
 
             # Draw notifications
             notifications = world.notifications.active_notifications()[-6:]
@@ -181,26 +181,26 @@ def sitemode(io: IO, world: World):
                     if n.source:
                         color = world.interest[n.source].color()
                     else:
-                        color = 5
+                        color = Colors.MSGSystem
                     draw_notification_ui = io.draw().goto(4, y).box(26, y + height).zeroed()
-                    draw_notification_ui.bg(0).fg(7)
+                    draw_notification_ui.bg(Colors.TermBG).fg(Colors.TermFG)
                     draw_notification_ui.copy().fg(color).expand(2, 1).fillc(" ").etch(double=False)  # box
 
                     if isinstance(n.message, EMHandle):
                         quest_status: QuestStatus = world.eventmonitors.most_recent_status(n.message)
                         assert isinstance(quest_status, QuestStatus)  # A canceled quest should remove its notifications
 
-                        draw_notification_ui.copy().expand(2, 1).goto(0, -1).fg(15).puts(quest_status.name)
+                        draw_notification_ui.copy().expand(2, 1).goto(0, -1).fg(Colors.TermFGBold).puts(quest_status.name)
                         draw_notification_ui.copy().goto(0, 0).puts(quest_status.description, wrap=True)
                         yes = "Z - OK"
-                        draw_notification_ui.copy().fg(15).expand(2, 1).goto(0, height).puts(yes)
+                        draw_notification_ui.copy().fg(Colors.TermFGBold).expand(2, 1).goto(0, height).puts(yes)
                         no = "X - Ignore"
-                        draw_notification_ui.copy().fg(15).expand(2, 1).goto(draw_notification_ui.bounds.size.x - len(no), height).puts(no)
+                        draw_notification_ui.copy().fg(Colors.TermFGBold).expand(2, 1).goto(draw_notification_ui.bounds.size.x - len(no), height).puts(no)
                     else:
                         draw_notification_ui.goto(0, 0).puts(n.message, wrap=True)
                         help = "Z - OK"
-                        # fg=7 because this choice is unimportant
-                        draw_notification_ui.copy().fg(7).expand(2, 1).goto(0, height).puts(help)
+                        # not bold because this choice is unimportant
+                        draw_notification_ui.copy().fg(Colors.TermFG).expand(2, 1).goto(0, height).puts(help)
 
             # Draw quests
             draw_quests_ui = io.draw()
@@ -211,23 +211,23 @@ def sitemode(io: IO, world: World):
                 marked_quests.reverse()
 
                 y = 7
-                draw_quests_ui.copy().goto(60, y).bg(0).fg(7).puts("Q - Quests"); y += 1
+                draw_quests_ui.copy().goto(60, y).bg(Colors.TermBG).fg(Colors.TermFGBold).puts("Q - Quests"); y += 1
                 for y, (_, quest) in enumerate(marked_quests, y):
                     if y >= 29:  # screen height
                         break  # don't draw too many quests
                     if quest.assigner is None: color = 5
                     else: color = world.interest[quest.assigner].color()
-                    draw_quests_ui.copy().goto(62, y).bg(0).fg(color).puts("\xf9 ").fg(7).puts(quest.oneliner)
+                    draw_quests_ui.copy().goto(62, y).bg(Colors.TermBG).fg(color).puts("\xf9 ").fg(Colors.TermFG).puts(quest.oneliner)
 
             # Draw my HUD
             draw_hud_ui = io.draw().goto(4, 2).box(26, 6).zeroed()
-            draw_hud_ui.bg(0).fg(7)
-            box = draw_hud_ui.copy().expand(2, 1).fillc(" ").fg(5).etch(double=True)  # box
-            box.copy().fg(15).zeroed().goto(2, 0).puts("Nyeogmi Choi")
+            draw_hud_ui.bg(Colors.TermBG).fg(Colors.TermFG)
+            box = draw_hud_ui.copy().expand(2, 1).fillc(" ").fg(Colors.MSGSystem).etch(double=True)  # box
+            box.copy().fg(Colors.TermFGBold).zeroed().goto(2, 0).puts("Nyeogmi Choi")
 
-            draw_hud_ui.copy().goto(0, 1).puts("$").fg(15).puts("{:,.2f}".format(world.inventory.get(Resource.Money) / 100))
-            draw_hud_ui.copy().goto(0, 2).puts("[").bg(1).fg(0).puts(" " * 20).bg(0).fg(7).puts("]")
-            draw_hud_ui.copy().goto(0, 3).puts("[").bg(10).fg(0).puts(" " * 20).bg(0).fg(7).puts("]")
+            draw_hud_ui.copy().goto(0, 1).puts("$").fg(Colors.TermFGBold).puts("{:,.2f}".format(world.inventory.get(Resource.Money) / 100))
+            draw_hud_ui.copy().goto(0, 2).puts("[").bg(Colors.BloodRed).puts(" " * 20).bg(Colors.TermBG).fg(Colors.TermFG).puts("]")
+            draw_hud_ui.copy().goto(0, 3).puts("[").bg(Colors.BrightGreen).puts(" " * 20).bg(Colors.TermBG).fg(Colors.TermFG).puts("]")
 
 
 class Target(NamedTuple):

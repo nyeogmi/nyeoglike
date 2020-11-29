@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Dict
 
+from display import Color, Colors
 from .npc import NPCHandle
 
 
@@ -9,17 +10,16 @@ class Interest(Enum):
     Friend = 1
     Love = 2
 
-    def color(self):
+    def color(self) -> Color:
         if self == Interest.No:
-            return 3
+            return Colors.NPCNoInterest
         elif self == Interest.Friend:
-            return 10
+            return Colors.NPCFriend
         else:
-            return 13
+            return Colors.NPCLove
 
     def __lt__(self, other: "Interest"):
         return self.value < other.value
-
 
 
 class InterestTracker(object):
