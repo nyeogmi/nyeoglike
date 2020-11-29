@@ -1,0 +1,125 @@
+from ds.gensym import Gensym, Sym
+
+from .event import Event
+from enum import Enum
+from typing import Callable, Dict, List, NamedTuple, Optional, Protocol, Set, runtime_checkable, TYPE_CHECKING
+
+
+class EMHandle(NamedTuple):
+    ident: Sym
+
+
+class EventMonitors(object):
+    def __init__(self):
+        self._active: Dict[EMHandle, "EventMonitor"] = {}
+        self._active_keys: Set = set()  # arbitrary set populated by calling key() on EventMonitors
+        self._sym = Gensym("EM")
+
+        self._most_recent_status: Dict[EMHandle, QuestStatus] = {}
+        self._accepted_quests = []
+        self._failed_quests = []
+        self._succeeded_quests = []
+
+    def add(self, world: "World", constructor: Callable[[EMHandle], "EventMonitor"]) -> Optional[EMHandle]:
+        from .world import World
+        assert isinstance(world, World)
+
+        handle = EMHandle(self._sym.gen())
+        em = constructor(handle)
+
+        if em.key() in self._active_keys:
+            return
+
+        assert isinstance(em, EventMonitor)
+        self._active[handle] = em
+        self._active_keys.add(em.key())
+
+        quest_status = self._active[handle].quest_status(world)
+        if quest_status:
+            world.notifications.send(handle, quest_status.assigner)
+
+            self._most_recent_status[handle] = quest_status
+
+        return handle
+
+    def most_recent_status(self, quest: EMHandle) -> Optional["QuestStatus"]:
+        return self._most_recent_status.get(quest)
+
+    def accept_quest(self, quest: EMHandle):
+        assert isinstance(quest, EMHandle)
+        if quest in self._active:
+            self._accepted_quests.append(quest)
+
+    def ignore_quest(self, quest: EMHandle):
+        assert isinstance(quest, EMHandle)
+        # TODO: Do we need to do anything with the "ignore" info?
+        pass
+
+    # TODO: Failed quests? Succeeded quests? Limited N? Sort order?
+    def accepted_quests(self) -> List["QuestStatus"]:
+        return list(self._accepted_quests)
+
+    def notify(self, world: "World", event: "Event"):
+        from .world import World
+
+        assert isinstance(world, World)
+        assert isinstance(event, Event)
+
+        # TODO: Make sure handle order is maintained thru serialization/deserialization, so this remains deterministic
+        done_ems = set()
+        for handle, em in self._active.items():
+            if em.notify(world, event) == Done.Done:
+                done_ems.add(handle)
+
+            quest_status = em.quest_status(world)
+            if quest_status is not None:
+                if quest_status.outcome == QuestOutcome.Failed:
+                    done_ems.add(handle)
+                    self._failed_quests.append(quest_status)
+                elif quest_status.outcome == QuestOutcome.Succeeded:
+                    done_ems.add(handle)
+                    self._succeeded_quests.append(quest_status)
+
+                self._most_recent_status[handle] = quest_status
+
+        for d in done_ems:
+            self._active_keys.remove(self._active[d].key())
+            del self._active[d]
+
+
+@runtime_checkable
+class EventMonitor(Protocol):
+    def notify(self, world: "World", event: "Event") -> Optional["Done"]:
+        raise NotImplementedError()
+
+    def quest_status(self, world: "World") -> Optional["QuestStatus"]:
+        raise NotImplementedError()
+
+    def key(self):
+        raise NotImplementedError()
+
+
+class Done(Enum):
+    Done = 0
+
+
+class QuestOutcome(Enum):
+    InProgress = 0
+    Succeeded = 1
+    Failed = 2
+
+
+class QuestStatus(NamedTuple):
+    name: str
+    description: str
+    oneliner: str
+    outcome: QuestOutcome
+    assigner: Optional["NPCHandle"]
+    # TODO: The item the quest is about, if it has one?
+
+
+# -- Typechecking --
+if TYPE_CHECKING:
+    from .npc import NPCHandle
+    from .world import World
+
