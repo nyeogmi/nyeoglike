@@ -23,9 +23,12 @@ class Colors(object):
     N = len(SWATCH)
     """
     SWATCH = tuple(map(load, [
-        "1A1A13", "23262F", "3A3A4A", "5D6F6F",
-        "E0D8DB", "FFFFFF",
-        "FCB97D", "FF4A59", "7740E6", "DCED31",
+        # "1A1A13", "23262F", "3A3A4A", "5D6F6F",
+        # "E0D8DB", "FFFFFF",
+        "171712", "1E1F1F", "27292A", "5D6F6F",
+        "DDDADB", "FFFFFF",
+
+        "FCB97D", "FF4A59", "8C5DEA", "DCED31",
         "E03616"
     ]))
     N = len(SWATCH)
@@ -51,7 +54,7 @@ class Colors(object):
 
     WorldBG = DarkBlack
     Streak1 = DarkGray
-    Streak2 = DarkBlue
+    Streak2 = DarkGray  # DarkBlue
 
     WorldFG = MidWhite
 

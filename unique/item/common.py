@@ -58,6 +58,26 @@ LEVEL_CODES = {
 # - Banh mi
 # - Tacos
 # - Soup (pho, carne en su jugo)
+# - Spare rib
+# - Waffles
+# - Fries
+# - Pomegranates
+# - Chips
+# - Galbi / Kalbijjim
+# - Bulgogi
+# - Bratwurst
+# - Tuna
+# - Peaches (other fruits?)
+# - Strawberries
+# - Pet food
+# - Burger
+# - Burrito
+# - Meatloaf
+# - Stroganoff
+# - Pad thai
+# - Chicken fettucine alfredo
+# - Curry
+# - Chicken tikka masala
 #
 # Spark items:
 # - Dice
@@ -76,6 +96,28 @@ LEVEL_CODES = {
 # - Scissors
 # - Game cartridge
 # - TV
+# - Pruning shears
+# - Pens
+# - Handheld game consoles
+# - Casting resin
+# - Paints
+# - Spray bottle
+# - Terrarium
+# - Charger
+# - Fossils
+# - Ocarina
+# - Cards
+# - Handkerchiefs
+# - Collectible coins
+# - Ruler
+# - Pendulum
+# - Pocketwatch
+# - Metronome
+# - Strobe light
+# - USB drive
+# - SD card
+# - Pokemon cards
+# - Carving knives
 #
 # TODO: Luxuries and spark items seem similar. Maybe make them always be $ and you can only get spark by completing a quest
 #

@@ -109,10 +109,13 @@ def sitemode(io: IO, world: World):
                 x, y = world_xy
 
                 # draw bg. (TODO: Better pattern?)
+                """
                 bg_streak_ix = ((x // 4 + y * 2 + x // 16 + y // 12) % 18)
                 if bg_streak_ix < 1: bg = Colors.Streak2
                 elif bg_streak_ix < 4: bg = Colors.Streak1
                 else: bg = Colors.WorldBG
+                """
+                bg = Colors.WorldBG
 
                 draw_tile = draw_world.goto(viewport_xy).bg(bg).fg(Colors.WorldFG)
                 draw_tile.copy().putdw(DoubleWide.Blank)
