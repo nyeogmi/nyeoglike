@@ -39,3 +39,7 @@ def ref_named(name) -> Callable[[T], Ref[T]]:
         return Ref(name)
 
     return dec
+
+
+def singleton(x: Callable[[], T]) -> T:
+    return x()

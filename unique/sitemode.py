@@ -117,6 +117,20 @@ def sitemode(io: IO, world: World):
                     # full block
                     draw_tile.copy().bg(0).fg(7).puts("\xdb\xdb", wrap=False)
 
+                for item in world.level.items.get(world_xy, []):
+                    tile = item.tile()
+                    dt = draw_tile.copy()
+                    if tile.bg is not None: dt.bg(tile.bg)
+                    if tile.fg is not None: dt.fg(tile.fg)
+                    dt.goto(viewport_xy + V2(1, 0)).puts(tile.s)
+
+                    if item.n <= 1:
+                        dt.goto(viewport_xy + V2(0, 0)).puts(tile.s)
+                    elif 2 <= item.n <= 9:
+                        dt.goto(viewport_xy).puts(str(item.n))
+                    elif item.n >= 10:
+                        dt.goto(viewport_xy).puts("*")
+
                 npc: NPCHandle
                 for npc in world.level.npc_sites.get_bs(world_xy):
                     interest = world.interest[npc]

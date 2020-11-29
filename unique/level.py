@@ -2,6 +2,7 @@ from ds.relational import OneToMany
 from ds.vecs import V2
 from typing import Dict, List, Iterator
 import os.path
+from .item import Item, common
 from .npc import NPCHandle
 
 
@@ -10,6 +11,7 @@ class Level(object):
         self,
         player_start_xy: V2,
         blocks: Dict[V2, bool],
+        items: Dict[V2, List[Item]],
         npc_sites: OneToMany[V2, NPCHandle]
     ):
         assert isinstance(player_start_xy, V2)
@@ -19,6 +21,7 @@ class Level(object):
 
         self.player_start_xy = player_start_xy
         self.blocks: Dict[V2, bool] = blocks
+        self.items: Dict[V2, List[Item]] = items
         self.npc_sites: OneToMany[V2, NPCHandle] = npc_sites
 
     @classmethod
@@ -26,6 +29,7 @@ class Level(object):
         fname = os.path.join("ascii/levels", name)
 
         player_xy = None
+        items = {}
         blocks = {}
         npc_sites = OneToMany()
 
@@ -42,6 +46,9 @@ class Level(object):
                         npc_sites.add(v, world.npcs.generate())
                     elif c == "#":
                         blocks[v] = True
+                    elif c in common.LEVEL_CODES:
+                        items[v] = items.get(v, [])
+                        items[v].append(common.LEVEL_CODES[c]())
                     elif c == " ":
                         pass
                     else:
@@ -52,6 +59,7 @@ class Level(object):
         return Level(
             player_xy,
             blocks,
+            items,
             npc_sites,
         )
 
