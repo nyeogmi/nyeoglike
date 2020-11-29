@@ -4,6 +4,7 @@ import os.path
 from .event import Event, Verbs
 from .eventmonitor import EventMonitors, EventMonitor
 from .interest import InterestTracker
+from .inventory import Inventory
 from .level import Level
 from .notifications import Notifications, Notification
 from .npc import NPCs, NPC
@@ -21,6 +22,8 @@ class World(object):
         self.camera_xy: V2 = V2.zero()
         self.player_xy: V2 = V2.zero()
         self.player_orientation: V2 = V2.zero()
+        self.inventory: Inventory = Inventory()
+
         self.level: Optional[Level] = None
 
     def activate_level(self, level: Level):

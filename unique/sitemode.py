@@ -5,6 +5,7 @@ from ds.vecs import V2
 from .event import Event, Verbs
 from .eventmonitor import EMHandle, QuestStatus
 from .interest import Interest
+from .item import Resource, common
 from .npc import NPCs, NPC, NPCHandle
 from .world import World
 
@@ -17,6 +18,7 @@ def sitemode(io: IO, world: World):
     world.notifications.send("BATS ARE SO COOL")
     world.notifications.send("BATS RULE")
     world.notifications.send("BATS ARE THE BEST")
+    world.inventory.add(common.cash_loot())
 
     targets = Targeter()
     first = True
@@ -101,6 +103,8 @@ def sitemode(io: IO, world: World):
             targets.update_possible(player_xy=world.player_xy, possible_targets=possible_targets)
             target_handle = targets.target
 
+            tooltip_xy = None
+            tooltip_lst = []
             for world_xy, viewport_xy in zip(camera_xy0.to(camera_xy1), viewport_xys):
                 x, y = world_xy
 
@@ -118,18 +122,18 @@ def sitemode(io: IO, world: World):
                     draw_tile.copy().bg(0).fg(7).puts("\xdb\xdb", wrap=False)
 
                 for item in world.level.items.get(world_xy, []):
-                    tile = item.tile()
+                    profile = item.profile
                     dt = draw_tile.copy()
-                    if tile.bg is not None: dt.bg(tile.bg)
-                    if tile.fg is not None: dt.fg(tile.fg)
-                    dt.goto(viewport_xy + V2(1, 0)).puts(tile.s)
+                    if profile.bg is not None: dt.bg(profile.bg)
+                    if profile.fg is not None: dt.fg(profile.fg)
 
-                    if item.n <= 1:
-                        dt.goto(viewport_xy + V2(0, 0)).puts(tile.s)
-                    elif 2 <= item.n <= 9:
-                        dt.goto(viewport_xy).puts(str(item.n))
-                    elif item.n >= 10:
-                        dt.goto(viewport_xy).puts("*")
+                    dt.goto(viewport_xy + V2(1, 0)).puts(profile.icon)
+                    (resource_fg, resource_icon) = item.contributions[0].resource.display()
+                    dt.goto(viewport_xy).fg(resource_fg).puts(resource_icon)
+
+                    if world_xy == world.player_xy:
+                        tooltip_xy = viewport_xy + V2(0, 1)
+                        tooltip_lst.append(profile.name)
 
                 npc: NPCHandle
                 for npc in world.level.npc_sites.get_bs(world_xy):
@@ -144,6 +148,12 @@ def sitemode(io: IO, world: World):
                     draw_tile.copy().fg(15).putdw(DoubleWide.Bat)
 
                 # TODO: Draw bushes in a knight's move pattern
+
+            # Draw tooltips
+            if tooltip_xy is not None and tooltip_lst:
+                draw_tooltips = io.draw().goto(tooltip_xy)
+                for i, tip in enumerate(tooltip_lst):
+                    draw_tooltips.goto(tooltip_xy + V2.new(0, i)).fg(15).puts(tip)
 
             # Draw targeted user
             if target_handle is not None:
@@ -214,6 +224,10 @@ def sitemode(io: IO, world: World):
             draw_hud_ui.bg(0).fg(7)
             box = draw_hud_ui.copy().expand(2, 1).fillc(" ").fg(5).etch(double=True)  # box
             box.copy().fg(15).zeroed().goto(2, 0).puts("Nyeogmi Choi")
+
+            draw_hud_ui.copy().goto(0, 1).puts("$").fg(15).puts("{:,.2f}".format(world.inventory.get(Resource.Money) / 100))
+            draw_hud_ui.copy().goto(0, 2).puts("[").bg(1).fg(0).puts(" " * 20).bg(0).fg(7).puts("]")
+            draw_hud_ui.copy().goto(0, 3).puts("[").bg(10).fg(0).puts(" " * 20).bg(0).fg(7).puts("]")
 
 
 class Target(NamedTuple):

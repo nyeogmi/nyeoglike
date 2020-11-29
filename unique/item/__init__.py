@@ -1,2 +1,2 @@
-from .item import Item, ItemData
+from .item import Item, Resource
 from . import common

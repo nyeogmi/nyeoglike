@@ -1,29 +1,43 @@
-from typing import Dict, List
-from ds.code_registry import Ref
-from .item import Item, ItemData
-
-
-class Slot(object):
-    def __init__(self):
-        # TODO: Earmark items for quests
-        self.n = 0
-
+from typing import Dict
+from .item import Item, Resource
 
 
 class Inventory(object):
     def __init__(self):
-        # Measured in cents.
-        self.money: int = 0
-
-        self.common_items: Dict[Ref[ItemData], Slot] = {}
-        # self.unique_items: List[Item] = []
+        self.resources: Dict[Resource, int] = {}
+        # self.earmarked_items: Dict[<quest>, Item] = []
 
         # TODO:
         # self.blood = 0  # Vampires need this to live
         # self.spark = 0  # Vampires need this to control minds
 
     def add(self, item: Item):
-        self.common_items[item.data] = self.common_items.get(item.data, Slot())
-        self.common_items[item.data].n += item.n
+        assert isinstance(item, Item)
+        # TODO: Allow quests to earmark this before I go on
 
-    def take(self, kind: Ref[ItemData], n: ):
+        for c in item.contributions:
+            self.resources[c.resource] = self.resources.get(c.resource, 0)
+            self.resources[c.resource] += c.n
+
+        """
+        if self.resources[Resource.Blood] > 100:
+            self.resources[Resource.Blood] = 100
+
+        if self.resources[Resource.Spark] > 100:
+            self.resources[Resource.Spark] = 100
+        """
+
+    def get(self, resource: Resource) -> int:
+        return self.resources.get(resource, 0)
+
+    def take(self, resource: Resource, n: int) -> bool:
+        assert isinstance(n, int)
+        if n == 0:
+            return True
+
+        if n > self.resources.get(resource, 0):
+            return False
+
+        self.resources[resource] -= n
+        if self.resources[resource] == 0:
+            del self.resources[resource]
