@@ -11,6 +11,7 @@ def load(s: str):
 
 
 class Colors(object):
+    """
     SWATCH = tuple(map(load, [
         "262626", "af0000", "5faf00", "dfaf5f",
         # darkening the gray (7) from d0d0d0
@@ -20,19 +21,31 @@ class Colors(object):
         # TODO: Make 15 = 5fafdf like in the original?
     ]))
     N = len(SWATCH)
+    """
+    SWATCH = tuple(map(load, [
+        "1A1A13", "23262F", "3A3A4A", "5D6F6F",
+        "E0D8DB", "FFFFFF",
+        "FCB97D", "FF4A59", "7740E6", "DCED31",
+        "E03616"
+    ]))
+    N = len(SWATCH)
 
-    DarkBlack = Color(0)
-    BloodRed = Color(1)
-    Yellow = Color(3)
-    DarkGray = Color(4)
-    DarkBlue = Color(5)
-    MidWhite = Color(7)
-    BrightGreen = Color(10)
-    BrightPink = Color(13)
-    Azure = Color(14)
-    BrightWhite = Color(15)
+    DarkestBlack = Color(0)
+    DarkBlack = Color(1)
+    DarkGray = Color(2)
+    DarkBlue = Color(3)
 
-    TermBG = DarkBlack
+    MidWhite = Color(4)
+    BrightWhite = Color(5)
+
+    Yellow = Color(6)
+    BrightPink = Color(7)
+    BrightPurp = Color(8)
+    BrightGreen = Color(9)
+
+    BloodRed = Color(10)
+
+    TermBG = DarkestBlack
     TermFG = MidWhite
     TermFGBold = BrightWhite
 

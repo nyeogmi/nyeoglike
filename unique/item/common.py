@@ -23,7 +23,7 @@ def snack() -> Item:
 
 
 _FURNITURE = [
-    Item.new(Profile.new(name="table", icon="\xd1", fg=Colors.Azure), res0=Resource.Furniture, n0=10),
+    Item.new(Profile.new(name="table", icon="\xd1", fg=Colors.DarkBlue), res0=Resource.Furniture, n0=10),
 ]
 
 
