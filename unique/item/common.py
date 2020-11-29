@@ -78,6 +78,9 @@ LEVEL_CODES = {
 # - Chicken fettucine alfredo
 # - Curry
 # - Chicken tikka masala
+# - Fried ice cream
+# - Cinnamon buns
+# - Donuts
 #
 # Spark items:
 # - Dice
@@ -118,6 +121,13 @@ LEVEL_CODES = {
 # - SD card
 # - Pokemon cards
 # - Carving knives
+# - Cables
+# - RAM sticks
+# - PSU
+# - Monitor
+# - Socks
+# - Underwear
+# - T-shirts
 #
 # TODO: Luxuries and spark items seem similar. Maybe make them always be $ and you can only get spark by completing a quest
 #

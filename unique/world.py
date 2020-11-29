@@ -21,7 +21,6 @@ class World(object):
 
         self.camera_xy: V2 = V2.zero()
         self.player_xy: V2 = V2.zero()
-        self.player_orientation: V2 = V2.zero()
         self.inventory: Inventory = Inventory()
 
         self.level: Optional[Level] = None
@@ -35,7 +34,6 @@ class World(object):
 
         self.camera_xy = level.player_start_xy
         self.player_xy = level.player_start_xy
-        self.player_orientation = V2.zero()
         self.level = level
 
     def notify(self, event: Event):
