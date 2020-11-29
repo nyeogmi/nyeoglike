@@ -52,6 +52,9 @@ class Colors(object):
     TermFG = MidWhite
     TermFGBold = BrightWhite
 
+    FadeBG = DarkBlack
+    FadeFG = DarkBlue
+
     WorldBG = DarkBlack
     Streak1 = DarkGray
     Streak2 = DarkGray  # DarkBlue

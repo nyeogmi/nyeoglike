@@ -21,6 +21,10 @@ class Resource(Enum):
         return Colors.DarkGray, "?"
 
 
+class Resources(object):
+    ESSENTIAL = (Resource.Money, Resource.Blood, Resource.Spark)
+
+
 class Contribution(NamedTuple):
     resource: Resource
     n: int

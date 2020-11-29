@@ -1,5 +1,4 @@
-from display import Color, Colors, DoubleWide, Key, Keycodes, Screen, IO
-from typing import List, NamedTuple, Optional
+from display import Colors, DoubleWide, Key, Keycodes, IO
 
 from ds.vecs import V2
 from ..event import Event, Verbs
@@ -9,7 +8,9 @@ from ..item import Resource, common
 from ..npc import NPCs, NPC, NPCHandle
 from ..world import World
 
+from . import inventory_screen
 from .targeter import Targeter, Target
+from .window import draw_window, Window
 
 
 def sitemode(io: IO, world: World):
@@ -19,6 +20,8 @@ def sitemode(io: IO, world: World):
 VIEW = V2(80, 30)
 
 # use a class to provide shared scope for the important stuff, and to share it when delegating to other fns
+
+
 class Sitemode(object):
     def __init__(self, io: IO, world: World):
         assert isinstance(io, IO)
@@ -67,6 +70,9 @@ class Sitemode(object):
                 self.world.notifications.acknowledge(self.world, notif.ident, False)
         elif input.match(Key.new("a")):
             if self.targets.target: self.world.interest.tab(self.targets.target)
+
+        elif input.match(Key.new("i")):
+            inventory_screen.show(self.io, self.world)
 
         # move the player
         moves = [
@@ -177,19 +183,18 @@ class Sitemode(object):
             target = self.world.npcs.get(target_handle)
             interest = self.world.interest[target_handle]
 
-            draw_npc_ui = self.io.draw().goto(30, 2).box(76, 6).zeroed()
-            draw_npc_ui.bg(Colors.TermBG).fg(Colors.TermFG)
-            box = draw_npc_ui.copy().expand(2, 1).fillc(" ").fg(interest.color()).etch(double=False)  # box
-            box.zeroed().goto(2, 0).fg(Colors.TermFGBold).puts(target.name)
+            window = draw_window(self.io.draw().goto(30, 2).box(76, 6), fg=interest.color())
+            window.title_bar.copy().fg(Colors.TermFGBold).puts(target.name)
             if interest != Interest.No:
-                box.zeroed().goto(2 + len(target.name) + 1, 0).fg(Colors.TermFG).puts("({})".format(interest.name))
+                b2 = window.title_bar.copy().goto(len(target.name) + 1, 0).fg(Colors.TermFG)
+                b2.puts("({})".format(interest.name))
 
-            box.zeroed().goto(48 - len("A - Mark"), 0).fg(Colors.TermFGBold).puts("A - Mark")
+            window.title_bar.copy().goto(window.title_bar.bounds.size.x - len("A - Mark"), 0).fg(Colors.TermFGBold).puts("A - Mark")
 
     def draw_notifications(self):
         notifications = self.world.notifications.active_notifications()[-6:]
         if notifications:
-            for y, (i, n) in enumerate(enumerate(notifications), 8):
+            for y, (i, n) in enumerate(enumerate(notifications), 7):
                 last = (i == len(notifications) - 1)
                 if last:
                     height = 4  # TODO: Real height
@@ -201,26 +206,23 @@ class Sitemode(object):
                 else:
                     color = Colors.MSGSystem
 
-                draw_notification_ui = self.io.draw().goto(4, y).box(26, y + height).zeroed()
-                draw_notification_ui.bg(Colors.TermBG).fg(Colors.TermFG)
-                draw_notification_ui.copy().fg(color).expand(2, 1).fillc(" ").etch(double=False)  # box
+                window = draw_window(self.io.draw().goto(4, y).box(26, y + height), fg=color)
 
                 if isinstance(n.message, EMHandle):
                     quest_status: QuestStatus = self.world.eventmonitors.most_recent_status(n.message)
                     assert isinstance(quest_status, QuestStatus)  # A canceled quest should remove its notifications
 
-                    draw_notification_ui.copy().expand(2, 1).goto(0, -1).fg(Colors.TermFGBold).puts(quest_status.name)
-                    draw_notification_ui.copy().goto(0, 0).puts(quest_status.description, wrap=True)
+                    window.title_bar.copy().fg(Colors.TermFGBold).puts(quest_status.name)
+                    window.content.copy().puts(quest_status.description, wrap=True)
                     yes = "Z - OK"
-                    draw_notification_ui.copy().fg(Colors.TermFGBold).expand(2, 1).goto(0, height).puts(yes)
+                    window.button_bar.copy().fg(Colors.TermFGBold).puts(yes)
                     no = "X - Ignore"
-                    draw_notification_ui.copy().fg(Colors.TermFGBold).expand(2, 1).goto(
-                        draw_notification_ui.bounds.size.x - len(no), height).puts(no)
+                    window.button_bar.copy().fg(Colors.TermFGBold).goto(window.button_bar.bounds.size.x - len(no), 0).puts(no)
                 else:
-                    draw_notification_ui.goto(0, 0).puts(n.message, wrap=True)
+                    window.content.copy().puts(n.message, wrap=True)
                     help = "Z - OK"
                     # not bold because this choice is unimportant
-                    draw_notification_ui.copy().fg(Colors.TermFG).expand(2, 1).goto(0, height).puts(help)
+                    window.button_bar.copy().fg(Colors.TermFG).puts(help)
 
     def draw_quests(self):
         draw_quests_ui = self.io.draw()
@@ -246,15 +248,14 @@ class Sitemode(object):
                     quest.oneliner)
 
     def draw_my_hud(self):
-        draw_hud_ui = self.io.draw().goto(4, 2).box(26, 6).zeroed()
-        draw_hud_ui.bg(Colors.TermBG).fg(Colors.TermFG)
-        box = draw_hud_ui.copy().expand(2, 1).fillc(" ").fg(Colors.MSGSystem).etch(double=True)  # box
-        box.copy().fg(Colors.TermFGBold).zeroed().goto(2, 0).puts("Nyeogmi Choi")
+        window = draw_window(self.io.draw().goto(4, 2).box(26, 5), double=True, fg=Colors.MSGSystem)
 
-        draw_hud_ui.copy().goto(0, 1).puts("$").fg(Colors.TermFGBold).puts(
+        window.title_bar.copy().fg(Colors.TermFGBold).puts("Nyeogmi Choi")
+
+        window.content.copy().goto(0, 0).puts("$").fg(Colors.TermFGBold).puts(
             "{:,.2f}".format(self.world.inventory.get(Resource.Money) / 100)
         )
-        draw_hud_ui.copy().goto(0, 2).puts("[").bg(Colors.BloodRed).puts(" " * 20).bg(Colors.TermBG).fg(Colors.TermFG).puts("]")
-        draw_hud_ui.copy().goto(0, 3).puts("[").bg(Colors.BrightGreen).puts(
+        window.content.copy().goto(0, 1).puts("[").bg(Colors.BloodRed).puts(" " * 20).bg(Colors.TermBG).fg(Colors.TermFG).puts("]")
+        window.content.copy().goto(0, 2).puts("[").bg(Colors.BrightGreen).puts(
             " " * 20
         ).bg(Colors.TermBG).fg(Colors.TermFG).puts("]")

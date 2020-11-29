@@ -128,6 +128,8 @@ LEVEL_CODES = {
 # - Socks
 # - Underwear
 # - T-shirts
+# - Jewelry
+# - Glasses
 #
 # TODO: Luxuries and spark items seem similar. Maybe make them always be $ and you can only get spark by completing a quest
 #

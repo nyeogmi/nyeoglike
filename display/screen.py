@@ -300,3 +300,21 @@ class Drawer(object):
         from . import boxart
         boxart.draw(self, self._bounds, double=double)
         return self
+
+    def fade(self):
+        old_xy = self._xy
+        for i in self._bounds:
+            self.goto(i).fadec()
+        self.goto(old_xy)
+        return self
+
+    def fadec(self):
+        if not (self._xy in self._bounds and self._xy in self._actual_bounds):
+            return
+
+        old = self._screen._cells[self._xy + self._offset]
+        self._screen._cells[self._xy + self._offset] = Cell.new(
+            bg=Colors.FadeBG.color,
+            fg=Colors.FadeFG.color,
+            character=old.character,
+        )
