@@ -8,6 +8,7 @@ from .inventory import Inventory
 from .level import Level
 from .notifications import Notifications, Notification
 from .npc import NPCs, NPC
+from .scheduling import Schedules
 
 from typing import Optional
 
@@ -18,6 +19,7 @@ class World(object):
         self.notifications = Notifications()
         self.npcs = NPCs()
         self.interest = InterestTracker()
+        self.schedules = Schedules()
 
         self.camera_xy: V2 = V2.zero()
         self.player_xy: V2 = V2.zero()

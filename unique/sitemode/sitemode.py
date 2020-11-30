@@ -161,6 +161,7 @@ class Sitemode(object):
         self.draw_notifications()
         self.draw_quests()
         self.draw_my_hud()
+        self.draw_timeinfo()
 
     def draw_grid(self):
         # draw grid
@@ -241,7 +242,7 @@ class Sitemode(object):
             window.title_bar.copy().goto(window.title_bar.bounds.size.x - len("A - Mark"), 0).fg(Colors.TermFGBold).puts("A - Mark")
 
     def draw_notifications(self):
-        notifications = self.world.notifications.active_notifications()[-6:]
+        notifications = self.world.notifications.active_notifications()[-12:]
         if notifications:
             for y, (i, n) in enumerate(enumerate(notifications), 7):
                 last = (i == len(notifications) - 1)
@@ -333,3 +334,9 @@ class Sitemode(object):
         window.content.copy().goto(0, 2).puts("[").bg(Colors.BrightGreen).puts(
             " " * 20
         ).bg(Colors.TermBG).fg(Colors.TermFG).puts("]")
+
+    def draw_timeinfo(self):
+        txt = self.world.schedules.time_of_day.display()
+        window = draw_window(self.io.draw().goto(4, 27).box(4 + len(txt), 28), double=True, fg=Colors.MSGSystem)
+
+        window.content.copy().puts(txt)
