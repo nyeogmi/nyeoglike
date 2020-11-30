@@ -81,6 +81,7 @@ LEVEL_CODES = {
 # - Fried ice cream
 # - Cinnamon buns
 # - Donuts
+# - Shrimp
 #
 # Spark items:
 # - Dice
@@ -130,6 +131,10 @@ LEVEL_CODES = {
 # - T-shirts
 # - Jewelry
 # - Glasses
+# - Candles
+# - Paper
+# - Books (Encyclopedias?)
+# - Highlighters
 #
 # TODO: Luxuries and spark items seem similar. Maybe make them always be $ and you can only get spark by completing a quest
 #

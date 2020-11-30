@@ -2,9 +2,10 @@ from display import Colors, DoubleWide, Key, Keycodes, IO
 
 from ds.vecs import V2
 from ..event import Event, Verbs
-from ..eventmonitor import EMHandle, QuestStatus
+from ..eventmonitor import EMHandle, QuestStatus, QuestOutcome
 from ..interest import Interest
 from ..item import Resource, common
+from ..notifications import NotificationReason
 from ..npc import NPCs, NPC, NPCHandle
 from ..world import World
 
@@ -66,13 +67,29 @@ class Sitemode(object):
                 self.world.notifications.acknowledge(self.world, notif.ident, True)
         elif input.match(Key.new("x")):
             notif = self.world.notifications.last_notification()
-            if notif:
+            if notif and notif.reason == NotificationReason.AnnounceQuest:
                 self.world.notifications.acknowledge(self.world, notif.ident, False)
         elif input.match(Key.new("a")):
             if self.targets.target: self.world.interest.tab(self.targets.target)
 
         elif input.match(Key.new("i")):
             inventory_screen.show(self.io, self.world)
+
+        elif input.match(Key.new("g")):
+            items = self.world.level.items.get(self.world.player_xy, [])
+            if len(items) == 0:
+                pass  # nothing to grab
+            else:
+                if len(items) == 1:  # TODO: Only autopick the item if it would not be stealing
+                    ix = 0
+                else:
+                    # TODO: Let the player pick their item
+                    ix = 0  # item = self.pick_item(items)
+
+                item = items.pop()
+                if len(items) == 0:
+                    del self.world.level.items[self.world.player_xy]  # TODO: This should be abstracted around
+                self.world.inventory.add(item)
 
         # move the player
         moves = [
@@ -209,15 +226,32 @@ class Sitemode(object):
                 window = draw_window(self.io.draw().goto(4, y).box(26, y + height), fg=color)
 
                 if isinstance(n.message, EMHandle):
-                    quest_status: QuestStatus = self.world.eventmonitors.most_recent_status(n.message)
-                    assert isinstance(quest_status, QuestStatus)  # A canceled quest should remove its notifications
+                    if n.reason == NotificationReason.AnnounceQuest:
+                        quest_status: QuestStatus = self.world.eventmonitors.most_recent_status(n.message)
+                        assert quest_status is not None
 
-                    window.title_bar.copy().fg(Colors.TermFGBold).puts(quest_status.name)
-                    window.content.copy().puts(quest_status.description, wrap=True)
-                    yes = "Z - OK"
-                    window.button_bar.copy().fg(Colors.TermFGBold).puts(yes)
-                    no = "X - Ignore"
-                    window.button_bar.copy().fg(Colors.TermFGBold).goto(window.button_bar.bounds.size.x - len(no), 0).puts(no)
+                        window.title_bar.copy().fg(Colors.TermFGBold).puts(quest_status.name)
+                        window.content.copy().puts(quest_status.description, wrap=True)
+                        yes = "Z - OK"
+                        window.button_bar.copy().fg(Colors.TermFGBold).puts(yes)
+                        no = "X - Ignore"
+                        window.button_bar.copy().fg(Colors.TermFGBold).goto(window.button_bar.bounds.size.x - len(no), 0).puts(no)
+                    elif n.reason == NotificationReason.FinalizeQuest:
+                        quest_status: QuestStatus = self.world.eventmonitors.most_recent_status(n.message)
+                        assert quest_status is not None
+
+                        if quest_status.outcome == QuestOutcome.Failed:
+                            window.border.copy().fg(Colors.BloodRed).etch(double=True)
+                            window.title_bar.copy().fg(Colors.TermFGBold).puts("Failed: " + quest_status.name)
+                        else:
+                            window.border.copy().fg(Colors.BrightPurp).etch(double=True)
+                            window.title_bar.copy().fg(Colors.TermFGBold).puts("Succeeded: " + quest_status.name)
+
+                        window.content.copy().puts(quest_status.description, wrap=True)
+                        yes = "Z - OK"
+                        window.button_bar.copy().fg(Colors.TermFGBold).puts(yes)
+                    else:
+                        raise AssertionError("bad reason: {}".format(n.reason))
                 else:
                     window.content.copy().puts(n.message, wrap=True)
                     help = "Z - OK"

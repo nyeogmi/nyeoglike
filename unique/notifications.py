@@ -1,4 +1,5 @@
 from ds.gensym import Gensym, Sym
+from enum import Enum
 from typing import Dict, List, NamedTuple, Optional, Union, TYPE_CHECKING
 
 
@@ -6,17 +7,39 @@ class NotificationHandle(NamedTuple):
     ident: Sym
 
 
+class NotificationReason(Enum):
+    Misc = 0
+    AnnounceQuest = 1
+    FinalizeQuest = 2
+
+
+class Notification(NamedTuple):
+    ident: NotificationHandle
+    message: Union[str, "EMHandle"]
+    reason: NotificationReason
+    source: Optional["NPCHandle"]
+
+
 class Notifications(object):
     def __init__(self):
         self._active: List[Notification] = []
         self._sym = Gensym("NOT")
 
-    def send(self, msg: Union[str, "EMHandle"], source: Optional["NPCHandle"] = None) -> NotificationHandle:
+    def send(
+        self,
+        msg: Union[str, "EMHandle"],
+        reason: NotificationReason = NotificationReason.Misc,
+        source: Optional["NPCHandle"] = None
+    ) -> NotificationHandle:
         from .eventmonitor import EMHandle
+        from .npc import NPCHandle
+
         assert isinstance(msg, (str, EMHandle))
+        assert isinstance(reason, NotificationReason)
+        assert source is None or isinstance(source, NPCHandle)
 
         handle = NotificationHandle(self._sym.gen())
-        self._active.append(Notification(ident=handle, message=msg, source=source))
+        self._active.append(Notification(ident=handle, message=msg, reason=reason, source=source))
         return handle
 
     def acknowledge(self, world: "World", handle: NotificationHandle, yes):
@@ -35,11 +58,14 @@ class Notifications(object):
 
         notif = self._active.pop(ix)
         if notif and notif.message and isinstance(notif.message, EMHandle):
-            handle = notif.message
-            if yes:
-                world.eventmonitors.accept_quest(handle)
-            else:
-                world.eventmonitors.ignore_quest(handle)
+            if notif.reason == NotificationReason.AnnounceQuest:
+                if yes:
+                    world.eventmonitors.accept_quest(notif.message)
+                else:
+                    world.eventmonitors.ignore_quest(notif.message)
+
+            elif notif.reason == NotificationReason.FinalizeQuest:
+                world.eventmonitors.finalize_quest(notif.message)
 
     # TODO: Order?
     def active_notifications(self) -> List["Notification"]:
@@ -50,11 +76,18 @@ class Notifications(object):
             return self._active[-1]
         return None
 
+    def remove_for(self, quest: "EMHandle", reason: Optional["NotificationReason"] = None):
+        from .eventmonitor import EMHandle
+        assert isinstance(quest, EMHandle)
+        assert reason is None or isinstance(reason, NotificationReason)
 
-class Notification(NamedTuple):
-    ident: NotificationHandle
-    message: Union[str, "EMHandle"]
-    source: Optional["NPCHandle"]
+        ixs = [
+            ix for ix, notif in enumerate(self._active)
+            if notif.message == quest
+            and (notif.reason == reason if reason is not None else True)
+        ]
+        for ix in ixs[::-1]:
+            self._active.pop(ix)
 
 
 if TYPE_CHECKING:

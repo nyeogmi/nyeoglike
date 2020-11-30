@@ -1,6 +1,7 @@
 from ds.gensym import Gensym, Sym
 
 from .event import Event
+from .notifications import NotificationReason
 from enum import Enum
 from typing import Callable, Dict, List, NamedTuple, Optional, Protocol, Set, runtime_checkable, TYPE_CHECKING
 
@@ -16,9 +17,9 @@ class EventMonitors(object):
         self._sym = Gensym("EM")
 
         self._most_recent_status: Dict[EMHandle, QuestStatus] = {}
-        self._accepted_quests = []
-        self._failed_quests = []
-        self._succeeded_quests = []
+        self._accepted_quests: List[EMHandle] = []
+        self._failed_quests: List[EMHandle] = []
+        self._succeeded_quests: List[EMHandle] = []
 
     def add(self, world: "World", constructor: Callable[[EMHandle], "EventMonitor"]) -> Optional[EMHandle]:
         from .world import World
@@ -36,7 +37,7 @@ class EventMonitors(object):
 
         quest_status = self._active[handle].quest_status(world)
         if quest_status:
-            world.notifications.send(handle, quest_status.assigner)
+            world.notifications.send(handle, NotificationReason.AnnounceQuest, quest_status.assigner)
 
             self._most_recent_status[handle] = quest_status
 
@@ -76,15 +77,32 @@ class EventMonitors(object):
                 if quest_status.outcome == QuestOutcome.Failed:
                     done_ems.add(handle)
                     self._failed_quests.append(quest_status)
+                    self.send_finalize_quest(world, handle, quest_status)
+
                 elif quest_status.outcome == QuestOutcome.Succeeded:
                     done_ems.add(handle)
                     self._succeeded_quests.append(quest_status)
+                    self.send_finalize_quest(world, handle, quest_status)
 
                 self._most_recent_status[handle] = quest_status
 
         for d in done_ems:
             self._active_keys.remove(self._active[d].key())
+            world.notifications.remove_for(d, NotificationReason.AnnounceQuest)
             del self._active[d]
+
+    def send_finalize_quest(self, world: "World", handle: EMHandle, quest_status: "QuestStatus"):
+        if handle in self._accepted_quests:
+            world.notifications.send(handle, NotificationReason.FinalizeQuest, quest_status.assigner)
+        else:
+            # don't wait for the user
+            self.finalize_quest(handle)
+
+    def finalize_quest(self, em: EMHandle):
+        assert isinstance(em, EMHandle)
+        print(em, self._accepted_quests)
+        if em in self._accepted_quests:
+            self._accepted_quests.remove(em)
 
 
 @runtime_checkable
