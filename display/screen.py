@@ -241,24 +241,54 @@ class Drawer(object):
         start_xy = self._xy
         new_xy = self._xy
         just_wrapped = False
-        for c in s:
+
+        if wrap:
+            # count the characters until the next break for each word
+            chars_to_next_break = [0 for c in s]
+            last_break = len(s)
+            for i in range(len(s) - 1, -1, -1):  # indices in s in reverse
+                if s[i] in "\r\n ":
+                    last_break = i
+                chars_to_next_break[i] = last_break - i
+
+            # count the chars in each word for each word
+            chars_in_word = [0 for c in s]
+            for i, n in enumerate(chars_to_next_break):
+                if chars_to_next_break[i] == 0:
+                    chars_in_word[i] = 0
+                else:
+                    chars_in_word[i] = max(0 if i == 0 else chars_in_word[i - 1], chars_to_next_break[i])
+            print(s, chars_in_word)
+
+        for i, c in enumerate(s):
             if c == "\r":
                 just_wrapped = False
                 new_xy = V2.new(start_xy.x, new_xy.y)
             elif c == "\n":
-                just_wrapped = False
+                just_wrapped = True
                 new_xy = V2.new(start_xy.x, new_xy.y + 1)
-            elif c == "\t":
-                just_wrapped = False
-                x = new_xy.x
-                x -= start_xy.x
-                while x % 4 == 0: x += 1
-                x += start_xy.x
-                new_xy = V2.new(x, new_xy.y)
             elif c == " " and just_wrapped: # collapse one space right after wrapping
                 just_wrapped = False
                 continue
             else:
+                if (
+                    wrap and
+                    chars_in_word[i] < self.bounds.size.x - start_xy.x and
+                    chars_to_next_break[i] > self.bounds.bot_exclusive.x - new_xy.x
+                ):
+                    new_xy = V2.new(start_xy.x, new_xy.y + 1)
+
+                # if it's a space and the next word will wrap, wrap now
+                if (
+                    wrap and
+                    c == " " and i < len(s) - 1 and
+                    chars_in_word[i + 1] < self.bounds.size.x - start_xy.x and
+                    chars_to_next_break[i + 1] > self.bounds.bot_exclusive.x - new_xy.x
+                ):
+                    new_xy = V2.new(start_xy.x, new_xy.y + 1)
+                    just_wrapped = True
+                    continue
+
                 just_wrapped = False
                 if actually_put and new_xy in self._bounds and new_xy in self._actual_bounds:
                     old_cell = self._screen._cells[new_xy + self._offset]
