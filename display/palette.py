@@ -52,6 +52,9 @@ class Colors(object):
     TermFG = MidWhite
     TermFGBold = BrightWhite
 
+    TermHighlightBG = BrightPurp
+    TermHighlightBGInactive = DarkBlue
+
     FadeBG = DarkBlack
     FadeFG = DarkBlue
 

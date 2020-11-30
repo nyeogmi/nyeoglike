@@ -10,7 +10,7 @@ from ..notifications import NotificationReason
 from ..npc import NPCs, NPC, NPCHandle
 from ..world import World
 
-from . import fov, inventory_screen
+from . import fly_screen, fov, inventory_screen
 from .targeter import Targeter, Target
 from .window import draw_window, Window
 
@@ -76,6 +76,9 @@ class Sitemode(object):
 
         elif input.match(Key.new("i")):
             inventory_screen.show(self.io, self.world)
+
+        elif input.match(Key.new("f")):
+            fly_screen.show(self.io, self.world)
 
         elif input.match(Key.new("g")):
             items = self.world.level.items.get(self.world.player_xy, [])
@@ -143,6 +146,10 @@ class Sitemode(object):
             if self.lightmap[world_xy] > 0
             for npc in self.world.level.npc_sites.get_bs(world_xy)
         ]
+
+        for tar in possible_targets:
+            self.world.npcs.get(tar.npc).seen = True
+
         self.targets.update_possible(
             player_xy=self.world.player_xy,
             possible_targets=possible_targets
@@ -294,7 +301,7 @@ class Sitemode(object):
             marked_quests.reverse()
 
             y = 7
-            draw_quests_ui.copy().goto(50, y).bg(Colors.TermBG).fg(Colors.TermFGBold).puts("Q - Quests");
+            draw_quests_ui.copy().goto(50, y).bg(Colors.TermBG).fg(Colors.TermFGBold).puts("Q - Quests")
             y += 1
             for (_, quest) in marked_quests:
                 if y >= 29:  # screen height

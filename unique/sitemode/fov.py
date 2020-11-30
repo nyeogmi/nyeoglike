@@ -20,7 +20,6 @@ def fov(
 class Lightmap(object):
     def __init__(self, light_level: Dict[V2, float]):
         self._light_level = light_level
-        print(self._light_level)
 
     def __getitem__(self, v: V2) -> float:
         assert isinstance(v, V2)

@@ -61,6 +61,8 @@ class EventMonitors(object):
         if quest in self._accepted_quests:
             self._accepted_quests.remove(quest)
 
+        # TODO: Remove the claims?
+
     # TODO: Failed quests? Succeeded quests? Limited N? Sort order?
     def accepted_quests(self) -> List["EMHandle"]:
         return list(self._accepted_quests)

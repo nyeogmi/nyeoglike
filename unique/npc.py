@@ -44,6 +44,7 @@ class NPC(object):
     def __init__(self, ident, name):
         self._ident = ident
         self.name = name
+        self.seen = False  # set in sitemode
 
     @property
     def ident(self):

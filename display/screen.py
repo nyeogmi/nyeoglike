@@ -70,9 +70,14 @@ def is_cell(c: Cell):
     assert isinstance(c, Cell)
 
 
-def measure(s: str) -> V2:
+def measure(s: str) -> int:
     # Rely on the fact that measure() doesn't use the screen if actually_put is false
     return Drawer(None, None, None, V2.zero(), V2.zero()).measure(s, wrap=False)
+
+
+def measure_wrap(s: str, width: int) -> int:
+    # Rely on the fact that measure() doesn't use the screen if actually_put is false
+    return Drawer(None, V2.zero().to(V2.new(width, 100000)), None, V2.zero(), V2.zero()).measure(s, wrap=True)
 
 
 class Drawer(object):
@@ -223,12 +228,14 @@ class Drawer(object):
         self.goto(old_xy)
         return self
 
-    def measure(self, s: str, wrap: bool = False):
+    def measure(self, s: str, wrap: bool = False) -> int:  # TODO: Measure x
         assert isinstance(s, str)
         assert isinstance(wrap, bool)
 
+        old_xy = self._xy
         new_xy = self._puts(s, wrap, actually_put=False)
-        return new_xy - self._xy
+        print(old_xy, new_xy)
+        return new_xy.y + (0 if new_xy.x == old_xy.x else 1)  # if we just wrapped, don't include that too
 
     def _puts(self, s: str, wrap: bool, actually_put: bool) -> V2:
         assert isinstance(s, str)
@@ -258,7 +265,6 @@ class Drawer(object):
                     chars_in_word[i] = 0
                 else:
                     chars_in_word[i] = max(0 if i == 0 else chars_in_word[i - 1], chars_to_next_break[i])
-            print(s, chars_in_word)
 
         for i, c in enumerate(s):
             if c == "\r":

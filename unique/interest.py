@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict
+from typing import Dict, Iterator
 
 from display import Color, Colors
 from .npc import NPCHandle
@@ -35,6 +35,10 @@ class InterestTracker(object):
         )
         self[handle] = new
         return new
+
+    def friends_list(self) -> Iterator[NPCHandle]:
+        for npch in self._interest_level:
+            yield npch
 
     def __delitem__(self, handle: NPCHandle):
         assert isinstance(handle, NPCHandle)

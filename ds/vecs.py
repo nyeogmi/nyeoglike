@@ -68,6 +68,7 @@ class R2(NamedTuple):
 
     @property
     def bot_inclusive(self) -> V2:
+        assert self.size.x > 0 and self.size.y > 0
         return self.top + self.size - V2.new(1, 1)
 
     @property
