@@ -57,7 +57,7 @@ class EventMonitors(object):
         pass
 
     # TODO: Failed quests? Succeeded quests? Limited N? Sort order?
-    def accepted_quests(self) -> List["QuestStatus"]:
+    def accepted_quests(self) -> List["EMHandle"]:
         return list(self._accepted_quests)
 
     def notify(self, world: "World", event: "Event"):

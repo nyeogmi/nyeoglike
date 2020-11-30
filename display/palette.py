@@ -68,3 +68,6 @@ class Colors(object):
     NPCFriend = BrightGreen
     NPCLove = BrightPink
     MSGSystem = DarkBlue
+
+    QuestSucceeded = BrightPurp
+    QuestFailed = BloodRed

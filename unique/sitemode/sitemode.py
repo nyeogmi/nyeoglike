@@ -241,10 +241,10 @@ class Sitemode(object):
                         assert quest_status is not None
 
                         if quest_status.outcome == QuestOutcome.Failed:
-                            window.border.copy().fg(Colors.BloodRed).etch(double=True)
+                            window.border.copy().fg(Colors.QuestFailed).etch(double=True)
                             window.title_bar.copy().fg(Colors.TermFGBold).puts("Failed: " + quest_status.name)
                         else:
-                            window.border.copy().fg(Colors.BrightPurp).etch(double=True)
+                            window.border.copy().fg(Colors.QuestSucceeded).etch(double=True)
                             window.title_bar.copy().fg(Colors.TermFGBold).puts("Succeeded: " + quest_status.name)
 
                         window.content.copy().puts(quest_status.description, wrap=True)
@@ -263,7 +263,9 @@ class Sitemode(object):
         quest_emhs = self.world.eventmonitors.accepted_quests()
         if quest_emhs:
             marked_quests = [(emh, self.world.eventmonitors.most_recent_status(emh)) for emh in quest_emhs]
-            marked_quests.sort(key=lambda q: (self.world.interest[q[1].assigner], q[0]))
+            marked_quests.sort(key=lambda q: (
+                q[1].outcome != QuestOutcome.InProgress, self.world.interest[q[1].assigner], q[0]
+            ))
             marked_quests.reverse()
 
             y = 7
@@ -273,7 +275,11 @@ class Sitemode(object):
                 if y >= 29:  # screen height
                     break  # don't draw too many quests
 
-                if quest.assigner is None:
+                if quest.outcome == QuestOutcome.Succeeded:
+                    color = Colors.QuestSucceeded
+                elif quest.outcome == QuestOutcome.Failed:
+                    color = Colors.QuestFailed
+                elif quest.assigner is None:
                     color = Colors.MSGSystem
                 else:
                     color = self.world.interest[quest.assigner].color()

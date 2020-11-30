@@ -80,8 +80,10 @@ LEVEL_CODES = {
 # - Chicken tikka masala
 # - Fried ice cream
 # - Cinnamon buns
-# - Donuts
+# - Donuts (raised, jelly)
 # - Shrimp
+# - Tteokbokki
+# - Jeon
 #
 # Spark items:
 # - Dice
