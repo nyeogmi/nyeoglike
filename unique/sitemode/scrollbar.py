@@ -64,7 +64,6 @@ class Scrollbar(object):
         y = 0
         for i in range(self._scroll_i, len(self._data)):
             sz = self._proto.measure_item(self._data[i], region.bounds.size.x - 2)
-            print(y, i, sz)
             region2 = region.copy().goto(2, y).box(sz.x, min(y + sz.y, region.bounds.size.y)).zeroed()
             self._proto.draw_item(self._data[i], region2, i == self._i)
             y += sz.y

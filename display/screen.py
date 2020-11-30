@@ -234,7 +234,6 @@ class Drawer(object):
 
         old_xy = self._xy
         new_xy = self._puts(s, wrap, actually_put=False)
-        print(old_xy, new_xy)
         return new_xy.y + (0 if new_xy.x == old_xy.x else 1)  # if we just wrapped, don't include that too
 
     def _puts(self, s: str, wrap: bool, actually_put: bool) -> V2:

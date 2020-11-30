@@ -39,9 +39,7 @@ class FetchQuest(EventMonitor):
         if self._state() == _FQState.NotFetched:
             if event.verb == Verbs.Claim:
                 (box,) = event.args
-                print(box.item.profile.name, self._item_name)
                 if box.item.profile.name == self._item_name:
-                    print("found!!")
                     self._claimed_item = box.claim(self._handle)
 
         elif self._state() == _FQState.NotReturned:

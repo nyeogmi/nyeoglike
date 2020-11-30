@@ -130,7 +130,6 @@ class EventMonitors(object):
 
     def finalize_quest(self, em: EMHandle):
         assert isinstance(em, EMHandle)
-        print(em, self._accepted_quests)
         if em in self._accepted_quests:
             self._accepted_quests.remove(em)
 

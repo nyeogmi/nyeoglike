@@ -90,10 +90,13 @@ class Follow(ScrollbarData):
     def __init__(self, fly: FlyScreen):
         self.fly = fly
 
+    def text(self, npch):
+        npc = self.fly.world.npcs.get(npch)
+        return npc.name + "\n" + "(going home)"
+
     def measure_item(self, npch, width: int) -> V2:
         # TODO: Measure NPC name
-        npc = self.fly.world.npcs.get(npch)
-        y = measure_wrap(npc.name, width - 2)  # bullet point
+        y = measure_wrap(self.text(npch), width - 2)  # bullet point
         return V2.new(width, y)
 
     def draw_item(self, npch, draw: Drawer, selected: bool):
@@ -101,7 +104,7 @@ class Follow(ScrollbarData):
         color = self.fly.world.interest[npch].color()
         if selected:
             draw.bg(Colors.TermHighlightBG if self.fly._state == FlyScreenState.Follow else Colors.TermHighlightBGInactive)
-        draw.goto(0, 0).fg(color).puts("\xf9 ").fg(Colors.TermFG).puts(npc.name, wrap=True)
+        draw.goto(0, 0).fg(color).puts("\xf9 ").fg(Colors.TermFG).puts(self.text(npch), wrap=True)
 
 
 class FlyScreenState(Enum):
