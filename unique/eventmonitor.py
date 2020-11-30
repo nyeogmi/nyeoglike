@@ -92,7 +92,8 @@ class EventMonitors(object):
             del self._active[d]
 
     def send_finalize_quest(self, world: "World", handle: EMHandle, quest_status: "QuestStatus"):
-        if handle in self._accepted_quests:
+        if handle in self._accepted_quests or quest_status.outcome == QuestOutcome.Succeeded:
+            # NOTE: Show successes even if the user didn't accept the quest
             world.notifications.send(handle, NotificationReason.FinalizeQuest, quest_status.assigner)
         else:
             # don't wait for the user
