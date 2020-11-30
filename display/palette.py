@@ -55,11 +55,11 @@ class Colors(object):
     FadeBG = DarkBlack
     FadeFG = DarkBlue
 
-    WorldBG = DarkBlack
-    Streak1 = DarkGray
-    Streak2 = DarkGray  # DarkBlue
-
+    WorldBG = DarkestBlack  # was DarkBlack
     WorldFG = MidWhite
+
+    WorldUnseenBG = DarkBlack
+    WorldUnseenFG = DarkBlue
 
     ResourceGeneric = DarkBlue
 

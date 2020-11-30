@@ -1,6 +1,7 @@
 from display import Colors, DoubleWide, Key, Keycodes, IO
 
 from ds.vecs import V2
+
 from ..event import Event, Verbs
 from ..eventmonitor import EMHandle, QuestStatus, QuestOutcome
 from ..interest import Interest
@@ -9,7 +10,7 @@ from ..notifications import NotificationReason
 from ..npc import NPCs, NPC, NPCHandle
 from ..world import World
 
-from . import inventory_screen
+from . import fov, inventory_screen
 from .targeter import Targeter, Target
 from .window import draw_window, Window
 
@@ -31,6 +32,7 @@ class Sitemode(object):
         self.io = io
         self.world = world
         self.targets = Targeter()
+        self.lightmap: fov.Lightmap = fov.Lightmap({})
 
     @property
     def camera_world_rect(self):
@@ -123,9 +125,22 @@ class Sitemode(object):
                 self.world.notify(Event.new(Verbs.Tick, ()))
 
     def recalculate_visibility(self):
+        self.lightmap = fov.fov(
+            lambda world_xy: world_xy in self.world.level.blocks,
+            self.camera_world_rect,
+            self.world.player_xy,
+            80.0,  # see indefinitely in all directions
+        )
+        self.world.level.seen.update(
+            world_xy
+            for world_xy in self.camera_world_rect
+            if self.lightmap[world_xy] > 0
+        )
+        # TODO: Player always sees NPCs who they are Friend/Love with
         possible_targets = [
             Target(npc, world_xy)
             for world_xy in self.camera_world_rect
+            if self.lightmap[world_xy] > 0
             for npc in self.world.level.npc_sites.get_bs(world_xy)
         ]
         self.targets.update_possible(
@@ -151,42 +166,52 @@ class Sitemode(object):
         tooltip_xy = None
         tooltip_lst = []
         for world_xy, viewport_xy in zip(self.camera_world_rect, viewport_xys):
-            bg = Colors.WorldBG
+            if self.lightmap[world_xy] == 0:
+                draw_tile = draw_world.goto(viewport_xy).bg(Colors.WorldUnseenBG).fg(Colors.WorldUnseenFG)
+                draw_tile.copy().putdw(DoubleWide.Blank)
+                # don't draw what we can't see
+                # except blocks, if seen before
 
-            draw_tile = draw_world.goto(viewport_xy).bg(bg).fg(Colors.WorldFG)
-            draw_tile.copy().putdw(DoubleWide.Blank)
+                if world_xy in self.world.level.seen:
+                    # TODO: Use "memory of seen tiles."
+                    # Right now it's just "if you saw a tile, you know if there's a wall there."
+                    if world_xy in self.world.level.blocks:
+                        # full block
+                        draw_tile.copy().puts("\xdb\xdb", wrap=False)
 
-            if world_xy in self.world.level.blocks:
-                # full block
-                draw_tile.copy().bg(Colors.WorldBG).fg(Colors.WorldFG).puts("\xdb\xdb", wrap=False)
+            else:
+                draw_tile = draw_world.goto(viewport_xy).bg(Colors.WorldBG).fg(Colors.WorldFG)
+                draw_tile.copy().putdw(DoubleWide.Blank)
 
-            for item in self.world.level.items.get(world_xy, []):
-                profile = item.profile
-                dt = draw_tile.copy()
-                if profile.bg is not None: dt.bg(profile.bg)
-                if profile.fg is not None: dt.fg(profile.fg)
+                if world_xy in self.world.level.blocks:
+                    # full block
+                    draw_tile.copy().puts("\xdb\xdb", wrap=False)
 
-                dt.goto(viewport_xy + V2(1, 0)).puts(profile.icon)
-                (resource_fg, resource_icon) = item.contributions[0].resource.display()
-                dt.goto(viewport_xy).fg(resource_fg).puts(resource_icon)
+                for item in self.world.level.items.get(world_xy, []):
+                    profile = item.profile
+                    dt = draw_tile.copy()
+                    if profile.bg is not None: dt.bg(profile.bg)
+                    if profile.fg is not None: dt.fg(profile.fg)
+
+                    dt.goto(viewport_xy + V2(1, 0)).puts(profile.icon)
+                    (resource_fg, resource_icon) = item.contributions[0].resource.display()
+                    dt.goto(viewport_xy).fg(resource_fg).puts(resource_icon)
+
+                    if world_xy == self.world.player_xy:
+                        tooltip_xy = viewport_xy + V2(0, 1)
+                        tooltip_lst.append(profile.name)
+
+                npc: NPCHandle
+                for npc in self.world.level.npc_sites.get_bs(world_xy):
+                    interest = self.world.interest[npc]
+                    # npc_sites
+                    if npc == self.targets.target:
+                        draw_tile.copy().bg(interest.color()).fg(Colors.WorldBG).putdw(DoubleWide.At)
+                    else:
+                        draw_tile.copy().bg(Colors.WorldBG).fg(interest.color()).putdw(DoubleWide.At)
 
                 if world_xy == self.world.player_xy:
-                    tooltip_xy = viewport_xy + V2(0, 1)
-                    tooltip_lst.append(profile.name)
-
-            npc: NPCHandle
-            for npc in self.world.level.npc_sites.get_bs(world_xy):
-                interest = self.world.interest[npc]
-                # npc_sites
-                if npc == self.targets.target:
-                    draw_tile.copy().bg(interest.color()).fg(Colors.WorldBG).putdw(DoubleWide.At)
-                else:
-                    draw_tile.copy().bg(Colors.WorldBG).fg(interest.color()).putdw(DoubleWide.At)
-
-            if world_xy == self.world.player_xy:
-                draw_tile.copy().fg(Colors.Player).putdw(DoubleWide.Bat)
-
-            # TODO: Draw bushes in a knight's move pattern
+                    draw_tile.copy().fg(Colors.Player).putdw(DoubleWide.Bat)
 
         # Draw tooltips
         if tooltip_xy is not None and tooltip_lst:
@@ -284,9 +309,10 @@ class Sitemode(object):
                 else:
                     color = self.world.interest[quest.assigner].color()
 
-                dq2 = draw_quests_ui.copy().goto(52, y).bg(Colors.TermBG).fg(color).puts("\xf9 ").fg(Colors.TermFG).puts(
-                    quest.oneliner, wrap=True)
-                y = dq2.xy.y + 1
+                dq2 = draw_quests_ui.copy().goto(52, y).bg(Colors.TermBG).fg(color).puts("\xf9 ").fg(Colors.TermFG)
+                start_x = dq2.xy.x
+                dq2.puts(quest.oneliner, wrap=True)
+                y = dq2.xy.y + (1 if dq2.xy.x != start_x else 0)  # drop once if we didn't wrap
 
     def draw_my_hud(self):
         window = draw_window(self.io.draw().goto(4, 2).box(26, 5), double=True, fg=Colors.MSGSystem)

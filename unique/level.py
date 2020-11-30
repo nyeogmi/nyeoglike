@@ -1,6 +1,6 @@
 from ds.relational import OneToMany
 from ds.vecs import V2
-from typing import Dict, List, Iterator
+from typing import Dict, List, Set, Iterator
 import os.path
 from .item import Item, common
 from .npc import NPCHandle
@@ -21,6 +21,7 @@ class Level(object):
 
         self.player_start_xy = player_start_xy
         self.blocks: Dict[V2, bool] = blocks
+        self.seen: Set[V2] = set()  # every time the player sees a tile, add it to this
         self.items: Dict[V2, List[Item]] = items
         self.npc_sites: OneToMany[V2, NPCHandle] = npc_sites
 
