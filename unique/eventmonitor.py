@@ -1,6 +1,6 @@
 from ds.gensym import Gensym, Sym
 
-from .event import Event
+from .event import Event, Verbs
 from .notifications import NotificationReason
 from enum import Enum
 from typing import Callable, Dict, List, NamedTuple, Optional, Protocol, Set, runtime_checkable, TYPE_CHECKING
@@ -38,6 +38,7 @@ class EventMonitors(object):
         quest_status = self._active[handle].quest_status(world)
         if quest_status:
             world.notifications.send(handle, NotificationReason.AnnounceQuest, quest_status.assigner)
+            self._accepted_quests.append(handle)
 
             self._most_recent_status[handle] = quest_status
 
@@ -48,19 +49,24 @@ class EventMonitors(object):
 
     def accept_quest(self, quest: EMHandle):
         assert isinstance(quest, EMHandle)
-        if quest in self._active:
+
+        # Add if not presumed-accepted
+        if quest in self._active and quest not in self._accepted_quests:
             self._accepted_quests.append(quest)
 
     def ignore_quest(self, quest: EMHandle):
         assert isinstance(quest, EMHandle)
-        # TODO: Do we need to do anything with the "ignore" info?
-        pass
+
+        # Remove if presumed-accepted
+        if quest in self._accepted_quests:
+            self._accepted_quests.remove(quest)
 
     # TODO: Failed quests? Succeeded quests? Limited N? Sort order?
     def accepted_quests(self) -> List["EMHandle"]:
         return list(self._accepted_quests)
 
     def notify(self, world: "World", event: "Event"):
+        from .inventory import ClaimBox
         from .world import World
 
         assert isinstance(world, World)
@@ -68,11 +74,28 @@ class EventMonitors(object):
 
         # TODO: Make sure handle order is maintained thru serialization/deserialization, so this remains deterministic
         done_ems = set()
-        for handle, em in self._active.items():
-            if em.notify(world, event) == Done.Done:
-                done_ems.add(handle)
 
+        # TODO: For Claim, iterate in quest precedence order here -- that is, love > friend > normal
+        for handle, em in self._active.items():
             quest_status = em.quest_status(world)
+            verb = event.verb
+
+            if Verbs.quest_only(verb):
+                should_notify = (
+                    quest_status and quest_status.outcome == QuestOutcome.InProgress
+                )
+
+                if verb == Verbs.Claim and handle not in self._accepted_quests:
+                    should_notify = False
+            else:
+                should_notify = True
+
+            if should_notify:
+                if em.notify(world, event) == Done.Done:
+                    done_ems.add(handle)
+
+                quest_status = em.quest_status(world)
+
             if quest_status is not None:
                 if quest_status.outcome == QuestOutcome.Failed:
                     done_ems.add(handle)
@@ -86,7 +109,11 @@ class EventMonitors(object):
 
                 self._most_recent_status[handle] = quest_status
 
-        for d in done_ems:
+            # Don't let anyone else look at this Claim if it's all claimed
+            if verb == Verbs.Claim and all(i.taken for i in event.args if isinstance(i, ClaimBox)):
+                break
+
+        for d in sorted(done_ems):
             self._active_keys.remove(self._active[d].key())
             world.notifications.remove_for(d, NotificationReason.AnnounceQuest)
             del self._active[d]

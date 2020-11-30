@@ -15,6 +15,8 @@ def cash_loot() -> Item:
 
 _SNACK = [
     Item.new(Profile.new(name="musubi", icon="\xf6", fg=Colors.BrightPink), res0=Resource.Snack, n0=10),
+    # TODO: Better icon
+    Item.new(Profile.new(name="pizza", icon="\xf6", fg=Colors.BrightPink), res0=Resource.Snack, n0=50),
 ]
 
 

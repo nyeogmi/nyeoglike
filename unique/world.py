@@ -37,5 +37,9 @@ class World(object):
         self.level = level
 
     def notify(self, event: Event):
-        self.eventmonitors.notify(self, event)
-        self.npcs.notify(self, event)
+        if Verbs.quest_only(event.verb):
+            # No need for NPCs to know. This event pertains to quests
+            self.eventmonitors.notify(self, event)
+        else:
+            self.eventmonitors.notify(self, event)
+            self.npcs.notify(self, event)

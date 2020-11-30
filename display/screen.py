@@ -93,6 +93,10 @@ class Drawer(object):
         self._bg: Optional[Color] = None
 
     @property
+    def xy(self):
+        return self._xy
+
+    @property
     def bounds(self):
         return self._bounds
 

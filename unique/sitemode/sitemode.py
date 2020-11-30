@@ -44,7 +44,7 @@ class Sitemode(object):
         self.world.notifications.send("BATS ARE SO COOL")
         self.world.notifications.send("BATS RULE")
         self.world.notifications.send("BATS ARE THE BEST")
-        self.world.inventory.add(common.cash_loot())
+        self.world.inventory.add(self.world, common.cash_loot())
 
         while True:
             self.recalculate_visibility()
@@ -89,7 +89,7 @@ class Sitemode(object):
                 item = items.pop()
                 if len(items) == 0:
                     del self.world.level.items[self.world.player_xy]  # TODO: This should be abstracted around
-                self.world.inventory.add(item)
+                self.world.inventory.add(self.world, item)
 
         # move the player
         moves = [
@@ -269,9 +269,9 @@ class Sitemode(object):
             marked_quests.reverse()
 
             y = 7
-            draw_quests_ui.copy().goto(60, y).bg(Colors.TermBG).fg(Colors.TermFGBold).puts("Q - Quests");
+            draw_quests_ui.copy().goto(50, y).bg(Colors.TermBG).fg(Colors.TermFGBold).puts("Q - Quests");
             y += 1
-            for y, (_, quest) in enumerate(marked_quests, y):
+            for (_, quest) in marked_quests:
                 if y >= 29:  # screen height
                     break  # don't draw too many quests
 
@@ -284,8 +284,9 @@ class Sitemode(object):
                 else:
                     color = self.world.interest[quest.assigner].color()
 
-                draw_quests_ui.copy().goto(62, y).bg(Colors.TermBG).fg(color).puts("\xf9 ").fg(Colors.TermFG).puts(
-                    quest.oneliner)
+                dq2 = draw_quests_ui.copy().goto(52, y).bg(Colors.TermBG).fg(color).puts("\xf9 ").fg(Colors.TermFG).puts(
+                    quest.oneliner, wrap=True)
+                y = dq2.xy.y + 1
 
     def draw_my_hud(self):
         window = draw_window(self.io.draw().goto(4, 2).box(26, 5), double=True, fg=Colors.MSGSystem)

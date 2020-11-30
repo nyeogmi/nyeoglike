@@ -64,6 +64,7 @@ class NPC(object):
         )
 
     def notify(self, world: "World", me: Me, event: Event):
+        from .quests import FetchQuest
         from .world import World
 
         assert isinstance(world, World)
@@ -72,37 +73,9 @@ class NPC(object):
 
         if world.player_xy.manhattan(me.me_xy) <= 1:
             # offer a quest
-            world.eventmonitors.add(world, lambda handle: TestQuest(handle, self._ident))
+            # world.eventmonitors.add(world, lambda handle: TestQuest(handle, self._ident))
+            world.eventmonitors.add(world, lambda handle: FetchQuest(handle, self._ident, "pizza"))
 
-
-class TestQuest(EventMonitor):
-    def __init__(self, handle: "EMHandle", npc: NPCHandle):
-        from .eventmonitor import EMHandle
-        assert isinstance(handle, EMHandle)
-
-        self._handle = handle
-        self._npc = npc
-        self._ticks = 10
-
-    def notify(self, world: "World", event: "Event") -> Optional["Done"]:
-        print(world, event)
-        if event.verb == Verbs.Tick:
-            self._ticks -= 1
-
-        if self._ticks < 0:
-            self._ticks = 0
-
-    def quest_status(self, world: "World") -> Optional["QuestStatus"]:
-        return QuestStatus(
-            name="Hey! ({})".format(world.npcs.get(self._npc).name),
-            description="I'm a quest, and you can complete me.",
-            oneliner="Wait {} ticks".format(self._ticks) if self._ticks else "You win!",
-            outcome=QuestOutcome.InProgress if self._ticks else QuestOutcome.Succeeded,
-            assigner=self._npc,
-        )
-
-    def key(self):
-        return TestQuest, self._npc
 
 
 from typing import TYPE_CHECKING

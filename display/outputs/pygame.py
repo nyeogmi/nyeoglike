@@ -78,7 +78,7 @@ def start(interactor: Interactor):
     while not interactor.should_quit():
         screen, changed = interactor.view()
 
-        if changed:
+        if changed or True:  # TODO: For now, always redraw
             with screen.lock():
                 pygame_screen.fill(Colors.SWATCH[Colors.TermBG.color])
                 for xy in screen.bounds:
