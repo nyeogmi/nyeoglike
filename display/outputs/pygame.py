@@ -71,20 +71,21 @@ def start(interactor: Interactor):
 
     tile_size = V2(8, 16)
 
-    screen = interactor.view()
+    screen, _ = interactor.view()
     pygame_screen = pygame.display.set_mode(list(screen.bounds.size * tile_size), flags=pygame.SCALED)
     font = Font.load("vga_8x16.png", tile_size)
 
     while not interactor.should_quit():
-        screen = interactor.view()
+        screen, changed = interactor.view()
 
-        with screen.lock():
-            pygame_screen.fill(Colors.SWATCH[Colors.TermBG.color])
-            for xy in screen.bounds:
-                cell = screen[xy]
-                font.draw(pygame_screen, xy, cell.bg, cell.fg, cell.character)
+        if changed:
+            with screen.lock():
+                pygame_screen.fill(Colors.SWATCH[Colors.TermBG.color])
+                for xy in screen.bounds:
+                    cell = screen[xy]
+                    font.draw(pygame_screen, xy, cell.bg, cell.fg, cell.character)
 
-            pygame.display.flip()
+                pygame.display.flip()
 
         keys = []
         quit = False

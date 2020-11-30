@@ -8,7 +8,7 @@ from typing import Protocol, runtime_checkable
 
 @runtime_checkable
 class Interactor(Protocol):
-    def view(self) -> Screen:
+    def view(self) -> (Screen, bool):  # bool: whether it is changed
         raise NotImplementedError()
 
     def handle_key(self, key: Key):

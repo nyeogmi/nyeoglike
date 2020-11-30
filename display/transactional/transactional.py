@@ -64,18 +64,14 @@ class Host(Interactor):
         self._send = send
         self._recv = recv
 
-    def _view(self) -> Screen:
+    def view(self) -> (Screen, bool):
         try:
             # TODO: Set an "updated" flag when this is received, only have pygame redraw on update
             self._screen = self._recv.get(timeout=0.0)
             assert isinstance(self._screen, Screen)
+            return self._screen, True
         except Empty as e:
-            pass
-
-        return self._screen
-
-    def view(self) -> Screen:
-        return self._view()
+            return self._screen, False
 
     def handle_key(self, key: Key):
         assert isinstance(key, Key)
