@@ -23,6 +23,10 @@ class V2(NamedTuple):
         assert isinstance(other, V2)
         return R2.new_4i(self.x, self.y, other.x, other.y)
 
+    def sized(self, other: "V2") -> "R2":
+        assert isinstance(other, V2)
+        return R2.new_4i(self.x, self.y, self.x + other.x, self.y + other.y)
+
     def __add__(self, other: "V2") -> "V2":
         assert isinstance(other, V2)
         return V2.new(self.x + other.x, self.y + other.y)

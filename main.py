@@ -23,5 +23,5 @@ if __name__ == "__main__":
     display.outputs.pygame.start(interactor)
 """
 if __name__ == "__main__":
-    from unique.level.gen import floorplan
-    print(floorplan().to_s())
+    from unique.level.gen import apartment
+    print(apartment().to_s())
