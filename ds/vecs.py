@@ -49,6 +49,12 @@ class V2(NamedTuple):
         assert isinstance(other, V2)
         return abs(self.x - other.x) + abs(self.y - other.y)
 
+    def neighbors(self) -> Iterator["V2"]:
+        for y in range(self.y - 1, self.y + 2):
+            for x in range(self.x - 1, self.x + 2):
+                if x == self.x and y == self.y: continue
+                yield V2.new(x, y)
+
 
 class R2(NamedTuple):
     top: V2

@@ -31,3 +31,4 @@ class FastGensym(object):
 
     def ungen(self):
         self._number -= 1
+        return self._number

@@ -14,8 +14,37 @@ class RoomHandle(NamedTuple):
     ident: int
 
 
+class RoomType(Enum):
+    EntryZone = 0
+    Hallway = 1
+    Antechamber = 2
+    LivingRoom = 3
+    Bedroom = 4
+    Kitchen = 5
+    Bathroom = 6
+    Closet = 7
+
+    def tile(self) -> str:
+        if self == RoomType.EntryZone:
+            return "e"
+        elif self == RoomType.Hallway:
+            return "."
+        elif self == RoomType.Antechamber:
+            return "a"
+        elif self == RoomType.LivingRoom:
+            return "l"
+        elif self == RoomType.Bedroom:
+            return "b"
+        elif self == RoomType.Kitchen:
+            return "k"
+        elif self == RoomType.Bathroom:
+            return "r"
+        elif self == RoomType.Closet:
+            return "c"
+
+
 class CreateRoom(NamedTuple):
-    pass
+    room_type: RoomType
 
 
 class CarveTile(NamedTuple):
@@ -38,6 +67,7 @@ class Rule(Enum):
 
 class Veto(Exception): pass
 
+
 class VetoBox(object):
     def __init__(self):
         self._vetoed = None
@@ -53,11 +83,13 @@ class VetoBox(object):
         return self.vetoed
 
 
-# TODO: Support random permutation of this
+# TODO: Support random rotation/mirroring of this
+# TODO: Veto if a room becomes too small
 class Carve(object):
     def __init__(self):
         self._rooms = FastGensym()
         self._room_tiles: OneToMany[RoomHandle, V2] = OneToMany()
+        self._room_types: Dict[RoomHandle, RoomType] = {}
 
         self._room_frozen = set()
 
@@ -78,8 +110,8 @@ class Carve(object):
     def veto(self):
         raise Veto
 
-    def _create_room(self) -> RoomHandle:
-        return self._do_log(CreateRoom())
+    def _create_room(self, room_type: RoomType) -> RoomHandle:
+        return self._do_log(CreateRoom(room_type))
 
     def _carve_point(self, v2: V2, new_owner: Optional[RoomHandle]):
         old_owner = self._room_tiles.get_a(v2)
@@ -95,7 +127,9 @@ class Carve(object):
 
     def _do_op(self, operation: CarveOp):
         if isinstance(operation, CreateRoom):
-            return RoomHandle(self._rooms.gen())
+            rh = RoomHandle(self._rooms.gen())
+            self._room_types[rh] = operation.room_type
+            return rh
         elif isinstance(operation, CarveTile):
             if operation.new_owner is None:
                 self._room_tiles.remove_b(operation.position)
@@ -108,7 +142,8 @@ class Carve(object):
 
     def _undo_op(self, operation: CarveOp):
         if isinstance(operation, CreateRoom):
-            self._rooms.ungen()
+            rh = self._rooms.ungen()
+            del self._room_types[RoomHandle(rh)]
         elif isinstance(operation, CarveTile):
             if operation.old_owner is None:
                 self._room_tiles.remove_b(operation.position)
@@ -119,14 +154,14 @@ class Carve(object):
         else:
             raise AssertionError("what is {}?".format(operation))
 
-    def carve(self, r: R2, ignore: List[RoomHandle] = None) -> RoomHandle:
+    def carve(self, r: R2, room_type: RoomType, ignore: List[RoomHandle] = None) -> RoomHandle:
         ignore = ignore or []
         assert isinstance(ignore, List)
         assert isinstance(r, R2)
 
-        h = self._create_room()
+        h = self._create_room(room_type)
 
-        affected_rooms = set()
+        affected_rooms = {}
         for v in r.expand(V2.new(1, 1)):
             existing_room = self._room_tiles.get_a(v)
             if existing_room in ignore:
@@ -135,18 +170,104 @@ class Carve(object):
             if existing_room in self._room_frozen:
                 self.veto()
 
-            affected_rooms.add(existing_room)
+            affected_rooms[existing_room] = len(list(self._room_tiles.get_bs(v)))
 
             if v in r:
                 self._carve_point(v, h)
             else:
                 self._carve_point(v, None)
 
-        for r in affected_rooms:
-            if r in self._room_frozen:
+        for r, previous_area in affected_rooms.items():
+            new_area = len(list(self._room_tiles.get_bs(r)))
+            if self._ruined(r, previous_area, new_area):
                 self.veto()
 
         return h
+
+    def _ruined(self, r, previous_area, new_area):
+        if r in self._room_frozen:
+            return True
+
+        if new_area < 0.5 * previous_area:
+            return True
+
+        if (previous_area > 6) and (new_area < 6):
+            return True
+
+        # TODO: Check for no longer contiguous?
+        # TODO: Check for wonky shape
+
+        return False
+
+    def expand_densely(self, r: RoomHandle):
+        claimed = lambda tile: self._room_tiles.get_a(tile) is not None
+        claimed_me = lambda tile: self._room_tiles.get_a(tile) == r
+
+        change_made = True
+        while change_made:
+            to_add = set()
+            for d in [V2.new(-1, 0), V2.new(0, -1), V2.new(1, 0), V2.new(0, 1)]:
+                for t in self._room_tiles.get_bs(r):
+                    # True if the tile is claimed
+                    t1 = claimed(t + d)
+                    if t1: continue
+
+                    if claimed_me(t + d + d):
+                        to_add.add(t + d)
+                        continue
+
+                    t2 = claimed(t + d + d)
+                    if t2: continue
+
+                    t3 = claimed(t + d + d + d)
+                    t4 = claimed(t + d + d + d + d)
+                    # t5 = claimed(t + d + d + d + d + d)
+
+                    if (
+                        # (t5 and not any([t4, t3])) or
+                        (t4 and not any([t3])) or
+                        t3
+                    ):
+                        to_add.add(t + d)
+
+            change_made = len(to_add) > 0
+            for t in to_add:
+                self._carve_point(t, r)
+
+    def erode(self, r: RoomHandle, iterations):
+        claimed = lambda tile: self._room_tiles.get_a(tile) is not None
+
+        directions1 = [V2.new(-1, 0), V2.new(0, -1), V2.new(1, 0), V2.new(0, 1)]
+        directions2 = directions1[1:] + directions1[:1]
+
+        for i in range(iterations):
+            to_remove = set()
+            for d1, d2 in zip(directions1, directions2):
+                for t in self._room_tiles.get_bs(r):
+                    tu1 = claimed(t + d1)
+                    tu2 = claimed(t + d1 + d1)
+                    tl1 = claimed(t + d2)
+                    tl2 = claimed(t + d2 + d2)
+                    if not (tu1 or tu2 or tl1 or tl2):
+                        to_remove.add(t)
+
+            for t in to_remove:
+                self._carve_point(t, None)
+
+    def erode_1tile_wonk(self, r: RoomHandle):  # removes one-tile bacon strips
+        claimed = lambda tile: self._room_tiles.get_a(tile) is not None
+
+        to_remove = set()
+        directions = [V2.new(-1, 0), V2.new(0, -1)]
+        for d in directions:
+            for t in self._room_tiles.get_bs(r):
+                tl = claimed(t + d)
+                tr = claimed(t - d)
+                if not (tl or tr):
+                    to_remove.add(t)
+
+        for t in to_remove:
+            self._carve_point(t, None)
 
     def to_s(self):
         carved = {}
@@ -164,13 +285,9 @@ class Carve(object):
         s = StringIO()
         for y in range(mn_y - 1, mx_y + 2):
             for x in range(mn_x - 1, mx_x + 2):
-                if x == 0 and y == 0:
-                    s.write(".")
-                    continue
-
                 room = carved.get(V2.new(x, y))
                 if room:
-                    room_tile = chr(ord("A") + (room.ident % 26))
+                    room_tile = self._room_types[room].tile()  # chr(ord("A") + (room.ident % 26))
                 else:
                     room_tile = None
                 if room_tile:
@@ -188,10 +305,18 @@ class Carve(object):
             s.write("\n")
         return s.getvalue().strip("\n")
 
+    def ident_rooms(self, room_type: RoomType) -> List[RoomHandle]:
+        found = []
+        for room in self._room_tiles.all_as():
+            if self._room_types[room] != room_type: continue
+            found.append(room)
+
+        return found
+
     def snake(self, room: RoomHandle, direction: "Cardinal") -> "Snake":
         return Snake(self, room, direction)
 
-    def tunnel_east(self, room_handle: RoomHandle, size: V2, min_contact=None, use_ignore=False, rule: Rule = Rule.RNG) -> RoomHandle:
+    def tunnel_east(self, room_handle: RoomHandle, size: V2, room_type: RoomType, min_contact=None, use_ignore=False, rule: Rule = Rule.RNG) -> RoomHandle:
         assert isinstance(room_handle, RoomHandle)
         tiles = list(self._room_tiles.get_bs(room_handle))
         max_x = max(t.x for t in tiles)
@@ -200,9 +325,9 @@ class Carve(object):
         if min_contact is None:
             min_contact = size.y if use_ignore else 1
 
-        return self._tunnel(room_handle, size, min_contact, use_ignore, rhs_tiles, V2.new(1, 0), rule)
+        return self._tunnel(room_handle, size, room_type, min_contact, use_ignore, rhs_tiles, V2.new(1, 0), rule)
 
-    def tunnel_south(self, room_handle: RoomHandle, size: V2, min_contact=None, use_ignore=False, rule: Rule = Rule.RNG) -> RoomHandle:
+    def tunnel_south(self, room_handle: RoomHandle, size: V2, room_type: RoomType, min_contact=None, use_ignore=False, rule: Rule = Rule.RNG) -> RoomHandle:
         assert isinstance(room_handle, RoomHandle)
         tiles = list(self._room_tiles.get_bs(room_handle))
         max_y = max(t.y for t in tiles)
@@ -211,9 +336,9 @@ class Carve(object):
         if min_contact is None:
             min_contact = size.x if use_ignore else 1
 
-        return self._tunnel(room_handle, size, min_contact, use_ignore, bot_tiles, V2.new(0, 1), rule)
+        return self._tunnel(room_handle, size, room_type, min_contact, use_ignore, bot_tiles, V2.new(0, 1), rule)
 
-    def tunnel_west(self, room_handle: RoomHandle, size: V2, min_contact=None, use_ignore=False, rule: Rule = Rule.RNG) -> RoomHandle:
+    def tunnel_west(self, room_handle: RoomHandle, size: V2, room_type: RoomType, min_contact=None, use_ignore=False, rule: Rule = Rule.RNG) -> RoomHandle:
         assert isinstance(room_handle, RoomHandle)
         tiles = list(self._room_tiles.get_bs(room_handle))
         min_x = min(t.x for t in tiles)
@@ -222,9 +347,9 @@ class Carve(object):
         if min_contact is None:
             min_contact = size.y if use_ignore else 1
 
-        return self._tunnel(room_handle, size, min_contact, use_ignore, lhs_tiles, V2.new(-1, 0), rule)
+        return self._tunnel(room_handle, size, room_type, min_contact, use_ignore, lhs_tiles, V2.new(-1, 0), rule)
 
-    def tunnel_north(self, room_handle: RoomHandle, size: V2, min_contact=None, use_ignore=False, rule: Rule = Rule.RNG) -> RoomHandle:
+    def tunnel_north(self, room_handle: RoomHandle, size: V2, room_type: RoomType, min_contact=None, use_ignore=False, rule: Rule = Rule.RNG) -> RoomHandle:
         assert isinstance(room_handle, RoomHandle)
         tiles = list(self._room_tiles.get_bs(room_handle))
         min_y = min(t.y for t in tiles)
@@ -233,9 +358,9 @@ class Carve(object):
         if min_contact is None:
             min_contact = size.x if use_ignore else 1
 
-        return self._tunnel(room_handle, size, min_contact, use_ignore, lhs_tiles, V2.new(0, -1), rule)
+        return self._tunnel(room_handle, size, room_type, min_contact, use_ignore, lhs_tiles, V2.new(0, -1), rule)
 
-    def _tunnel(self, room_handle: RoomHandle, size: V2, min_contact: int, use_ignore: bool, tiles: List[V2], direction: V2, rule: Rule):
+    def _tunnel(self, room_handle: RoomHandle, size: V2, room_type: RoomType, min_contact: int, use_ignore: bool, tiles: List[V2], direction: V2, rule: Rule):
         sites = []
         for t in tiles:
             if use_ignore:
@@ -255,7 +380,7 @@ class Carve(object):
         ]
         if len(sites) == 0: self.veto()
 
-        return self.carve(self._choose(sites, rule), ignore=[room_handle] if use_ignore else [])
+        return self.carve(self._choose(sites, rule), room_type, ignore=[room_handle] if use_ignore else [])
 
     def _choose(self, sites: List[R2], rule: Rule):
         if rule == Rule.RNG:
@@ -312,6 +437,12 @@ class Cardinal(Enum):
     def left(self):
         return Cardinal((self.value - 1) % 4)
 
+    @classmethod
+    def all_shuffled(cls) -> List["Cardinal"]:
+        base = [Cardinal.North, Cardinal.East, Cardinal.South, Cardinal.West]
+        random.shuffle(base)
+        return base
+
 
 class Snake(object):
     def __init__(self, carve: Carve, room: RoomHandle, direction: Cardinal):
@@ -345,19 +476,19 @@ class Snake(object):
     def turn_left(self):
         self._direction = self._direction.left()
 
-    def tunnel(self, size: V2, min_contact: Optional[int] = None, use_ignore: bool = False, rule: Rule = Rule.RNG):
+    def tunnel(self, size: V2, room_type: RoomType, min_contact: Optional[int] = None, use_ignore: bool = False, rule: Rule = Rule.RNG):
         if self._direction in [Cardinal.East, Cardinal.West]:
             # Swap components for L/R
             size = V2.new(size.y, size.x)
 
         if self._direction == Cardinal.North:
-            room = self._carve.tunnel_north(self._room, size, min_contact=min_contact, use_ignore=use_ignore, rule=rule)
+            room = self._carve.tunnel_north(self._room, size, room_type, min_contact=min_contact, use_ignore=use_ignore, rule=rule)
         elif self._direction == Cardinal.East:
-            room = self._carve.tunnel_east(self._room, size, min_contact=min_contact, use_ignore=use_ignore, rule=rule)
+            room = self._carve.tunnel_east(self._room, size, room_type, min_contact=min_contact, use_ignore=use_ignore, rule=rule)
         elif self._direction == Cardinal.South:
-            room = self._carve.tunnel_south(self._room, size, min_contact=min_contact, use_ignore=use_ignore, rule=rule)
+            room = self._carve.tunnel_south(self._room, size, room_type, min_contact=min_contact, use_ignore=use_ignore, rule=rule)
         elif self._direction == Cardinal.West:
-            room = self._carve.tunnel_west(self._room, size, min_contact=min_contact, use_ignore=use_ignore, rule=rule)
+            room = self._carve.tunnel_west(self._room, size, room_type, min_contact=min_contact, use_ignore=use_ignore, rule=rule)
         else:
             raise AssertionError("direction: {}".format(self._direction))
 
@@ -368,126 +499,202 @@ class Snake(object):
 def apartment() -> Carve:
     carve = Carve()
 
-    cell_sz_x = random.randint(3, 5)
+    cell_sz_x = random.randint(3, 4)
 
     living_room_width = random.randint(cell_sz_x + 3, cell_sz_x * 2 + 1)
     living_room_height = random.randrange(6, 8)
-    living_room = carve.carve(V2.new(0, 0).sized(V2.new(living_room_width, living_room_height)))
+    living_room = carve.carve(V2.new(0, 0).sized(V2.new(living_room_width, living_room_height)), RoomType.LivingRoom)
     carve.freeze(living_room)
 
-    bedroom_depth = random.randint(living_room_height // 2, living_room_height)
+    def build_kitchen(snake: Snake):
+        kitchen_width = random.randint(living_room_width - 1, living_room_width)
+        kitchen_height = random.randint(living_room_height - 4, living_room_height - 2)
+        kitchen_height = max(kitchen_height, 2)
+        carve.freeze(snake.tunnel(V2.new(kitchen_width, kitchen_height), RoomType.Kitchen, min_contact=kitchen_width))
 
-    def hall_room(snake: Snake) -> bool:
-        for sz_x in range(cell_sz_x, 0, -1):
+    build_kitchen(carve.snake(living_room, Cardinal.North))
+
+    def build_antechamber_once(snake: Snake):
+        choice = random.choice([0, 0, 0, 1, 1])
+        if choice == 0:
+            # tiny room -- _just_ an entry zone
+            carve.freeze(snake.tunnel(V2.new(3, 3), RoomType.EntryZone, min_contact=3))
+        else:
+            # yard-like
+            carve.freeze(snake.tunnel(V2.new(living_room_height, 3), RoomType.Antechamber, min_contact=living_room_height))
+            if random.choice([False, True]):
+                snake.turn_right()
+                carve.freeze(snake.tunnel(V2.new(3, 3), RoomType.Antechamber))
+
+            random.choice([lambda: None, snake.turn_left])()
+            carve.freeze(snake.tunnel(V2.new(3, 3), RoomType.EntryZone, min_contact=3))
+
+    def build_antechamber(snake: Snake):
+        for try_ in range(5):
             with snake.veto_point() as vetoed:
-                snake.tunnel(V2.new(sz_x, bedroom_depth), min_contact=min(cell_sz_x, sz_x), rule=Rule.Dense)
+                return build_antechamber_once(snake)
+        snake.veto()
+
+    build_antechamber(carve.snake(living_room, Cardinal.West))
+
+    bedroom_depth_l = random.randint(living_room_height // 2, living_room_height)
+    bedroom_depth_r = random.randint(living_room_height // 2, living_room_height)
+
+    def build_hall_room(snake: Snake, master: bool, depth: int) -> bool:
+        for sz_x in range(cell_sz_x, 2, -1):
+            room_type = (
+                RoomType.Bedroom if master else
+                RoomType.Bathroom if len(carve.ident_rooms(RoomType.Bathroom)) == 0 else
+                RoomType.Bedroom
+            )
+            size = V2.new(sz_x + (random.randint(2, 4) if master else 0), depth + (random.randint(0, 1) if master else 0))
+            size = V2.new(size.x, min(size.y, int(size.x * 1.5)))
+
+            with snake.veto_point() as vetoed:
+                # TODO: Bathroom
+                snake.tunnel(
+                    size,
+                    room_type,
+                    min_contact=min(cell_sz_x, sz_x),
+                    rule=Rule.Dense
+                )
 
             if not vetoed:
                 return True
 
         return False
 
-    def hallway(snake: Snake, n_hall_nodes: int):
+    def build_bathroom(snake: Snake) -> bool:
+        for sz_x in range(4, 2, -1):
+            room_type = RoomType.Bathroom
+            size = V2.new(sz_x, 3)
+
+            with snake.veto_point() as vetoed:
+                carve.freeze(snake.tunnel(size, room_type, min_contact=min(cell_sz_x, sz_x - 1), rule=Rule.Dense))
+
+            if not vetoed:
+                return True
+
+        return False
+
+    def build_closet(snake: Snake) -> bool:
+        for sz_x in range(5, 1, -1):
+            room_type = RoomType.Closet
+            size = V2.new(sz_x, 1)
+
+            with snake.veto_point() as vetoed:
+                r = snake.tunnel(size, room_type, min_contact=sz_x, rule=Rule.Dense)
+                carve.freeze(r)  # should be frozen, closets are easy to wipe out
+
+            if not vetoed:
+                return True
+
+        return False
+
+    def build_hallway(snake: Snake, n_hall_nodes: int):
         if n_hall_nodes == 0:
-            hall_room(snake)
+            build_hall_room(snake, master=True, depth=living_room_width)
             return
 
         # bend
-        bend = None
-        if n_hall_nodes > 1 and random.choice([False, True, True]):
-            bend = random.randrange(1, n_hall_nodes)
-
         for i in range(n_hall_nodes):
-            if i == bend:
-                snake.tunnel(V2.new(3, 3), min_contact=3)
-                snake.turn_left()
-                snake.tunnel(V2.new(3, cell_sz_x), min_contact=3)
+            carve.freeze(snake.tunnel(V2.new(3, cell_sz_x), RoomType.Hallway, min_contact=3))
 
+            def build_l():
                 room1 = snake.branch()
                 room1.turn_left()
-                hall_room(room1)
+                build_hall_room(room1, False, bedroom_depth_l)
 
+            def build_r():
                 room2 = snake.branch()
                 room2.turn_right()
-                hall_room(room2)
+                build_hall_room(room2, False, bedroom_depth_r)
 
-                snake.tunnel(V2.new(3, 3), min_contact=3)
-                snake.turn_right()
-                snake.tunnel(V2.new(3, cell_sz_x), min_contact=3)
+            # we assign bathroom first, so assign it to the smaller side
+            if bedroom_depth_l < bedroom_depth_r:
+                build_l()
+                build_r()
             else:
-                snake.tunnel(V2.new(3, cell_sz_x), min_contact=3)
+                build_r()
+                build_l()
 
-                room1 = snake.branch()
-                room1.turn_left()
-                hall_room(room1)
+        build_hall_room(snake, True, cell_sz_x)  # master bedroom
 
-                room2 = snake.branch()
-                room2.turn_right()
-                hall_room(room2)
 
     has_junction = random.choice([False, True])
 
     if has_junction:
-        n_hall_nodes = random.choice([1, 1, 1, 2 ])
+        n_hall_nodes = random.choice([0, 0, 1, 2])
         junc = carve.snake(living_room, Cardinal.East)
-        junc.tunnel(V2.new(3, 3), min_contact=3)
+        junc.tunnel(V2.new(3, 3), RoomType.Hallway, min_contact=3)
 
         h1 = junc.branch()
         h1.turn_right()
-        hallway(h1, n_hall_nodes=n_hall_nodes)
+        build_hallway(h1, n_hall_nodes=n_hall_nodes)
 
         if random.choice([False, True, True]):
-            n_hall_nodes = random.choice([0])
+            n_hall_nodes = random.choice([0, 0, 1])
             h1 = junc.branch()
             if random.choice([False, False, True]):
                 h1.turn_left()
-            hallway(h1, n_hall_nodes=n_hall_nodes)
+            build_hallway(h1, n_hall_nodes=n_hall_nodes)
     else:
-        n_hall_nodes = random.choice([1, 1, 1, 2, 2, 3])
+        n_hall_nodes = random.choice([0, 0, 0, 1, 1, 2, 3])
         h1 = carve.snake(living_room, Cardinal.East)
-        hallway(h1, n_hall_nodes=n_hall_nodes)
+        build_hallway(h1, n_hall_nodes=n_hall_nodes)
 
+    # TODO: Veto if the number of rooms is wrong
 
+    bedrooms = carve.ident_rooms(room_type=RoomType.Bedroom)
+    bathrooms = carve.ident_rooms(room_type=RoomType.Bathroom)
+    hallways = carve.ident_rooms(room_type=RoomType.Hallway)
+    # Freeze rooms
+    for br in bedrooms: carve.freeze(br)
+    for br in bathrooms: carve.freeze(br)
+    for hw in hallways: carve.freeze(hw)
+
+    # give every bedroom a closet if possible
+    for br in bedrooms:
+        for card in Cardinal.all_shuffled():
+            if build_closet(carve.snake(br, card)):
+                break
+        else:
+            # try really hard to have a closet
+            carve.veto()
+
+    bathroom_bedrooms = list(bedrooms)
+    # if there aren't enough bathrooms, try to add some
+    for try_ in range(10):
+        bathrooms = carve.ident_rooms(room_type=RoomType.Bathroom)
+        if len(bathrooms) >= len(bedrooms):
+            break
+
+        random_bedroom = random.choice(bathroom_bedrooms)
+        for card in Cardinal.all_shuffled():
+            if build_bathroom(carve.snake(random_bedroom, card)):
+                bathroom_bedrooms.remove(random_bedroom)
+                break
+
+        if hallways:
+            random_hallway = random.choice(hallways)
+            for card in Cardinal.all_shuffled():
+                if build_bathroom(carve.snake(random_hallway, card)):
+                    break
+
+    # now improve various room types
+    for room_type in [RoomType.Bedroom, RoomType.Kitchen, RoomType.LivingRoom]:
+        for r in carve.ident_rooms(room_type):
+            carve.expand_densely(r)
+
+    for room_type in [RoomType.Bedroom, RoomType.Kitchen, RoomType.LivingRoom]:
+        for r in carve.ident_rooms(room_type):
+            carve.erode_1tile_wonk(r)
+
+    # erode room types that are often pointlessly large
+    if random.choice([False, False, True]):
+        for room_type in [RoomType.LivingRoom, RoomType.Kitchen]:
+            for r in carve.ident_rooms(room_type):
+                carve.erode(r, 1)
 
     return carve
-
-    """
-    bedroom_width = random.randrange(6, 8)
-    bedroom_depth = random.randrange(5, 7)
-
-    n_bedrooms = random.choice([1, 1, 1, 2, 2, 3])
-
-    width_hallway = random.randint(2, 3)
-    len_hallway = (bedroom_width + 1) * n_bedrooms
-    y_hallway = random.randrange(0, living_room_height - width_hallway)
-
-    hallway = V2.new(living_room_width, y_hallway).to(V2.new(living_room_width + len_hallway, y_hallway + width_hallway))
-
-    carve = Carve()
-    living_room = carve.carve(living_room)
-    carve.carve(hallway, ignore=[living_room])
-
-    rooms_orientation = random.choice([0, 1, 2])
-
-    br_x = hallway.top.x
-    for i in range(n_bedrooms):
-        if rooms_orientation in [0, 2]:
-            bedroom_tr = V2.new(br_x + 1, hallway.top.y - bedroom_depth - 1)
-            bedroom_bl = V2.new(br_x + 1 + bedroom_width, hallway.top.y - 1)
-            carve.carve(bedroom_tr.to(bedroom_bl))
-        if rooms_orientation in [1, 2]:
-            bedroom_tr = V2.new(br_x + 1, hallway.bot_exclusive.y + 1)
-            bedroom_bl = V2.new(br_x + 1 + bedroom_width, hallway.bot_exclusive.y + 1 + bedroom_depth)
-            carve.carve(bedroom_tr.to(bedroom_bl))
-
-        br_x += bedroom_width + 1
-
-    have_master_bedroom = random.choice([False, True, True]) if n_bedrooms > 1 else False  # TODO: Randomize
-    if have_master_bedroom:
-        mbr_tr = V2.new(br_x + 1, hallway.top.y - (random.randint(2, 3) if rooms_orientation in [1, 2] else 0))
-        mbr_bl = V2.new(br_x + 1 + bedroom_depth, hallway.bot_exclusive.y + (random.randint(1, 3) if rooms_orientation in [1, 2] else 0))
-        carve.carve(mbr_tr.to(mbr_bl))
-
-    return carve
-    """
 
