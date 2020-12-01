@@ -1,0 +1,32 @@
+    # == Design TODOs ==
+
+    # TODO: Living room should be in a grid size that is a multiple of bedroom width.
+    # For instance, if the bedroom doors are spaced 3 apart in the hallway, the living room should be 3 or 6 tiles wide
+    # Even if the hallway goes in a right angle to the original direction, LR stuff should still be plotted in multiples of 3
+
+    # TODO: The ideal primitive for this is carve_room(rect: R) where R is a rectangle whose coords are all inclusive,
+    # and plopping it down automatically surrounds it one tile thick in wall, adjusting nearby rooms
+    # Some rooms should be able to mark themselves as "can't drop a rectangle on me"
+    # Bisecting an existing room is always disallowed, as well as making an existing room U-shaped. (Possibly, >6 corners is banned)
+    # Plopping a rect should fail and backtrack if it makes a mess of existing rooms
+
+    # When placing doors -- see if multiple rooms of that type can get away with the same door placement, and if so,
+    # with a high probability, do that
+    # Probably try all door placements to see if a version of that can work
+
+    # "Getting away with" a door placement happens when that door connects one room to a compatible room
+
+    # TODO: L/R rotation
+
+    # == Fringe design TODOs ==
+    # TODO: Generate named lines in certain cases, then have a room check for them. Likewise, check for clearance, claimed zones, etc
+    # TODO:
+    #   Instead of having the player minecraft their house together, have them push and pull walls like in Portal 2's level editor
+    #   Cost is determined by difference in number of total blocks needed
+
+    # == This layout TODOs ==
+    # TODO: Better primitives for this
+
+    # TODO: Adjoiner on the side that there is no rooms
+    # TODO: Antechamber on either side
+    # TODO: Closets
