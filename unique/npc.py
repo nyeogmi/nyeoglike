@@ -54,7 +54,7 @@ class NPC(object):
 
     @classmethod
     def generate(cls, ident):
-        # TODO: Name gen
+        # TODO: Name tools
         return NPC(
             ident=ident,
             name=random.choice([
