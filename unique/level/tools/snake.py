@@ -1,6 +1,6 @@
 from enum import Enum
 from .carve import Carve
-from .recs import RoomHandle, RoomType, Rule
+from .recs import RoomHandle, LinkType, RoomType, Rule
 
 from contextlib import contextmanager
 
@@ -62,7 +62,14 @@ class Snake(object):
     def turn_left(self):
         self._direction = self._direction.left()
 
-    def tunnel(self, size: V2, room_type: RoomType, min_contact: Optional[int] = None, use_ignore: bool = False, rule: Rule = Rule.RNG):
+    def tunnel(self, size: V2, room_type: RoomType, link_type: LinkType, min_contact: Optional[int] = None, use_ignore: bool = False, rule: Rule = Rule.RNG):
+        assert isinstance(size, V2)
+        assert isinstance(room_type, RoomType)
+        assert isinstance(link_type, LinkType)
+        assert min_contact is None or isinstance(min_contact, int)
+        assert isinstance(use_ignore, bool)
+        assert isinstance(rule, Rule)
+
         if self._direction in [Cardinal.East, Cardinal.West]:
             # Swap components for L/R
             size = V2.new(size.y, size.x)
@@ -78,6 +85,7 @@ class Snake(object):
         else:
             raise AssertionError("direction: {}".format(self._direction))
 
+        self._carve.link_rooms(link_type, self._room, room)
         self._room = room
         return room
 

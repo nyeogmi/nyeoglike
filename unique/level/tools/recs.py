@@ -6,6 +6,31 @@ class RoomHandle(NamedTuple):
     ident: int
 
 
+class LinkType(Enum):
+    Ignore = 0
+    Door = 1
+    Complete = 2
+    # TODO: Fat door, antidoor
+    # A fat door looks like this  |-    -|
+    # An antidoor looks like this | ---- |
+
+
+class DoorSpread(NamedTuple):
+    # linear
+    x: int
+    y: int
+
+    # constants
+    cx: int
+    cy: int
+
+
+class Link(NamedTuple):
+    link_type: LinkType
+    room0: RoomHandle
+    room1: RoomHandle
+
+
 class RoomType(Enum):
     EntryZone = 0
     Hallway = 1

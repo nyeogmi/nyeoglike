@@ -5,14 +5,30 @@ from .recs import *
 # TODO: Support random rotation/mirroring of this
 # TODO: Veto if a room becomes too small
 class Carve(object):
-    def __init__(self):
+    def __init__(self, door_spread: DoorSpread):
+        self._door_spread = door_spread
+
         self._rooms = FastGensym()
         self._room_tiles: OneToMany[RoomHandle, V2] = OneToMany()
         self._room_types: Dict[RoomHandle, RoomType] = {}
-
         self._room_frozen = set()
+        self._links: List[Link] = []
 
         self._operation_log = []
+
+    def permute_at_random(self):
+        _room_tiles_2: OneToMany[RoomHandle, V2] = OneToMany()
+
+        # TODO: Is one rotation more likely than another w/ this?
+        mul_x = random.choice([-1, 1])
+        mul_y = random.choice([-1, 1])
+        swap = random.choice([True, False])
+
+        for rh, v2 in self._room_tiles.all():
+            v2 = V2.new(mul_x * v2.x, mul_y * v2.y)
+            if swap: v2 = V2.new(v2.y, v2.x)
+            _room_tiles_2.add(rh, v2)
+        self._room_tiles = _room_tiles_2
 
     def to_s(self):
         carved = {}
@@ -32,7 +48,7 @@ class Carve(object):
             for x in range(mn_x - 1, mx_x + 2):
                 room = carved.get(V2.new(x, y))
                 if room:
-                    room_tile = self._room_types[room].tile()  # chr(ord("A") + (room.ident % 26))
+                    room_tile = " " # self._room_types[room].tile()  # chr(ord("A") + (room.ident % 26))
                 else:
                     room_tile = None
                 if room_tile:
@@ -44,7 +60,7 @@ class Carve(object):
                             if V2.new(x + x1, y + y1) in carved:
                                 needed = True
                     if needed:
-                        s.write("-")
+                        s.write("#")
                     else:
                         s.write(" ")
             s.write("\n")
@@ -76,6 +92,9 @@ class Carve(object):
         if rh in self._room_frozen: return
         self._do_log(FreezeRoom(rh))
 
+    def link_rooms(self, link_type: LinkType, rh0: RoomHandle, rh1: RoomHandle):
+        self._do_log(LinkRooms(link_type, rh0, rh1))
+
     def _do_log(self, operation: CarveOp):
         self._operation_log.append(operation)
         return self._do_op(operation)
@@ -92,6 +111,8 @@ class Carve(object):
                 self._room_tiles.add(operation.new_owner, operation.position)
         elif isinstance(operation, FreezeRoom):
             self._room_frozen.add(operation.room)
+        elif isinstance(operation, LinkRooms):
+            self._links.append(Link(operation.link_type, operation.room0, operation.room1))
         else:
             raise AssertionError("what is {}?".format(operation))
 
@@ -106,6 +127,8 @@ class Carve(object):
                 self._room_tiles.add(operation.old_owner, operation.position)
         elif isinstance(operation, FreezeRoom):
             self._room_frozen.discard(operation.room)
+        elif isinstance(operation, LinkRooms):
+            self._links.pop()
         else:
             raise AssertionError("what is {}?".format(operation))
 
@@ -232,6 +255,60 @@ class Carve(object):
 
         return found
 
+    def build_links(self):
+        claimed = lambda owner, tile: self._room_tiles.get_a(tile) == owner
+        not_claimed = lambda tile: claimed(None, tile)
+
+        links_hallway = self._create_room(RoomType.Hallway)
+
+        for link in self._links:
+            if link.link_type == LinkType.Ignore:
+                continue
+
+            room0 = link.room0
+            room1 = link.room1
+            dw = lambda label, direction: [
+                (label, t + direction)
+                for t in self._room_tiles.get_bs(room0)
+                if not_claimed(t + direction) and claimed(room1, t + direction * 2)
+            ]
+            door_worthy = set(
+                dw("horiz", V2.new(0, 1)) + dw("horiz", V2.new(0, -1)) +
+                dw("vert", V2.new(1, 0)) + dw("vert", V2.new(-1, 0))
+            )
+
+            if len(door_worthy) == 0:
+                self.veto()
+
+            # Find the door segment
+            if link.link_type == LinkType.Door:
+                if any(self._room_types[r] in [RoomType.EntryZone, RoomType.Closet] for r in [room0, room1]):
+                    # must be centered
+                    # all of the xs will be the same or all the ys, so it doesn't matter
+                    sorted_spots = sorted(door_worthy, key=lambda i: (i[1].x, i[1].y))
+                    door = sorted_spots[len(sorted_spots)//2][1]
+                else:
+                    scores = [self._door_score(*v) for v in door_worthy]
+                    max_score = max(scores)
+                    spots_best = [site for site, score in zip(door_worthy, scores) if score == max_score]
+                    door = random.choice(list(spots_best))[1]
+
+                self._carve_point(door, links_hallway)
+
+            elif link.link_type == LinkType.Complete:
+                for i in door_worthy:
+                    self._carve_point(i[1], room0)  # add to room0
+            else:
+                raise AssertionError("unrecognized link type: {}".format(link.link_type))
+
+    def _door_score(self, label: str, v2: V2):
+        if label == "horiz" and v2.x % self._door_spread.x == self._door_spread.cx:
+            return 1
+        if label == "vert" and v2.y % self._door_spread.y == self._door_spread.cy:
+            return 1
+        return 0
+
+    # == snake support
     def snake(self, room: RoomHandle, direction: "Cardinal") -> "Snake":
         from .snake import Snake
         return Snake(self, room, direction)

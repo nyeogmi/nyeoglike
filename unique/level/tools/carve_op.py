@@ -8,7 +8,7 @@ from io import StringIO
 import random
 from contextlib import contextmanager
 
-from .recs import RoomHandle, RoomType
+from .recs import RoomHandle, RoomType, LinkType
 
 
 class CreateRoom(NamedTuple):
@@ -25,4 +25,10 @@ class FreezeRoom(NamedTuple):
     room: RoomHandle
 
 
-CarveOp = Union[CreateRoom, CarveTile, FreezeRoom]
+class LinkRooms(NamedTuple):
+    link_type: LinkType
+    room0: RoomHandle
+    room1: RoomHandle
+
+
+CarveOp = Union[CreateRoom, CarveTile, FreezeRoom, LinkRooms]

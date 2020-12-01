@@ -8,13 +8,13 @@ from io import StringIO
 import random
 from contextlib import contextmanager
 
-from .tools import Cardinal, Carve, RoomType, Rule, Snake
+from .tools import Cardinal, Carve, DoorSpread, LinkType, RoomType, Rule, Snake
 
 
 def apartment() -> Carve:
-    carve = Carve()
-
     cell_sz_x = random.randint(3, 4)
+
+    carve = Carve(DoorSpread(x=cell_sz_x, y=cell_sz_x, cx=random.randrange(cell_sz_x), cy=random.randrange(cell_sz_x)))
 
     living_room_width = random.randint(cell_sz_x + 3, cell_sz_x * 2 + 1)
     living_room_height = random.randrange(6, 8)
@@ -25,7 +25,7 @@ def apartment() -> Carve:
         kitchen_width = random.randint(living_room_width - 1, living_room_width)
         kitchen_height = random.randint(living_room_height - 4, living_room_height - 2)
         kitchen_height = max(kitchen_height, 2)
-        carve.freeze(snake.tunnel(V2.new(kitchen_width, kitchen_height), RoomType.Kitchen, min_contact=kitchen_width))
+        carve.freeze(snake.tunnel(V2.new(kitchen_width, kitchen_height), RoomType.Kitchen, LinkType.Complete, min_contact=kitchen_width))
 
     build_kitchen(carve.snake(living_room, Cardinal.North))
 
@@ -33,16 +33,16 @@ def apartment() -> Carve:
         choice = random.choice([0, 0, 0, 1, 1])
         if choice == 0:
             # tiny room -- _just_ an entry zone
-            carve.freeze(snake.tunnel(V2.new(3, 3), RoomType.EntryZone, min_contact=3))
+            carve.freeze(snake.tunnel(V2.new(3, 3), RoomType.EntryZone, LinkType.Door, min_contact=3))
         else:
             # yard-like
-            carve.freeze(snake.tunnel(V2.new(living_room_height, 3), RoomType.Antechamber, min_contact=living_room_height))
+            carve.freeze(snake.tunnel(V2.new(living_room_height, 3), RoomType.Antechamber, LinkType.Door, min_contact=living_room_height))
             if random.choice([False, True]):
                 snake.turn_right()
-                carve.freeze(snake.tunnel(V2.new(3, 3), RoomType.Antechamber))
+                carve.freeze(snake.tunnel(V2.new(3, 3), RoomType.Antechamber, LinkType.Door))
 
             random.choice([lambda: None, snake.turn_left])()
-            carve.freeze(snake.tunnel(V2.new(3, 3), RoomType.EntryZone, min_contact=3))
+            carve.freeze(snake.tunnel(V2.new(3, 3), RoomType.EntryZone, LinkType.Door, min_contact=3))
 
     def build_antechamber(snake: Snake):
         for try_ in range(5):
@@ -70,6 +70,7 @@ def apartment() -> Carve:
                 snake.tunnel(
                     size,
                     room_type,
+                    LinkType.Door,
                     min_contact=min(cell_sz_x, sz_x),
                     rule=Rule.Dense
                 )
@@ -85,7 +86,7 @@ def apartment() -> Carve:
             size = V2.new(sz_x, 3)
 
             with snake.veto_point() as vetoed:
-                carve.freeze(snake.tunnel(size, room_type, min_contact=min(cell_sz_x, sz_x - 1), rule=Rule.Dense))
+                carve.freeze(snake.tunnel(size, room_type, LinkType.Door, min_contact=min(cell_sz_x, sz_x - 1), rule=Rule.Dense))
 
             if not vetoed:
                 return True
@@ -98,7 +99,8 @@ def apartment() -> Carve:
             size = V2.new(sz_x, 1)
 
             with snake.veto_point() as vetoed:
-                r = snake.tunnel(size, room_type, min_contact=sz_x, rule=Rule.Dense)
+                # TODO: Complete sometimes?
+                r = snake.tunnel(size, room_type, LinkType.Door, min_contact=sz_x, rule=Rule.Dense)
                 carve.freeze(r)  # should be frozen, closets are easy to wipe out
 
             if not vetoed:
@@ -113,7 +115,7 @@ def apartment() -> Carve:
 
         # bend
         for i in range(n_hall_nodes):
-            carve.freeze(snake.tunnel(V2.new(3, cell_sz_x), RoomType.Hallway, min_contact=3))
+            carve.freeze(snake.tunnel(V2.new(3, cell_sz_x), RoomType.Hallway, LinkType.Complete, min_contact=3))
 
             def build_l():
                 room1 = snake.branch()
@@ -141,7 +143,7 @@ def apartment() -> Carve:
     if has_junction:
         n_hall_nodes = random.choice([0, 0, 1, 2])
         junc = carve.snake(living_room, Cardinal.East)
-        junc.tunnel(V2.new(3, 3), RoomType.Hallway, min_contact=3)
+        junc.tunnel(V2.new(3, 3), RoomType.Hallway, LinkType.Complete, min_contact=3)
 
         h1 = junc.branch()
         h1.turn_right()
@@ -211,5 +213,12 @@ def apartment() -> Carve:
             for r in carve.ident_rooms(room_type):
                 carve.erode(r, 1)
 
+    # build links
+    carve.build_links()
+
+    # randomize
+    carve.permute_at_random()
+
+    # TODO: Generate a spanning tree to make sure the level is possible
     return carve
 
