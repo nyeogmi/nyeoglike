@@ -1,3 +1,29 @@
+# Notes on what I implemented:
+use_ignore allows rooms to be placed in overlapping form. I should probably deprecate that
+
+Rule.Dense says "try to pack this so that it is next to as many claimed tiles as possible". (Rule.RNG says pick an option at random)
+
+For Snake, x is left/right and y is forward/back no matter what.
+
+erode_1tile_wonk gets rid of 1-tile-wide regions; it's designed to clean up artifacts of expand_densely
+
+veto forces a backtrack, undoing until the last veto point
+
+The door placer tries really hard to center doors for entry points and closets.
+
+min_contact sez "how many tiles do I force to be in contact across the wall"
+ex. if your room is 3 tiles wide and min_contact=2, then the following configuration is possible (with !s where the contact is felt)
+
+   ####
+ ###
+  !#!
+  !#!
+   ####
+ ###
+
+
+
+
     # == Design TODOs ==
 
     # TODO: Living room should be in a grid size that is a multiple of bedroom width.

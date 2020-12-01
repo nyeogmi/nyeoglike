@@ -216,7 +216,7 @@ def apartment() -> Carve:
     # build links
     carve.build_links()
 
-    # randomize
+    # randomize rotation/flip
     carve.permute_at_random()
 
     # TODO: Generate a spanning tree to make sure the level is possible
