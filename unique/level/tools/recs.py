@@ -2,6 +2,8 @@ from ds.vecs import V2
 from enum import Enum
 from typing import NamedTuple
 
+from ..unloaded_level import SpawnType
+
 
 class RoomHandle(NamedTuple):
     ident: int
@@ -14,11 +16,6 @@ class LinkType(Enum):
     # TODO: Fat door, antidoor
     # A fat door looks like this  |-    -|
     # An antidoor looks like this | ---- |
-
-
-class SpawnType(Enum):
-    Sleep = 0
-    Bedside = 1
 
 
 class Spawn(NamedTuple):

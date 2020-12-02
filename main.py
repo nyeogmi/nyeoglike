@@ -2,16 +2,22 @@ import display.outputs.pygame
 
 from display import DoubleWide, Key, Screen, transact, IO
 from ds.vecs import V2
-from unique.level import Level
-from unique.world import World
+from unique.level import UnloadedLevel, SpawnNPC
+from unique.scheduling import ScheduleItem
 from unique.sitemode import sitemode
+from unique.world import World
 
 
 def main(io: IO):
     w = World()
     from unique.level.gen import apartment
     level = apartment()
-    w.activate_level(level)
+
+    npc1 = w.npcs.generate()
+    npc2 = w.npcs.generate()
+    npc3 = w.npcs.generate()
+
+    w.activate_level(level, [SpawnNPC(npc1, ScheduleItem.HomeSleep), SpawnNPC(npc2, ScheduleItem.HomeSleep)])
     sitemode(io, w)
 
 

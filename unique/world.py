@@ -5,12 +5,12 @@ from .event import Event, Verbs
 from .eventmonitor import EventMonitors, EventMonitor
 from .interest import InterestTracker
 from .inventory import Inventory
-from .level import Level
+from .level import UnloadedLevel, LoadedLevel, SpawnNPC
 from .notifications import Notifications, Notification
 from .npc import NPCs, NPC
 from .scheduling import Schedules
 
-from typing import Optional
+from typing import Optional, List
 
 
 class World(object):
@@ -25,18 +25,18 @@ class World(object):
         self.player_xy: V2 = V2.zero()
         self.inventory: Inventory = Inventory()
 
-        self.level: Optional[Level] = None
+        self.level: Optional[LoadedLevel] = None
 
-    def activate_level(self, level: Level):
-        assert isinstance(level, Level)
+    def activate_level(self, level: UnloadedLevel, npcs: List[SpawnNPC]):
+        assert isinstance(level, UnloadedLevel)
 
         if self.level:
-            # save previous player position
-            self.level.player_start_xy = self.player_xy
+            # TODO: Save level status
+            pass
 
         self.camera_xy = level.player_start_xy
         self.player_xy = level.player_start_xy
-        self.level = level
+        self.level = level.load(npcs)
 
     def notify(self, event: Event):
         if Verbs.quest_only(event.verb):

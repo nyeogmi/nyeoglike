@@ -5,7 +5,7 @@ import random
 from typing import Dict, List, Set, Optional
 from io import StringIO
 
-from unique.level.level import Level
+from unique.level.unloaded_level import UnloadedLevel
 from .recs import RoomHandle, RoomType, Spawn, SpawnType
 
 
@@ -117,12 +117,12 @@ class InteriorDesigner(object):
             spawns[spawn.spawn_type] = spawns.get(spawn.spawn_type, set())
             spawns[spawn.spawn_type].add(spawn.location)
 
-        return Level(
+        return UnloadedLevel(
             # TODO
             player_start_xy=V2.new(0, 0),
             blocks=blocks,
             items=items,
-            npc_sites=OneToMany()  # TODO
+            npc_spawns=spawns,
         )
 
     def to_s(self):

@@ -1,8 +1,8 @@
 from .tools import InteriorDesigner
-from .level import Level
+from .unloaded_level import UnloadedLevel
 
 
-def apartment() -> Level:
+def apartment() -> UnloadedLevel:
     from .floorplans.apartment import apartment as apt_floorplan
     from .interiors.apartment import apartment as apt_interior
 

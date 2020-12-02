@@ -6,20 +6,16 @@ from ..item import Item, common
 from ..npc import NPCHandle
 
 
-class Level(object):
+class LoadedLevel(object):
     def __init__(
         self,
-        player_start_xy: V2,
         blocks: Dict[V2, bool],
         items: Dict[V2, List[Item]],
         npc_sites: OneToMany[V2, NPCHandle]
     ):
-        assert isinstance(player_start_xy, V2)
-
         # TODO: These will be expensive to validate, maybe don't do it now
         assert isinstance(blocks, dict) and all(isinstance(k, V2) and isinstance(v, bool) for k, v in blocks.items())
 
-        self.player_start_xy = player_start_xy
         self.blocks: Dict[V2, bool] = blocks
         self.seen: Set[V2] = set()  # every time the player sees a tile, add it to this
         self.items: Dict[V2, List[Item]] = items
