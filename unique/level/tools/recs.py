@@ -16,8 +16,9 @@ class LinkType(Enum):
     # An antidoor looks like this | ---- |
 
 
-class SpawnType(NamedTuple):
+class SpawnType(Enum):
     Sleep = 0
+    Bedside = 1
 
 
 class Spawn(NamedTuple):
