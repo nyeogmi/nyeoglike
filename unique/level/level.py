@@ -2,8 +2,8 @@ from ds.relational import OneToMany
 from ds.vecs import V2
 from typing import Dict, List, Set, Iterator
 import os.path
-from .item import Item, common
-from .npc import NPCHandle
+from ..item import Item, common
+from ..npc import NPCHandle
 
 
 class Level(object):

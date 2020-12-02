@@ -58,6 +58,7 @@ class Profile(NamedTuple):
 
 class Item(NamedTuple):
     profile: Profile
+    occludes_walk: bool
     contributions: Tuple[Contribution, ...]
 
     @classmethod
@@ -71,4 +72,4 @@ class Item(NamedTuple):
         if res1 is not None:
             tup += (Contribution.new(res1, n1))
 
-        return Item(profile, tup)
+        return Item(profile, occludes_walk, tup)

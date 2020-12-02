@@ -1,4 +1,3 @@
-"""
 import display.outputs.pygame
 
 from display import DoubleWide, Key, Screen, transact, IO
@@ -10,7 +9,8 @@ from unique.sitemode import sitemode
 
 def main(io: IO):
     w = World()
-    level = Level.load(w, "debug.lvl")
+    from unique.level.gen import apartment
+    level = apartment()
     w.activate_level(level)
     sitemode(io, w)
 
@@ -21,7 +21,3 @@ if __name__ == "__main__":
 
     interactor = transact(screen, main)
     display.outputs.pygame.start(interactor)
-"""
-if __name__ == "__main__":
-    from unique.level.gen import apartment
-    print(apartment().to_s())

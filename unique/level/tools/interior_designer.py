@@ -5,6 +5,7 @@ import random
 from typing import Dict, List, Set, Optional
 from io import StringIO
 
+from unique.level.level import Level
 from .recs import RoomHandle, RoomType, Spawn, SpawnType
 
 
@@ -72,6 +73,57 @@ class InteriorDesigner(object):
             found.append(self._rooms[rh])
 
         return found
+
+    def to_level(self):
+        carved = {}
+        for room, v in self._room_tiles.all():
+            carved[v] = room
+
+        if len(carved) == 0:
+            mn_x, mn_y, mx_x, mx_y = 0, 0, 0, 0
+        else:
+            mn_x = min(xy.x for xy in carved)
+            mn_y = min(xy.y for xy in carved)
+            mx_x = max(xy.x for xy in carved)
+            mx_y = max(xy.y for xy in carved)
+
+        blocks = {}
+        items = {}
+        spawns = {}
+        for y in range(mn_y - 1, mx_y + 2):
+            for x in range(mn_x - 1, mx_x + 2):
+                xy = V2.new(x, y)
+
+                if self._room_tiles.get_a(xy):
+                    # This is a room, so leave it carved out
+                    # TODO: Items, spawns
+                    if xy in self._cell_objects:
+                        items[xy] = list(self._cell_objects[xy])
+
+                else:
+                    needed = False
+                    for x1 in range(-1, 2):
+                        for y1 in range(-1, 2):
+                            if V2.new(x + x1, y + y1) in carved:
+                                needed = True
+
+                    if needed:
+                        blocks[xy] = True
+
+        for spawn in self._npc_spawns:
+            if spawn.location not in carved: continue
+            if any(i.occludes_walk for i in items.get(spawn.location, [])): continue
+
+            spawns[spawn.spawn_type] = spawns.get(spawn.spawn_type, set())
+            spawns[spawn.spawn_type].add(spawn.location)
+
+        return Level(
+            # TODO
+            player_start_xy=V2.new(0, 0),
+            blocks=blocks,
+            items=items,
+            npc_sites=OneToMany()  # TODO
+        )
 
     def to_s(self):
         carved = {}

@@ -46,7 +46,6 @@ class Sitemode(object):
         self.world.notifications.send("BATS ARE SO COOL")
         self.world.notifications.send("BATS RULE")
         self.world.notifications.send("BATS ARE THE BEST")
-        self.world.inventory.add(self.world, common.cash_loot())
 
         while True:
             self.recalculate_visibility()
