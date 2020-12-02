@@ -39,16 +39,18 @@ class Contribution(NamedTuple):
 class Profile(NamedTuple):
     name: str
     icon: str  # a string or a double-wide
+    ascii_icon: str
     bg: Optional[Color]
     fg: Optional[Color]
 
     @classmethod
-    def new(cls, name: str, icon: str, bg: Optional[int] = None, fg: Optional[int] = None):
+    def new(cls, name: str, icon: str, ascii_icon: str, bg: Optional[int] = None, fg: Optional[int] = None):
         assert isinstance(name, str)
         assert isinstance(icon, str) and len(icon) == 1
+        assert isinstance(ascii_icon, str) and len(ascii_icon) == 1
         assert bg is None or isinstance(bg, Color)
         assert fg is None or isinstance(fg, Color)
-        return Profile(name, icon, bg, fg)
+        return Profile(name, icon, ascii_icon, bg, fg)
 
 
 class Item(NamedTuple):

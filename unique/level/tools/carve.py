@@ -1,6 +1,8 @@
 from .carve_op import *
 from .recs import *
 
+from .interior_designer import InteriorDesigner
+
 
 # TODO: Support random rotation/mirroring of this
 # TODO: Veto if a room becomes too small
@@ -16,6 +18,9 @@ class Carve(object):
 
         self._operation_log = []
 
+    def to_interior(self) -> InteriorDesigner:
+        return InteriorDesigner(self._room_tiles, self._room_types)
+
     def permute_at_random(self):
         _room_tiles_2: OneToMany[RoomHandle, V2] = OneToMany()
 
@@ -29,42 +34,6 @@ class Carve(object):
             if swap: v2 = V2.new(v2.y, v2.x)
             _room_tiles_2.add(rh, v2)
         self._room_tiles = _room_tiles_2
-
-    def to_s(self):
-        carved = {}
-        for room, v in self._room_tiles.all():
-            carved[v] = room
-
-        if len(carved) == 0:
-            mn_x, mn_y, mx_x, mx_y = 0, 0, 0, 0
-        else:
-            mn_x = min(xy.x for xy in carved)
-            mn_y = min(xy.y for xy in carved)
-            mx_x = max(xy.x for xy in carved)
-            mx_y = max(xy.y for xy in carved)
-
-        s = StringIO()
-        for y in range(mn_y - 1, mx_y + 2):
-            for x in range(mn_x - 1, mx_x + 2):
-                room = carved.get(V2.new(x, y))
-                if room:
-                    room_tile = " " # self._room_types[room].tile()  # chr(ord("A") + (room.ident % 26))
-                else:
-                    room_tile = None
-                if room_tile:
-                    s.write(room_tile)
-                else:
-                    needed = False
-                    for x1 in range(-1, 2):
-                        for y1 in range(-1, 2):
-                            if V2.new(x + x1, y + y1) in carved:
-                                needed = True
-                    if needed:
-                        s.write("#")
-                    else:
-                        s.write(" ")
-            s.write("\n")
-        return s.getvalue().strip("\n")
 
     @contextmanager
     def veto_point(self):
@@ -179,16 +148,22 @@ class Carve(object):
 
     def expand_densely(self, r: RoomHandle):
         claimed = lambda tile: self._room_tiles.get_a(tile) is not None
+        claimed_not_me = lambda tile: self._room_tiles.get_a(tile) not in [None, r]
         claimed_me = lambda tile: self._room_tiles.get_a(tile) == r
 
         change_made = True
         while change_made:
             to_add = set()
+
+            # TODO: Make sure all the neighbors of the tile we wanna get are either unclaimed or claimed by the current room,
+            # so we don't edge into a closet or something. I'm p. sure bugs related to this are happening.
             for d in [V2.new(-1, 0), V2.new(0, -1), V2.new(1, 0), V2.new(0, 1)]:
                 for t in self._room_tiles.get_bs(r):
-                    # True if the tile is claimed
                     t1 = claimed(t + d)
                     if t1: continue
+
+                    for t2 in (t + d).neighbors():
+                        if claimed_not_me(t2): continue
 
                     if claimed_me(t + d + d):
                         to_add.add(t + d)
@@ -199,10 +174,10 @@ class Carve(object):
 
                     t3 = claimed(t + d + d + d)
                     t4 = claimed(t + d + d + d + d)
-                    # t5 = claimed(t + d + d + d + d + d)
+                    t5 = claimed(t + d + d + d + d + d)
 
                     if (
-                            # (t5 and not any([t4, t3])) or
+                            (t5 and not any([t4, t3])) or
                             (t4 and not any([t3])) or
                             t3
                     ):
@@ -297,6 +272,8 @@ class Carve(object):
 
             elif link.link_type == LinkType.Complete:
                 for i in door_worthy:
+                    # TODO: Go through neighbors and look for leftover "pillars" to get rid of.
+                    # See the screenshot I sent to Bhijn as an example
                     self._carve_point(i[1], room0)  # add to room0
             else:
                 raise AssertionError("unrecognized link type: {}".format(link.link_type))

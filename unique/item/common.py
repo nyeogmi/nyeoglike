@@ -4,8 +4,8 @@ from display import Color, Colors
 import random
 
 _CASH_LOOT = [
-    Item.new(Profile.new(name="laptop", icon="]"), res0=Resource.Money, n0=29999),
-    Item.new(Profile.new(name="phone", icon="'"), res0=Resource.Money, n0=29999),
+    Item.new(Profile.new(name="laptop", icon="]", ascii_icon="]"), res0=Resource.Money, n0=29999),
+    Item.new(Profile.new(name="phone", icon="'", ascii_icon="'"), res0=Resource.Money, n0=29999),
 ]
 
 
@@ -13,10 +13,11 @@ def cash_loot() -> Item:
     return random.choice(_CASH_LOOT)
 
 
+pizza = Item.new(Profile.new(name="pizza", icon="\xf6", ascii_icon="p", fg=Colors.BrightPink), res0=Resource.Snack, n0=50)
 _SNACK = [
-    Item.new(Profile.new(name="musubi", icon="\xf6", fg=Colors.BrightPink), res0=Resource.Snack, n0=10),
+    Item.new(Profile.new(name="musubi", icon="\xf6", ascii_icon="m", fg=Colors.BrightPink), res0=Resource.Snack, n0=10),
     # TODO: Better icon
-    Item.new(Profile.new(name="pizza", icon="\xf6", fg=Colors.BrightPink), res0=Resource.Snack, n0=50),
+    pizza,
 ]
 
 
@@ -25,7 +26,7 @@ def snack() -> Item:
 
 
 _FURNITURE = [
-    Item.new(Profile.new(name="table", icon="\xd1", fg=Colors.DarkBlue), res0=Resource.Furniture, n0=10),
+    Item.new(Profile.new(name="table", icon="\xd1", ascii_icon="T", fg=Colors.DarkBlue), res0=Resource.Furniture, n0=10),
 ]
 
 

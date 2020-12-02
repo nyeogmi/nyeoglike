@@ -1,3 +1,4 @@
+from ds.vecs import V2
 from enum import Enum
 from typing import NamedTuple
 
@@ -13,6 +14,15 @@ class LinkType(Enum):
     # TODO: Fat door, antidoor
     # A fat door looks like this  |-    -|
     # An antidoor looks like this | ---- |
+
+
+class SpawnType(NamedTuple):
+    Sleep = 0
+
+
+class Spawn(NamedTuple):
+    spawn_type: SpawnType
+    location: V2
 
 
 class DoorSpread(NamedTuple):
@@ -63,6 +73,15 @@ class RoomType(Enum):
 class Rule(Enum):
     RNG = 0
     Dense = 1
+    # TODO: Dense should try to avoid creating corners on the outside world. ex. this is bad:
+    # (Feature to detect is highlighted)
+    # #####!
+    # #   ####
+    # #   #  #
+    # #   #  #
+    # #   ####
+    # #   #!
+    # #####
 
 
 class Veto(Exception): pass
