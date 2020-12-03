@@ -9,7 +9,8 @@ from unique.world import World
 
 
 def main(io: IO):
-    w = World()
+    w = World.generate()
+    print([w.npcs.get(i).name for i in w.npcs._all.keys()])  # TODO: Better way to do this for non-debugging in the future
     from unique.level.gen import apartment
     level = apartment()
 
