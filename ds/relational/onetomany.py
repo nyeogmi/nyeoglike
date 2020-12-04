@@ -43,6 +43,9 @@ class OneToMany(Generic[A, B]):
         a = self.b_to_a.pop(b)
         self.a_to_bs[a].remove(b)
 
+        if len(self.a_to_bs[a]) == 0:
+            del self.a_to_bs[a]
+
     def get_bs(self, a: A) -> Iterator[B]:
         for b in self.a_to_bs.get(a, []):
             yield b

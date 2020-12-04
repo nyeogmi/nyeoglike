@@ -46,13 +46,15 @@ class NPC(object):
         self.name = name
         self.seen = False  # set in sitemode
 
+        self.asleep = False
+
     @property
     def ident(self):
         return self._ident
 
     @classmethod
     def generate(cls, ident):
-        # TODO: Name gen
+        # TODO: Name tools
         return NPC(
             ident=ident,
             name=random.choice([

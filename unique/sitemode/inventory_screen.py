@@ -39,7 +39,7 @@ class InventoryScreen(object):
             return
 
     def draw(self):
-        window = draw_window(self.io.draw().goto(4, 7).box(26, 28), fg=Colors.MSGSystem, double=True)
+        window = draw_window(self.io.draw().goto(4, 7).box(26, 25), fg=Colors.MSGSystem, double=True)
         window.title_bar.copy().fg(Colors.TermFGBold).puts("Inventory")
 
         window.content.copy().goto(0, 0).fg(Colors.TermFGBold).puts("Resources")

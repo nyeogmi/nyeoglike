@@ -23,6 +23,10 @@ class V2(NamedTuple):
         assert isinstance(other, V2)
         return R2.new_4i(self.x, self.y, other.x, other.y)
 
+    def sized(self, other: "V2") -> "R2":
+        assert isinstance(other, V2)
+        return R2.new_4i(self.x, self.y, self.x + other.x, self.y + other.y)
+
     def __add__(self, other: "V2") -> "V2":
         assert isinstance(other, V2)
         return V2.new(self.x + other.x, self.y + other.y)
@@ -44,6 +48,12 @@ class V2(NamedTuple):
     def manhattan(self, other: "V2") -> int:
         assert isinstance(other, V2)
         return abs(self.x - other.x) + abs(self.y - other.y)
+
+    def neighbors(self) -> Iterator["V2"]:
+        for y in range(self.y - 1, self.y + 2):
+            for x in range(self.x - 1, self.x + 2):
+                if x == self.x and y == self.y: continue
+                yield V2.new(x, y)
 
 
 class R2(NamedTuple):

@@ -18,3 +18,17 @@ class Gensym(object):
         n = self._number
         self._number += 1
         return Sym(self._prefix, n)
+
+
+class FastGensym(object):
+    def __init__(self):
+        self._number = 0
+
+    def gen(self) -> int:
+        n = self._number
+        self._number += 1
+        return n
+
+    def ungen(self):
+        self._number -= 1
+        return self._number

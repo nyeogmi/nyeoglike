@@ -39,27 +39,37 @@ class Contribution(NamedTuple):
 class Profile(NamedTuple):
     name: str
     icon: str  # a string or a double-wide
+    ascii_icon: str
     bg: Optional[Color]
     fg: Optional[Color]
 
     @classmethod
-    def new(cls, name: str, icon: str, bg: Optional[int] = None, fg: Optional[int] = None):
+    def new(cls, name: str, ascii_icon: str, icon: Optional[str] = None, bg: Optional[int] = None, fg: Optional[int] = None):
         assert isinstance(name, str)
+        assert isinstance(ascii_icon, str) and len(ascii_icon) == 1
+
+        if icon is None: icon = ascii_icon
         assert isinstance(icon, str) and len(icon) == 1
+
         assert bg is None or isinstance(bg, Color)
         assert fg is None or isinstance(fg, Color)
-        return Profile(name, icon, bg, fg)
+        return Profile(name, icon, ascii_icon, bg, fg)
 
 
 class Item(NamedTuple):
     profile: Profile
+    occludes_walk: bool
     contributions: Tuple[Contribution, ...]
 
     @classmethod
-    def new(cls, profile: Profile, res0: Resource, n0: int, res1: Optional[Resource] = None, n1: Optional[int] = None):
+    def new(cls, profile: Profile, occludes_walk: bool = False, res0: Resource = None, n0: int = None, res1: Optional[Resource] = None, n1: Optional[int] = None):
         assert isinstance(profile, Profile)
+        assert isinstance(occludes_walk, bool)
+        assert isinstance(res0, Resource)
+        assert isinstance(n0, int)
+
         tup = (Contribution.new(res0, n0),)
         if res1 is not None:
             tup += (Contribution.new(res1, n1))
 
-        return Item(profile, tup)
+        return Item(profile, occludes_walk, tup)
