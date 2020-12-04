@@ -268,8 +268,10 @@ class Drawer(object):
             if c == "\r":
                 just_wrapped = False
                 new_xy = V2.new(start_xy.x, new_xy.y)
+            elif c == "\n" and just_wrapped:
+                continue
             elif c == "\n":
-                just_wrapped = True
+                just_wrapped = False
                 new_xy = V2.new(start_xy.x, new_xy.y + 1)
             elif c == " " and just_wrapped: # collapse one space right after wrapping
                 just_wrapped = False
