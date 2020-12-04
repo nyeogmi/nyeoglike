@@ -76,6 +76,13 @@ class FlyScreen(object):
             if input.match(Key.new(Keycodes.Down)):
                 self.follow_npcs.down()
 
+            if input.match(Key.new(Keycodes.Enter)):
+                selected = self.follow_npcs.get_selected()
+                if selected:
+                    self.world.follow_npc(selected)
+                    self.world.advance_time()
+                    self.done = True
+
     def draw(self):
         window = draw_window(self.io.draw().goto(4, 7).box(26, 25), fg=Colors.MSGSystem, double=True)
         window.title_bar.copy().fg(Colors.TermFGBold).puts("Fly")

@@ -25,6 +25,19 @@ class TimeOfDay(Enum):
         if self == TimeOfDay.Morning:
             raise ValueError("it should never be morning")
 
+    def next_gameplay(self):
+        # TODO: Sleep thru the night
+        if self == TimeOfDay.Evening:
+            return TimeOfDay.Dusk
+        if self == TimeOfDay.Dusk:
+            return TimeOfDay.Midnight
+        if self == TimeOfDay.Midnight:
+            return TimeOfDay.Dawn
+        if self == TimeOfDay.Dawn:
+            return TimeOfDay.Evening
+        if self == TimeOfDay.Morning:
+            raise ValueError("it should never be morning")
+
 
 class ScheduleItem(Enum):
     HomeFun = 0
@@ -47,9 +60,9 @@ class Schedules(object):
     def time_of_day(self):
         return self._time_of_day
 
-    def advance_time(self, time_of_day):
+    def advance_time(self):
         self._next_location = {}
-        self._time_of_day = time_of_day
+        self._time_of_day = self._time_of_day.next_gameplay()
 
     def next_location(self, world: "World", npch: NPCHandle) -> ScheduleItem:
         from .world import World

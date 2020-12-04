@@ -40,6 +40,9 @@ class Households(object):
     def living_at(self, level: LevelHandle) -> Optional[HouseholdHandle]:
         return self._lives_at.get_a(level)
 
+    def household_of(self, npc: NPCHandle) -> Optional[HouseholdHandle]:
+        return self._members.get_a(npc)
+
     def members(self, household: HouseholdHandle) -> Iterator[NPCHandle]:
         for member in self._members.get_bs(household):
             yield member

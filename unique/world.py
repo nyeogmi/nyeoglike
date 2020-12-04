@@ -8,7 +8,7 @@ from .inventory import Inventory
 from .level import UnloadedLevel, LoadedLevel, SpawnNPC
 from .worldmap import Levels, LevelHandle
 from .notifications import Notifications, Notification
-from .npc import NPCs, NPC
+from .npc import NPCs, NPC, NPCHandle
 from .scheduling import Schedules
 from .social import Households
 
@@ -41,6 +41,15 @@ class World(object):
         for i in range(N_HOUSEHOLDS):
             world.households.generate(world, random.randint(*N_HOUSEHOLD_NPCS))
         return world
+
+    def advance_time(self):
+        self.schedules.advance_time()
+
+    def follow_npc(self, npc: NPCHandle):
+        # TODO: Figure out where the NPC will be using their schedule
+        household = self.households.household_of(npc)
+        home = self.households.get_home(self, household)
+        self.activate_level(home)
 
     def activate_level(self, level: LevelHandle):
         # figure out who will be there

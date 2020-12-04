@@ -21,45 +21,6 @@ class LoadedLevel(object):
         self.items: Dict[V2, List[Item]] = items
         self.npc_sites: OneToMany[V2, NPCHandle] = npc_sites
 
-    @classmethod
-    def load(cls, world: "World", name):
-        fname = os.path.join("ascii/levels", name)
-
-        player_xy = None
-        items = {}
-        blocks = {}
-        npc_sites = OneToMany()
-
-        with open(fname, "rt") as f:
-            text = f.read()
-            for y, line in enumerate(text.splitlines()):
-                for x, c in enumerate(line):
-                    v = V2.new(x, y)
-                    if c == "@":
-                        assert player_xy is None
-                        player_xy = v
-                    elif c == "$":
-                        # TODO: Don't generate, fetch?
-                        npc_sites.add(v, world.npcs.generate())
-                    elif c == "#":
-                        blocks[v] = True
-                    elif c in common.LEVEL_CODES:
-                        items[v] = items.get(v, [])
-                        items[v].append(common.LEVEL_CODES[c]())
-                    elif c == " ":
-                        pass
-                    else:
-                        raise AssertionError("unrecognized character: %r" % (c,))
-
-        assert player_xy is not None
-
-        return Level(
-            player_xy,
-            blocks,
-            items,
-            npc_sites,
-        )
-
     def npc_location(self, npc: NPCHandle) -> V2:
         return self.npc_sites.get_a(npc)
 
@@ -70,4 +31,4 @@ class LoadedLevel(object):
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .world import World
+    from ..world import World
