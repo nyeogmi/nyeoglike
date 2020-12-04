@@ -30,14 +30,11 @@ class Inventory(object):
             self.resources[c.resource] = self.resources.get(c.resource, 0)
             self.resources[c.resource] += c.n
 
-        # TODO: Resource caps
-        """
-        if self.resources[Resource.Blood] > 100:
+        if self.resources.get(Resource.Blood, 0) > 100:
             self.resources[Resource.Blood] = 100
 
-        if self.resources[Resource.Spark] > 100:
+        if self.resources.get(Resource.Spark, 0) > 100:
             self.resources[Resource.Spark] = 100
-        """
 
     def get(self, resource: Resource) -> int:
         return self.resources.get(resource, 0)
