@@ -1,2 +1,2 @@
 from .friendships import Friendships
-from .households import Households
+from .households import Households, HouseholdHandle

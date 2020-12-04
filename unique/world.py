@@ -9,7 +9,7 @@ from .level import UnloadedLevel, LoadedLevel, SpawnNPC
 from .worldmap import Levels, LevelHandle
 from .notifications import Notifications, Notification
 from .npc import NPCs, NPC, NPCHandle
-from .social import Friendships, Households
+from .social import Friendships, Households, HouseholdHandle
 from .time import Clock, Schedules
 
 import random
@@ -60,9 +60,17 @@ class World(object):
 
     def follow_npc(self, npc: NPCHandle):
         # TODO: Figure out where the NPC will be using their schedule
-        household = self.households.household_of(npc)
-        home = self.households.get_home(self, household)
-        self.activate_level(home)
+        schedule = self.schedules.next_schedule(npc)
+        location = schedule.location(npc, self)
+
+        if isinstance(location, HouseholdHandle):
+            home = self.households.get_home(self, location)
+            self.activate_level(home)
+            return
+
+        # TODO: LevelHandle
+
+        raise AssertionError("not sure where {} is going ({}; {})".format(npc, schedule, location))
 
     def activate_level(self, level: LevelHandle):
         # figure out who will be there

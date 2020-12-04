@@ -22,8 +22,36 @@ class Schedules(object):
         assert isinstance(time_of_day, TimeOfDay)
 
         next_schedule = {}
+
+        # TODO: NPCs who have nighttime jobs
+
+        not_sleepy = set()
         for npc in world.npcs.all():
-            next_schedule[npc] = transition(world, npc, time_of_day)
+            sleepy = random.choice([False, True])  # TODO: Smarter way to calculate this
+            if sleepy:
+                next_schedule[npc] = schedule_items.HomeSleep
+            else:
+                next_schedule[npc] = schedule_items.HomeFun
+                not_sleepy.add(npc)
+
+        for npc in not_sleepy:
+            # write the friends in random order
+            some_friends = list(world.friendships.friends(npc))
+            random.shuffle(some_friends)
+
+            for possible_engagement in some_friends:
+                if possible_engagement in not_sleepy:
+                    date = possible_engagement
+                    # it's a date!
+                    break
+            else:
+                # no one to do stuff with
+                # TODO: In the future, solo activities outside the house with randoms
+                break
+
+            # NOTE: This is the only group activity right now
+            next_schedule[npc] = schedule_items.SleepOver(date)
+            next_schedule[date] = schedule_items.HostSleepOver  # it doesn't make sense for the sleepover guy to be asleep for his own party
 
         self._prev_schedule, self._next_schedule = self._next_schedule, next_schedule
 
