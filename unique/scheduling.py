@@ -3,6 +3,7 @@ from .npc import NPCHandle
 
 import random
 
+
 class TimeOfDay(Enum):
     Evening = 0
     Dusk = 1

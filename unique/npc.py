@@ -5,6 +5,7 @@ import random
 
 from .event import Event, Verbs
 from .eventmonitor import Done, EventMonitor, QuestStatus, QuestOutcome
+from . import namegen
 
 
 class NPCHandle(NamedTuple):
@@ -57,13 +58,7 @@ class NPC(object):
         # TODO: Name tools
         return NPC(
             ident=ident,
-            name=random.choice([
-                "Margaret Morris",
-                "Laura Roman",
-                "Sandra Branton",
-                "Daniel Weiss",
-                "Peter Fischer",
-            ]),
+            name=namegen.generate(),
         )
 
     def notify(self, world: "World", me: Me, event: Event):
@@ -78,7 +73,6 @@ class NPC(object):
             # offer a quest
             # world.eventmonitors.add(world, lambda handle: TestQuest(handle, self._ident))
             world.eventmonitors.add(world, lambda handle: FetchQuest(handle, self._ident, "pizza"))
-
 
 
 from typing import TYPE_CHECKING
