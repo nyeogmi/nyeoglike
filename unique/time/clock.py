@@ -15,6 +15,12 @@ class Clock(object):
     def tick(self): return self._tick
 
     @property
+    def weekday(self):
+        return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][
+            (self._night + (1 if self._time_of_day in [TimeOfDay.Midnight, TimeOfDay.Morning, TimeOfDay.Dawn] else 0)) % 7
+        ]
+
+    @property
     def time_of_day(self): return self._time_of_day
 
     @property

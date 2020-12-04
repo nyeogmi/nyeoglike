@@ -352,7 +352,7 @@ class Sitemode(object):
         ).bg(Colors.TermBG).fg(Colors.TermFG).puts("]")
 
     def draw_timeinfo(self):
-        txt = self.world.clock.time_of_day.display()
+        txt = self.world.clock.time_of_day.display() + ", " + str(self.world.clock.weekday)
         window = draw_window(self.io.draw().goto(4, 27).box(4 + len(txt), 28), double=True, fg=Colors.MSGSystem)
 
-        window.content.copy().puts(txt)
+        window.content.copy().goto(0, 0).puts(txt)
