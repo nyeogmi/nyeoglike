@@ -11,14 +11,11 @@ from unique.world import World
 def main(io: IO):
     w = World.generate()
     print([w.npcs.get(i).name for i in w.npcs._all.keys()])  # TODO: Better way to do this for non-debugging in the future
-    from unique.level.gen import apartment
-    level = apartment()
 
-    npc1 = w.npcs.generate()
-    npc2 = w.npcs.generate()
-    npc3 = w.npcs.generate()
+    house1 = w.households.generate(w, 3)
+    level = w.households.get_home(w, house1)
+    w.activate_level(level)
 
-    w.activate_level(level, [SpawnNPC(npc1, ScheduleItem.HomeSleep), SpawnNPC(npc2, ScheduleItem.HomeSleep)])
     sitemode(io, w)
 
 

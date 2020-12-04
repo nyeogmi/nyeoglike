@@ -6,7 +6,7 @@ from .eventmonitor import EventMonitors, EventMonitor
 from .interest import InterestTracker
 from .inventory import Inventory
 from .level import UnloadedLevel, LoadedLevel, SpawnNPC
-from .worldmap import Levels
+from .worldmap import Levels, LevelHandle
 from .notifications import Notifications, Notification
 from .npc import NPCs, NPC
 from .scheduling import Schedules
@@ -42,7 +42,17 @@ class World(object):
             world.households.generate(world, random.randint(*N_HOUSEHOLD_NPCS))
         return world
 
-    def activate_level(self, level: UnloadedLevel, npcs: List[SpawnNPC]):
+    def activate_level(self, level: LevelHandle):
+        # figure out who will be there
+        # for now, the whole household. in the future use the schedule info
+        spawns = []
+        household_there = self.households.living_at(level)
+        for npc in self.households.members(household_there):
+            spawns.append(SpawnNPC(npc=npc, schedule=self.schedules.next_location(self, npc)))
+        lvl = self.levels.get(level)
+        self._activate_level(lvl, spawns)
+
+    def _activate_level(self, level: UnloadedLevel, npcs: List[SpawnNPC]):
         assert isinstance(level, UnloadedLevel)
 
         if self.level:
