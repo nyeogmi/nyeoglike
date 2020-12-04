@@ -1,6 +1,6 @@
 from .block import Block
 from ..item import Item
-from ..scheduling import ScheduleItem
+from ..time import schedule_items, ScheduleItem
 
 from enum import Enum
 
@@ -84,13 +84,13 @@ class UnloadedLevel(object):
 
 
 def spawn_type_compatible(schedule_item: ScheduleItem, spawn_type: SpawnType, lax=False) -> bool:
-    if schedule_item == ScheduleItem.HomeSleep:
+    if schedule_item == schedule_items.HomeSleep:
         if spawn_type == SpawnType.Sleep:
             return True
         if lax and spawn_type == SpawnType.Bedside:
             return True
 
-    elif schedule_item == ScheduleItem.HomeFun:
+    elif schedule_item == schedule_items.HomeFun:
         # more fun than sleep, I guess
         if lax and spawn_type == SpawnType.Bedside:
             return True

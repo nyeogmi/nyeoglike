@@ -1,4 +1,4 @@
-from typing import NamedTuple, Optional
+from typing import List, NamedTuple, Optional
 from ds.gensym import Gensym, Sym
 from ds.vecs import V2
 import random
@@ -21,6 +21,9 @@ class NPCs(object):
         handle = NPCHandle(self._sym.gen())
         self._all[handle] = NPC.generate(handle)
         return handle
+
+    def all(self) -> List[NPCHandle]:
+        return list(self._all.keys())
 
     def get(self, handle: NPCHandle) -> "NPC":
         return self._all[handle]

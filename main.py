@@ -3,7 +3,7 @@ import display.outputs.pygame
 from display import DoubleWide, Key, Screen, transact, IO
 from ds.vecs import V2
 from unique.level import UnloadedLevel, SpawnNPC
-from unique.scheduling import ScheduleItem
+from unique.time import ScheduleItem
 from unique.sitemode import sitemode
 from unique.world import World
 
@@ -13,7 +13,10 @@ def main(io: IO):
     print([w.npcs.get(i).name for i in w.npcs._all.keys()])  # TODO: Better way to do this for non-debugging in the future
 
     house1 = w.households.generate(w, 3)
+    w.friendships.mingle(w, 5)  # every NPC gets 5 friends
+
     level = w.households.get_home(w, house1)
+    w.start_time_period()
     w.activate_level(level)
 
     sitemode(io, w)

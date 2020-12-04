@@ -99,7 +99,7 @@ class Follow(ScrollbarData):
 
     def text(self, npch):
         npc = self.fly.world.npcs.get(npch)
-        return npc.name + "\n" + "(" + self.fly.world.schedules.next_location(self.fly.world, npch).to_text() + ")"
+        return npc.name + "\n" + "(" + self.fly.world.schedules.next_schedule(npch).to_text() + ")"
 
     def measure_item(self, npch, width: int) -> V2:
         # TODO: Measure NPC name

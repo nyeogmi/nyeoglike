@@ -37,11 +37,17 @@ class ManyToMany(Generic[A, B]):
         for b in bs:
             self.b_to_as[b].remove(a)
 
+            if len(self.b_to_as[b]) == 0:
+                del self.b_to_as[b]
+
     def remove_b(self, b: B):
         if b not in self.b_to_as: return
         as_ = self.b_to_as.pop(b)
         for a in as_:
             self.a_to_bs[a].remove(b)
+
+            if len(self.a_to_bs[a]) == 0:
+                del self.a_to_bs[a]
 
     def get_bs(self, a: A) -> Iterator[B]:
         for b in self.a_to_bs.get(a):

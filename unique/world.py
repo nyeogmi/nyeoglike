@@ -9,8 +9,8 @@ from .level import UnloadedLevel, LoadedLevel, SpawnNPC
 from .worldmap import Levels, LevelHandle
 from .notifications import Notifications, Notification
 from .npc import NPCs, NPC, NPCHandle
-from .scheduling import Schedules
-from .social import Households
+from .social import Friendships, Households
+from .time import Clock, Schedules
 
 import random
 from typing import Optional, List
@@ -21,7 +21,9 @@ N_HOUSEHOLD_NPCS = (1, 5)
 
 class World(object):
     def __init__(self):
+        self.clock = Clock()
         self.eventmonitors = EventMonitors()
+        self.friendships = Friendships()
         self.interest = InterestTracker()
         self.households = Households()
         self.levels = Levels()
@@ -43,7 +45,18 @@ class World(object):
         return world
 
     def advance_time(self):
-        self.schedules.advance_time()
+        self.clock.advance_time()
+        self.end_time_period()
+        self.start_time_period()
+
+    def start_time_period(self):
+        if not self.clock.started:
+            # This can be called more than once
+            self.clock.start()
+            self.schedules.calculate_schedules(self, self.clock.time_of_day.next())
+
+    def end_time_period(self):
+        pass
 
     def follow_npc(self, npc: NPCHandle):
         # TODO: Figure out where the NPC will be using their schedule
@@ -57,7 +70,7 @@ class World(object):
         spawns = []
         household_there = self.households.living_at(level)
         for npc in self.households.members(household_there):
-            spawns.append(SpawnNPC(npc=npc, schedule=self.schedules.next_location(self, npc)))
+            spawns.append(SpawnNPC(npc=npc, schedule=self.schedules.next_schedule(npc)))
         lvl = self.levels.get(level)
         self._activate_level(lvl, spawns)
 
