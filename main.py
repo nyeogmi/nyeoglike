@@ -23,5 +23,4 @@ if __name__ == "__main__":
     size = V2.new(80, 30)  # with double-tall characters, this is 4:3
     screen = Screen(size)
 
-    interactor = transact(screen, main)
-    display.outputs.pygame.start(interactor)
+    transact(screen, main, lambda interactor: display.outputs.pygame.start(interactor))

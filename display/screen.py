@@ -32,12 +32,11 @@ class Screen(object):
     def __init__(self, size: V2):
         self._cells: Grid[Cell] = Grid(R2.new(V2.zero(), size), default_cell, is_cell)
         self._cursor = V2.new(0, 0)
-        self._lock = threading.Lock()
 
     @contextmanager
     def lock(self):
-        with self._lock:
-            yield
+        # TODO: Remove
+        yield
 
     def snapshot(self) -> "Screen":
         screen = Screen(self._cells.bounds.size)

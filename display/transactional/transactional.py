@@ -2,23 +2,24 @@ from ..interactor import Interactor
 from ..keys import Key
 from ..screen import Drawer, Screen
 from ds.vecs import V2
-from threading import Thread
 from typing import Callable
+from greenlet import greenlet
 
+# TODO: Use plain lists instead
 from queue import Queue, Empty
 
 import time
 
 
 class Client(object):
-    def __init__(self, screen: Screen, send: Queue, recv: Queue):
+    def __init__(self, screen: Screen, host_thread: greenlet, keys: Queue):
         assert isinstance(screen, Screen)
-        assert isinstance(send, Queue)
-        assert isinstance(recv, Queue)
+        assert isinstance(host_thread, greenlet)
+        assert isinstance(keys, Queue)
 
         self._screen = screen
-        self._send = send
-        self._recv = recv
+        self._host_thread = host_thread
+        self._keys = keys
         self._last_wake_at = 0.0
 
     @property
@@ -29,10 +30,14 @@ class Client(object):
         return self._screen.draw()
 
     def getch(self) -> Key:
-        self._notify_host()
-
         while True:
-            (t, recv) = self._recv.get()
+            try:
+                got = self._keys.get_nowait()
+            except Empty:
+                self._notify_host()
+                continue
+
+            (t, recv) = got
 
             if t < self._last_wake_at:
                 continue
@@ -42,58 +47,47 @@ class Client(object):
             else:
                 raise NotImplementedError("don't know what %s is" % (recv,))
 
-    def sleep(self, t):
-        self._notify_host()
-        time.sleep(t)
-        self._last_wake_at = time.time()
-
     def _notify_host(self):
-        # this is thread unsafe but it's faster
-        self._send.put(self._screen)  # .snapshot())
+        self._host_thread.switch()
 
 
 class Host(Interactor):
-    def __init__(self, screen: Screen, thread: Thread, send: Queue, recv: Queue):
+    def __init__(self, screen: Screen, thread: greenlet, keys: Queue):
         assert isinstance(screen, Screen)
-        assert isinstance(thread, Thread)
-        assert isinstance(send, Queue)
-        assert isinstance(recv, Queue)
+        assert isinstance(thread, greenlet)
+        assert isinstance(keys, Queue)
 
         self._screen = screen
         self._thread = thread
-        self._send = send
-        self._recv = recv
+        self._keys = keys
 
     def view(self) -> (Screen, bool):
-        try:
-            # TODO: Set an "updated" flag when this is received, only have pygame redraw on update
-            self._screen = self._recv.get(timeout=0.0)
-            assert isinstance(self._screen, Screen)
-            return self._screen, True
-        except Empty as e:
-            return self._screen, False
+        # TODO: Figure out if it's been updated
+        return (self._screen, True)
 
     def handle_key(self, key: Key):
         assert isinstance(key, Key)
         push_at = time.time()
-        self._send.put((push_at, key))
+        self._keys.put((push_at, key))
+
+        self._thread.switch()
 
     def should_quit(self) -> bool:
-        if not self._thread.is_alive():
-            return True
-        return False
+        pass
+        # TODO
+        # if not self._thread.is_alive():
+            # return True
+        # return False
 
 
-def transact(screen: Screen, f) -> Host:
+def transact(screen: Screen, game_f, host_f):
     from .shorthand import IO
 
-    c2h = Queue()
-    h2c = Queue()
+    keys = Queue()
 
-    client = Client(screen, send=c2h, recv=h2c)
-    thread = Thread(target=f, args=(IO(client),))
-    thread.daemon = True  # Kill it if program isn't running any more
-    host = Host(screen.snapshot(), thread=thread, send=h2c, recv=c2h)
-    thread.start()
+    host_greenlet = greenlet(lambda: host_f(host))
+    client = Client(screen, host_greenlet, keys=keys)
+    game_greenlet = greenlet(lambda: game_f(IO(client)))
+    host = Host(screen, thread=game_greenlet, keys=keys)
 
-    return host
+    game_greenlet.switch()
