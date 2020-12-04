@@ -6,6 +6,7 @@ from ..event import Event, Verbs
 from ..eventmonitor import EMHandle, QuestStatus, QuestOutcome
 from ..interest import Interest
 from ..item import Resource, common
+from ..level import Block
 from ..notifications import NotificationReason
 from ..npc import NPCs, NPC, NPCHandle
 from ..world import World
@@ -111,11 +112,15 @@ class Sitemode(object):
 
         if move:
             # Camera follows player
-            if self.world.player_xy + move in self.world.level.blocks:
+            new_xy = self.world.player_xy + move
+            block = self.world.level.blocks.get(new_xy)
+            if block == Block.Normal:
                 # don't move
                 pass
+            elif block == Block.Exit:
+                fly_screen.show(self.io, self.world)
             else:
-                self.world.player_xy += move
+                self.world.player_xy = new_xy
                 if move.x != 0:
                     if abs(self.world.camera_xy.x - self.world.player_xy.x) > 4:
                         self.world.camera_xy += move
@@ -182,17 +187,26 @@ class Sitemode(object):
                 if world_xy in self.world.level.seen:
                     # TODO: Use "memory of seen tiles."
                     # Right now it's just "if you saw a tile, you know if there's a wall there."
-                    if world_xy in self.world.level.blocks:
+                    block = self.world.level.blocks.get(world_xy)
+
+                    if block == Block.Normal:
                         # full block
                         draw_tile.copy().puts("\xdb\xdb", wrap=False)
+
+                    elif block == Block.Exit:
+                        draw_tile.copy().putdw(DoubleWide.Exit)
 
             else:
                 draw_tile = draw_world.goto(viewport_xy).bg(Colors.WorldBG).fg(Colors.WorldFG)
                 draw_tile.copy().putdw(DoubleWide.Blank)
 
-                if world_xy in self.world.level.blocks:
+                block = self.world.level.blocks.get(world_xy)
+                if block == Block.Normal:
                     # full block
                     draw_tile.copy().puts("\xdb\xdb", wrap=False)
+
+                elif block == Block.Exit:
+                    draw_tile.copy().putdw(DoubleWide.Exit)
 
                 for item in self.world.level.items.get(world_xy, []):
                     profile = item.profile

@@ -6,6 +6,7 @@ from typing import Dict, List, Set, Optional
 from io import StringIO
 
 from unique.level.unloaded_level import UnloadedLevel
+from ..block import Block
 from .recs import RoomHandle, RoomType, Spawn, SpawnType
 
 
@@ -19,10 +20,12 @@ class InteriorDesigner(object):
         assert isinstance(room_tiles, OneToMany)
         assert isinstance(room_types, dict)
 
+        self._player_start_xy = V2(0, 0)
         self._room_tiles: OneToMany[RoomHandle, V2] = room_tiles
         self._room_types: Dict[RoomHandle, RoomType] = room_types
         self._cell_objects: Dict[V2, List[Item]] = dict()
         self._npc_spawns: Set[Spawn] = set()
+        self._exits: Set[V2] = set()
 
         self._rooms: Dict[RoomHandle, Room] = {}
         for rh in self._room_tiles.all_as():
@@ -64,7 +67,7 @@ class InteriorDesigner(object):
             else:
                 center.add(v)
 
-        return Room(self, room_handle, doors=list(doors), boundary=list(boundary), center=list(center))
+        return Room(self, room_handle, all_tiles=list(all_tiles), doors=list(doors), boundary=list(boundary), center=list(center))
 
     def ident_rooms(self, room_type: RoomType) -> List["Room"]:
         found = []
@@ -94,7 +97,10 @@ class InteriorDesigner(object):
             for x in range(mn_x - 1, mx_x + 2):
                 xy = V2.new(x, y)
 
-                if self._room_tiles.get_a(xy):
+                if xy in self._exits:
+                    blocks[xy] = Block.Exit
+
+                elif self._room_tiles.get_a(xy):
                     # This is a room, so leave it carved out
                     # TODO: Items, spawns
                     if xy in self._cell_objects:
@@ -108,7 +114,7 @@ class InteriorDesigner(object):
                                 needed = True
 
                     if needed:
-                        blocks[xy] = True
+                        blocks[xy] = Block.Normal
 
         for spawn in self._npc_spawns:
             if spawn.location not in carved: continue
@@ -118,51 +124,11 @@ class InteriorDesigner(object):
             spawns[spawn.spawn_type].add(spawn.location)
 
         return UnloadedLevel(
-            # TODO
-            player_start_xy=V2.new(0, 0),
+            player_start_xy=self._player_start_xy,
             blocks=blocks,
             items=items,
             npc_spawns=spawns,
         )
-
-    def to_s(self):
-        carved = {}
-        for room, v in self._room_tiles.all():
-            carved[v] = room
-
-        if len(carved) == 0:
-            mn_x, mn_y, mx_x, mx_y = 0, 0, 0, 0
-        else:
-            mn_x = min(xy.x for xy in carved)
-            mn_y = min(xy.y for xy in carved)
-            mx_x = max(xy.x for xy in carved)
-            mx_y = max(xy.y for xy in carved)
-
-        s = StringIO()
-        for y in range(mn_y - 1, mx_y + 2):
-            for x in range(mn_x - 1, mx_x + 2):
-                room = carved.get(V2.new(x, y))
-                if room:
-                    room_tile = " " # self._room_types[room].tile()  # chr(ord("A") + (room.ident % 26))
-                    for obj in self._cell_objects.get(V2.new(x, y), []):
-                        room_tile = obj.profile.ascii_icon
-
-                else:
-                    room_tile = None
-                if room_tile:
-                    s.write(room_tile)
-                else:
-                    needed = False
-                    for x1 in range(-1, 2):
-                        for y1 in range(-1, 2):
-                            if V2.new(x + x1, y + y1) in carved:
-                                needed = True
-                    if needed:
-                        s.write("#")
-                    else:
-                        s.write(" ")
-            s.write("\n")
-        return s.getvalue().strip("\n")
 
 
 # TODO: Support vault placement in the future
@@ -172,18 +138,25 @@ class Room(object):
         interior: InteriorDesigner,
         room_handle: RoomHandle,
 
+        all_tiles: List[V2],
         doors: List[V2],
         boundary: List[V2],
         center: List[V2],
     ):
         assert isinstance(interior, InteriorDesigner)
         assert isinstance(room_handle, RoomHandle)
+        assert isinstance(all_tiles, list)
         assert isinstance(doors, list)
         assert isinstance(boundary, list)
         assert isinstance(center, list)
 
         self._interior = interior
         self._room_handle = room_handle
+
+        self._all_tiles: List[V2] = all_tiles
+
+        self._original_doors: List[V2] = list(doors)
+        self._original_center: List[V2] = list(center)
 
         self._doors: List[V2] = doors
         self._boundary: List[V2] = boundary
@@ -211,6 +184,19 @@ class Room(object):
 
     def center(self, item: Item) -> bool:
         return self._add(self._center, item)
+
+    def fill_with_exits(self):
+        for i in self._all_tiles:
+            self._interior._exits.add(i)
+
+        for i in self._interior._all_doors:
+            self._interior._exits.discard(i)
+            for n in i.ortho_neighbors():
+                self._interior._exits.discard(n)
+
+        for i in self._original_center:
+            self._interior._player_start_xy = i
+            self._interior._exits.discard(i)
 
     def _add(self, v2s: List[V2], item: Item) -> bool:
         assert isinstance(v2s, list)

@@ -1,3 +1,4 @@
+from .block import Block
 from ..item import Item
 from ..scheduling import ScheduleItem
 
@@ -27,7 +28,7 @@ class UnloadedLevel(object):
     def __init__(
         self,
         player_start_xy: V2,
-        blocks: Dict[V2, bool],
+        blocks: Dict[V2, Block],
         items: Dict[V2, List[Item]],
         npc_spawns: Dict[SpawnType, Set[V2]]
     ):
