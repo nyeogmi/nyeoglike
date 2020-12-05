@@ -62,6 +62,9 @@ class Scrollbar(object):
             self._scroll_i -= 1
             top += self._proto.measure_item(self._data[self._scroll_i + 1], size.x).y
 
+        if self._scroll_i < 0:
+            self._scroll_i = 0
+
     def draw(self, region: Drawer):
         region = region.copy().zeroed()
 

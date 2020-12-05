@@ -1,0 +1,55 @@
+NOTE:
+There's a lot of prejudice encoded in these category groupings.
+
+The idea of these groupings is that there's a "typical" group
+and then a variety of namelists broken up by negative connotation.
+
+In the distant future, NPCs who have attained wealth and success are
+likely to be generated with names from the non-negatively connotated
+list. (To reflect name-related prejudice and match the player's
+expectations of name-related prejudice.)
+
+Unfortunately, that prejudice is based on racism and sexism. So, for
+now, here are the negative connotations and what they mean:
+
+feminine_first.ascii:
+  "Normal" feminine names.
+
+feminine_first_enby.ascii:
+  Female names that aren't sufficiently gendered.
+
+feminine_first_fun.ascii:
+  Female names that connote playfulness or sexual looseness.
+  Often diminutive. (like "Nicky")
+
+feminine_first_classweird.ascii:
+  Female names that connote nonwhiteness or lower-class economic
+  background. Often invented names.
+
+feminine_first_literary.ascii:
+  Female names that are long or literary.
+  This connotes wealthy background but can be alienating.
+  Plutocrats are unlikely to have this kind of name.
+
+feminine_first_nobject.ascii:
+  Uncommon, not-especially-literary names with high connotations
+  of professionalism/competence.
+
+masculine_first.ascii:
+  "Normal" masculine names.
+
+masculine_first_enby.ascii:
+  Masculine names that aren't sufficiently gendered.
+
+masculine_first_literary.ascii:
+  Masculine names that are long or literary.
+  This connotes wealthy background but can be alienating.
+  Plutocrats are unlikely to have this kind of name.
+
+masculine_first_nonwhite.ascii:
+  Masculine names that are stereotypically nonwhite.
+
+last_long.ascii
+  Long last names.
+
+last_short.ascii
