@@ -1,2 +1,2 @@
-from .levels import Levels, LevelHandle
+from .levels import Levels, LevelHandle, ZoneType
 from .realtor import Demand

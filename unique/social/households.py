@@ -3,7 +3,7 @@ from ds.relational import OneToOne, OneToMany
 from typing import NamedTuple, Optional, Iterator
 
 from ..npc import NPCHandle
-from ..worldmap import LevelHandle, Demand
+from ..worldmap import LevelHandle, Demand, ZoneType
 
 
 class HouseholdHandle(NamedTuple):
@@ -38,7 +38,10 @@ class Households(object):
         assert isinstance(household, HouseholdHandle)
 
         if self._lives_at.get_b(household) is None:
-            self._lives_at.add(household, world.levels.zone_residence(self._demand(household)))
+            self._lives_at.add(
+                household,
+                world.levels.zone(ZoneType.Residence, self._demand(household))
+            )
 
         level = self._lives_at.get_b(household)
         assert isinstance(level, LevelHandle)

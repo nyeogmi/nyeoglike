@@ -217,9 +217,12 @@ class Sitemode(object):
                     if profile.bg is not None: dt.bg(profile.bg)
                     if profile.fg is not None: dt.fg(profile.fg)
 
-                    dt.goto(viewport_xy + V2(1, 0)).puts(profile.icon)
-                    (resource_fg, resource_icon) = item.contributions[0].resource.display()
-                    dt.goto(viewport_xy).fg(resource_fg).puts(resource_icon)
+                    if profile.double_icon:
+                        dt.goto(viewport_xy).puts(profile.double_icon, wrap=False)
+                    else:
+                        dt.goto(viewport_xy + V2(1, 0)).puts(profile.icon)
+                        (resource_fg, resource_icon) = item.contributions[0].resource.display()
+                        dt.goto(viewport_xy).fg(resource_fg).puts(resource_icon)
 
                     if world_xy == self.world.player_xy:
                         tooltip_xy = viewport_xy + V2(0, 1)

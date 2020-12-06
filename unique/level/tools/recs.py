@@ -13,9 +13,16 @@ class LinkType(Enum):
     Ignore = 0
     Door = 1
     Complete = 2
+    Counter = 3
     # TODO: Fat door, antidoor
     # A fat door looks like this  |-    -|
     # An antidoor looks like this | ---- |
+
+
+class Hint(Enum):
+    # TODO: Hint for counterside tiles
+    Counter = 0
+    Counterside = 1
 
 
 class Spawn(NamedTuple):
@@ -23,7 +30,7 @@ class Spawn(NamedTuple):
     location: V2
 
 
-class DoorSpread(NamedTuple):
+class Grid(NamedTuple):
     # linear
     x: int
     y: int
@@ -49,6 +56,8 @@ class RoomType(Enum):
     Bathroom = 6
     Closet = 7
 
+    Gallery = 8
+
     def tile(self) -> str:
         if self == RoomType.EntryZone:
             return "e"
@@ -66,6 +75,8 @@ class RoomType(Enum):
             return "r"
         elif self == RoomType.Closet:
             return "c"
+        elif self == RoomType.Gallery:
+            return "g"
 
 
 class Rule(Enum):

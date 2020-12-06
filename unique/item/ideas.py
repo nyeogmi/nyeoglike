@@ -7,6 +7,7 @@
 # - Graphing calculator
 #
 # Snacks:
+# - Chicken nuggets
 # - Steak (+Blood)
 # - Falafel
 # - Salt

@@ -2,7 +2,7 @@ from ds.gensym import Gensym, Sym
 from typing import Dict, NamedTuple
 
 from ..level import UnloadedLevel
-from ..level.gen import residence
+from ..level.gen import residence, restaurant
 from .realtor import Demand, Realtor
 
 from enum import Enum
@@ -14,6 +14,7 @@ class LevelHandle(NamedTuple):
 
 class ZoneType(Enum):
     Residence = 0
+    Restaurant = 1
 
 
 class Zoning(NamedTuple):
@@ -29,6 +30,7 @@ class Levels(object):
 
         self._realtors: Dict[ZoneType, Realtor] = {
             ZoneType.Residence: Realtor(residence),
+            ZoneType.Restaurant: Realtor(restaurant),
         }
 
     def get(self, level: LevelHandle) -> UnloadedLevel:
@@ -47,6 +49,3 @@ class Levels(object):
         handle = LevelHandle(self._sym.gen())
         self._zoning[handle] = Zoning(zone_type, demand)
         return handle
-
-    def zone_residence(self, demand: Demand) -> LevelHandle:
-        return self.zone(ZoneType.Residence, demand)

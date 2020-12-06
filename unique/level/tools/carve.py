@@ -1,28 +1,35 @@
 from .carve_op import *
 from .recs import *
 
+from typing import Set
 from .interior_designer import InteriorDesigner
 
 
 # TODO: Support random rotation/mirroring of this
 # TODO: Veto if a room becomes too small
 class Carve(object):
-    def __init__(self, door_spread: DoorSpread):
-        self._door_spread = door_spread
+    def __init__(self, grid: Grid):
+        self._grid = grid
 
         self._rooms = FastGensym()
         self._room_tiles: OneToMany[RoomHandle, V2] = OneToMany()
         self._room_types: Dict[RoomHandle, RoomType] = {}
         self._room_frozen = set()
         self._links: List[Link] = []
+        self._hints: Dict[Hint, Set[V2]] = {}
 
         self._operation_log = []
 
+    def _add_hint(self, v2: V2, hint: Hint):
+        self._hints[hint] = self._hints.get(hint, set())
+        self._hints[hint].add(v2)
+
     def to_interior(self) -> InteriorDesigner:
-        return InteriorDesigner(self._room_tiles, self._room_types)
+        return InteriorDesigner(self._room_tiles, self._room_types, self._hints)
 
     def permute_at_random(self):
         _room_tiles_2: OneToMany[RoomHandle, V2] = OneToMany()
+        _hints_2: Dict[Hint, Set[V2]] = {}
 
         # TODO: Is one rotation more likely than another w/ this?
         mul_x = random.choice([-1, 1])
@@ -33,7 +40,17 @@ class Carve(object):
             v2 = V2.new(mul_x * v2.x, mul_y * v2.y)
             if swap: v2 = V2.new(v2.y, v2.x)
             _room_tiles_2.add(rh, v2)
+
+        for hint, set_ in self._hints.items():
+            set2 = set()
+            for v2 in set_:
+                v2 = V2.new(mul_x * v2.x, mul_y * v2.y)
+                if swap: v2 = V2.new(v2.y, v2.x)
+                set2.add(v2)
+            _hints_2[hint] = set2
+
         self._room_tiles = _room_tiles_2
+        self._hints = _hints_2
 
     @contextmanager
     def veto_point(self):
@@ -251,12 +268,13 @@ class Carve(object):
                 dw("horiz", V2.new(0, 1)) + dw("horiz", V2.new(0, -1)) +
                 dw("vert", V2.new(1, 0)) + dw("vert", V2.new(-1, 0))
             )
+            door_worthy_vecs = set(i[1] for i in door_worthy)
 
             if len(door_worthy) == 0:
                 self.veto()
 
             # Find the door segment
-            if link.link_type == LinkType.Door:
+            if link.link_type in [LinkType.Counter, LinkType.Door]:
                 if any(self._room_types[r] in [RoomType.EntryZone, RoomType.Closet] for r in [room0, room1]):
                     # must be centered
                     # all of the xs will be the same or all the ys, so it doesn't matter
@@ -268,7 +286,21 @@ class Carve(object):
                     spots_best = [site for site, score in zip(door_worthy, scores) if score == max_score]
                     door = random.choice(list(spots_best))[1]
 
-                self._carve_point(door, links_hallway)
+
+                if link.link_type == LinkType.Door:
+                    self._carve_point(door, links_hallway)
+                elif link.link_type == LinkType.Counter:
+                    self._carve_point(door, room0)
+
+                    for v in door_worthy_vecs:
+                        if v == door: continue
+
+                        self._carve_point(v, room0)
+                        self._add_hint(v, Hint.Counter)
+
+                        for n in v.ortho_neighbors():
+                            if n in door_worthy_vecs: continue
+                            self._add_hint(n, Hint.Counterside)
 
             elif link.link_type == LinkType.Complete:
                 for i in door_worthy:
@@ -279,9 +311,9 @@ class Carve(object):
                 raise AssertionError("unrecognized link type: {}".format(link.link_type))
 
     def _door_score(self, label: str, v2: V2):
-        if label == "horiz" and v2.x % self._door_spread.x == self._door_spread.cx:
+        if label == "horiz" and v2.x % self._grid.x == self._grid.cx:
             return 1
-        if label == "vert" and v2.y % self._door_spread.y == self._door_spread.cy:
+        if label == "vert" and v2.y % self._grid.y == self._grid.cy:
             return 1
         return 0
 
@@ -293,6 +325,7 @@ class Carve(object):
     def tunnel_east(self, room_handle: RoomHandle, size: V2, room_type: RoomType, min_contact=None, use_ignore=False, rule: Rule = Rule.RNG) -> RoomHandle:
         assert isinstance(room_handle, RoomHandle)
         tiles = list(self._room_tiles.get_bs(room_handle))
+        if len(tiles) == 0: self.veto()
         max_x = max(t.x for t in tiles)
         rhs_tiles = [t for t in tiles if t.x == max_x]
 
@@ -304,6 +337,7 @@ class Carve(object):
     def tunnel_south(self, room_handle: RoomHandle, size: V2, room_type: RoomType, min_contact=None, use_ignore=False, rule: Rule = Rule.RNG) -> RoomHandle:
         assert isinstance(room_handle, RoomHandle)
         tiles = list(self._room_tiles.get_bs(room_handle))
+        if len(tiles) == 0: self.veto()
         max_y = max(t.y for t in tiles)
         bot_tiles = [t for t in tiles if t.y == max_y]
 
@@ -315,6 +349,7 @@ class Carve(object):
     def tunnel_west(self, room_handle: RoomHandle, size: V2, room_type: RoomType, min_contact=None, use_ignore=False, rule: Rule = Rule.RNG) -> RoomHandle:
         assert isinstance(room_handle, RoomHandle)
         tiles = list(self._room_tiles.get_bs(room_handle))
+        if len(tiles) == 0: self.veto()
         min_x = min(t.x for t in tiles)
         lhs_tiles = [t - V2.new(size.x - 1, 0) for t in tiles if t.x == min_x]
 
@@ -326,6 +361,7 @@ class Carve(object):
     def tunnel_north(self, room_handle: RoomHandle, size: V2, room_type: RoomType, min_contact=None, use_ignore=False, rule: Rule = Rule.RNG) -> RoomHandle:
         assert isinstance(room_handle, RoomHandle)
         tiles = list(self._room_tiles.get_bs(room_handle))
+        if len(tiles) == 0: self.veto()
         min_y = min(t.y for t in tiles)
         lhs_tiles = [t - V2.new(0, size.y - 1) for t in tiles if t.y == min_y]
 

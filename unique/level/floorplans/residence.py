@@ -2,13 +2,13 @@ from ds.vecs import V2, R2
 
 import random
 
-from ..tools import Cardinal, Carve, DoorSpread, LinkType, RoomType, Rule, Snake
+from ..tools import Cardinal, Carve, Grid, LinkType, RoomType, Rule, Snake
 
 
 def residence() -> Carve:
     cell_sz_x = random.randint(3, 4)
 
-    carve = Carve(DoorSpread(x=cell_sz_x + 1, y=cell_sz_x + 1, cx=random.randrange(cell_sz_x + 1), cy=random.randrange(cell_sz_x + 1)))
+    carve = Carve(Grid(x=cell_sz_x + 1, y=cell_sz_x + 1, cx=random.randrange(cell_sz_x + 1), cy=random.randrange(cell_sz_x + 1)))
 
     living_room_width = random.randint(cell_sz_x + 3, cell_sz_x * 2 + 1)
     living_room_height = random.randrange(6, 8)

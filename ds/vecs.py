@@ -1,4 +1,4 @@
-from typing import NamedTuple, Iterator, Union
+from typing import NamedTuple, Iterator, Union, List
 
 
 class V2(NamedTuple):
@@ -81,6 +81,15 @@ class R2(NamedTuple):
         y_bot = max(y0, y1)
 
         return R2.new(V2(x_top, y_top), V2(x_bot - x_top, y_bot - y_top))
+
+    def inclusive_corners(self) -> List[V2]:
+        bot = self.bot_inclusive
+        return [
+            V2.new(self.top.x, self.top.y),
+            V2.new(bot.x, self.top.y),
+            V2.new(self.top.x, bot.y),
+            V2.new(bot.x, bot.y),
+        ]
 
     @property
     def bot_inclusive(self) -> V2:

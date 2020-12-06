@@ -2,12 +2,12 @@ from ds.relational import OneToMany
 from ds.vecs import V2
 from unique.item import Item
 import random
-from typing import Dict, List, Set, Optional
+from typing import Dict, Iterator, List, Set, Optional
 from io import StringIO
 
 from unique.level.unloaded_level import UnloadedLevel
 from ..block import Block
-from .recs import RoomHandle, RoomType, Spawn, SpawnType
+from .recs import RoomHandle, RoomType, Spawn, SpawnType, Hint
 
 
 # TODO: Item spawns that are randomized at level load time
@@ -16,9 +16,11 @@ class InteriorDesigner(object):
         self,
         room_tiles: OneToMany[RoomHandle, V2],
         room_types: Dict[RoomHandle, RoomType],
+        hints: Dict[Hint, Set[V2]],
     ):
         assert isinstance(room_tiles, OneToMany)
         assert isinstance(room_types, dict)
+        assert isinstance(hints, dict)
 
         self._player_start_xy = V2(0, 0)
         self._room_tiles: OneToMany[RoomHandle, V2] = room_tiles
@@ -26,6 +28,7 @@ class InteriorDesigner(object):
         self._cell_objects: Dict[V2, List[Item]] = dict()
         self._npc_spawns: Set[Spawn] = set()
         self._exits: Set[V2] = set()
+        self._hints = hints
 
         self._rooms: Dict[RoomHandle, Room] = {}
         for rh in self._room_tiles.all_as():
@@ -39,6 +42,22 @@ class InteriorDesigner(object):
         for door in self._all_doors:
             for rh, room in self._rooms.items():
                 room.boundary_avoid_door(door)
+
+    def merge_rooms(self, room0: "Room", room1: "Room"):
+        rh0 = room0._room_handle
+        rh1 = room1._room_handle
+        assert isinstance(rh0, RoomHandle)
+        assert isinstance(rh1, RoomHandle)
+
+        for i in list(self._room_tiles.get_bs(rh1)):
+            self._room_tiles.add(rh0, i)
+
+        self._rooms[rh0] = self._calculate_room(rh0)
+        self._rooms[rh1] = self._calculate_room(rh1)
+
+        for door in self._all_doors:
+            self._rooms[rh0].boundary_avoid_door(door)
+            self._rooms[rh1].boundary_avoid_door(door)
 
     def _calculate_room(self, room_handle: RoomHandle) -> "Room":
         all_tiles = set()
@@ -176,6 +195,20 @@ class Room(object):
             except ValueError as ve:
                 pass
 
+    def all_tiles(self) -> Iterator[V2]:
+        for t in self._all_tiles:
+            yield t
+
+    def hinted(self, hint: Hint) -> Iterator[V2]:
+        # TODO: Allow the user to also specify that it is in the doors, boundary, or center
+        if hint not in self._interior._hints:
+            return
+
+        hint_table = self._interior._hints[hint]
+        for v in self._all_tiles:
+            if v in hint_table:
+                yield v
+
     def door(self, item: Item) -> bool:
         return self._add(self._doors, item)
 
@@ -184,6 +217,11 @@ class Room(object):
 
     def center(self, item: Item) -> bool:
         return self._add(self._center, item)
+
+    def at(self, v2: V2, item: Item) -> bool:
+        if v2 not in self._all_tiles: return False  # TODO: Keep a set of all tiles for this reason?
+
+        return self._add([v2], item)
 
     def fill_with_exits(self):
         for i in self._all_tiles:

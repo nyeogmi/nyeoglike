@@ -40,6 +40,7 @@ class Profile(NamedTuple):
     name: str
     icon: str  # a string or a double-wide
     ascii_icon: str
+    double_icon: Optional[str]
     bg: Optional[Color]
     fg: Optional[Color]
 
@@ -53,7 +54,13 @@ class Profile(NamedTuple):
 
         assert bg is None or isinstance(bg, Color)
         assert fg is None or isinstance(fg, Color)
-        return Profile(name, icon, ascii_icon, bg, fg)
+        return Profile(name, icon, ascii_icon, None, bg, fg)
+
+    def with_double_icon(self, s) -> "Profile":
+        assert isinstance(s, str)
+        assert len(s) == 2
+
+        return self._replace(double_icon=s)
 
 
 class Item(NamedTuple):
