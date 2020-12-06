@@ -60,25 +60,18 @@ class World(object):
 
     def follow_npc(self, npc: NPCHandle):
         # TODO: Figure out where the NPC will be using their schedule
-        schedule = self.schedules.next_schedule(npc)
-        location = schedule.location(npc, self)
-
-        if isinstance(location, HouseholdHandle):
-            home = self.households.get_home(self, location)
-            self.activate_level(home)
-            return
-
-        # TODO: LevelHandle
-
-        raise AssertionError("not sure where {} is going ({}; {})".format(npc, schedule, location))
+        location = self.schedules.next_location(self, npc)
+        self.activate_level(location)
 
     def activate_level(self, level: LevelHandle):
         # figure out who will be there
         # for now, the whole household. in the future use the schedule info
         spawns = []
-        household_there = self.households.living_at(level)
-        for npc in self.households.members(household_there):
-            spawns.append(SpawnNPC(npc=npc, schedule=self.schedules.next_schedule(npc)))
+        for npch in self.npcs.all():
+            # TODO: Move this to schedules object
+            if self.schedules.next_location(self, npch) == level:
+                spawns.append(SpawnNPC(npc=npch, schedule=self.schedules.next_schedule(npch)))
+
         lvl = self.levels.get(level)
         self._activate_level(lvl, spawns)
 

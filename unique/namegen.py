@@ -139,7 +139,7 @@ def generate() -> str:
         last = american_last()
 
         pct = random.randrange(100)
-        if pct in range(0, 15):
+        if pct in range(0, 5):
             # gratuitous use of other languages
             pct = random.randrange(100)
             if pct in range(0, 40):

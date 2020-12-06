@@ -38,7 +38,7 @@ class Households(object):
         assert isinstance(household, HouseholdHandle)
 
         if self._lives_at.get_b(household) is None:
-            self._lives_at.add(household, world.levels.generate_apartment(self._demand(household)))
+            self._lives_at.add(household, world.levels.zone_apartment(self._demand(household)))
 
         level = self._lives_at.get_b(household)
         assert isinstance(level, LevelHandle)

@@ -47,10 +47,12 @@ class UnloadedLevel(object):
         return self._player_start_xy
 
     def load(self, spawns: List[SpawnNPC]) -> LoadedLevel:
+        all_possible_spots = []
         possible_spots = []
         for spawn_type, possible_vs in self._npc_spawns.items():
             for v in possible_vs:
                 possible_spots.append((v, spawn_type))
+                all_possible_spots.append((v, spawn_type))
 
         npc_sites = OneToMany()
         for npc in spawns:
@@ -69,10 +71,10 @@ class UnloadedLevel(object):
                         if ch(spawn_type):
                             possible_spots.pop(i)
                             return spot
+                return random.choice(all_possible_spots)[0]
 
             found_spot = find_spot()
-            if found_spot is None:
-                continue
+            assert found_spot is not None
             npc_sites.add(found_spot, npc.npc)
 
         return LoadedLevel(

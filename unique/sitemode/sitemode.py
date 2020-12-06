@@ -341,7 +341,7 @@ class Sitemode(object):
     def draw_my_hud(self):
         window = draw_window(self.io.draw().goto(4, 2).box(26, 5), double=True, fg=Colors.MSGSystem)
 
-        window.title_bar.copy().fg(Colors.TermFGBold).puts("a bat")
+        window.title_bar.copy().fg(Colors.TermFGBold).puts("Fivey Fox")
         # window.title_bar.copy().fg(Colors.TermFGBold).puts("Nyeogmi Choi")
 
         window.content.copy().goto(0, 0).puts("$").fg(Colors.TermFGBold).puts(

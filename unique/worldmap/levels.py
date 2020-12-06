@@ -5,26 +5,48 @@ from ..level import UnloadedLevel
 from ..level.gen import apartment
 from .realtor import Demand, Realtor
 
+from enum import Enum
+
 
 class LevelHandle(NamedTuple):
     ident: Sym
 
 
+class ZoneType(Enum):
+    Apartment = 0
+
+
+class Zoning(NamedTuple):
+    zone_type: ZoneType
+    demand: Demand
+
+
 class Levels(object):
     def __init__(self):
-        self._all: Dict[LevelHandle, UnloadedLevel] = {}
+        self._zoning: Dict[LevelHandle, Zoning] = {}
+        self._generation: Dict[LevelHandle, UnloadedLevel] = {}
         self._sym = Gensym("LVL")
 
-        self._realtor_apartments = Realtor(apartment)
+        self._realtors: Dict[ZoneType, Realtor] = {
+            ZoneType.Apartment: Realtor(apartment),
+        }
 
     def get(self, level: LevelHandle) -> UnloadedLevel:
         assert isinstance(level, LevelHandle)
-        assert level in self._all
-        return self._all[level]
 
-    def generate_apartment(self, demand: Demand) -> LevelHandle:
+        if level not in self._generation:
+            assert level in self._zoning
+            zoning = self._zoning[level]
+            self._generation[level] = self._realtors[zoning.zone_type].gen(zoning.demand)
+
+        return self._generation[level]
+
+    def zone(self, zone_type: ZoneType, demand: Demand) -> LevelHandle:
+        assert isinstance(zone_type, ZoneType)
         assert isinstance(demand, Demand)
-        level = self._realtor_apartments.gen(demand)
         handle = LevelHandle(self._sym.gen())
-        self._all[handle] = level
+        self._zoning[handle] = Zoning(zone_type, demand)
         return handle
+
+    def zone_apartment(self, demand: Demand) -> LevelHandle:
+        return self.zone(ZoneType.Apartment, demand)

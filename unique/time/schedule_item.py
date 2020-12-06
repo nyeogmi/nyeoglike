@@ -6,7 +6,7 @@ from typing import Optional, NamedTuple, Type
 
 class DestinationRule(Enum):
     MyHousehold = 0
-    NPCArgHousehold = 1
+    FollowNPC = 1
 
 
 class _Verb(NamedTuple):
@@ -31,17 +31,6 @@ class ScheduleItem(NamedTuple):
             tx = str(self.arg)
 
         return ALL.get(self.name).format.format(self, arg=tx)
-
-    def location(self, me: NPCHandle, world: "World") -> Optional["HouseholdHandle"]:  # TODO: Other location types
-        rule = ALL.get(self.name).destination_rule
-
-        if rule == DestinationRule.MyHousehold:
-            return world.households.household_of(me)
-        elif rule == DestinationRule.NPCArgHousehold:
-            assert isinstance(self.arg, NPCHandle)
-            return world.households.household_of(self.arg)
-        else:
-            raise AssertionError("unrecognized rule: {}".format(rule))
 
 
 class _Verbs(object):

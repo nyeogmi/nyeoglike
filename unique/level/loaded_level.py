@@ -1,6 +1,6 @@
 from ds.relational import OneToMany
 from ds.vecs import V2
-from typing import Dict, List, Set, Iterator
+from typing import Dict, List, Set, Iterator, Optional
 import os.path
 from .block import Block
 from ..item import Item, common
@@ -19,7 +19,8 @@ class LoadedLevel(object):
         self.items: Dict[V2, List[Item]] = items
         self.npc_sites: OneToMany[V2, NPCHandle] = npc_sites
 
-    def npc_location(self, npc: NPCHandle) -> V2:
+    def npc_location(self, npc: NPCHandle) -> Optional[V2]:
+        assert isinstance(npc, NPCHandle)
         return self.npc_sites.get_a(npc)
 
     def loaded_npcs(self) -> Iterator[NPCHandle]:
