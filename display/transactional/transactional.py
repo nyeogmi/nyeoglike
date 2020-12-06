@@ -6,19 +6,33 @@ from typing import Callable
 from greenlet import greenlet
 
 # TODO: Use plain lists instead
-from queue import Queue, Empty
-
 import time
+from typing import List
+
+
+class UpdateTracker(object):
+    def __init__(self):
+        self._updated = True
+
+    def mark_updated(self):
+        self._updated = True
+
+    def pop_updated(self):
+        upd = self._updated
+        self._updated = False
+        return upd
 
 
 class Client(object):
-    def __init__(self, screen: Screen, host_thread: greenlet, keys: Queue):
+    def __init__(self, screen: Screen, host_thread: greenlet, updated: UpdateTracker, keys: list):
         assert isinstance(screen, Screen)
         assert isinstance(host_thread, greenlet)
-        assert isinstance(keys, Queue)
+        assert isinstance(updated, UpdateTracker)
+        assert isinstance(keys, list)
 
         self._screen = screen
         self._host_thread = host_thread
+        self._updated = updated
         self._keys = keys
         self._last_wake_at = 0.0
 
@@ -30,15 +44,13 @@ class Client(object):
         return self._screen.draw()
 
     def getch(self) -> Key:
+        self._updated.mark_updated()
         while True:
-            try:
-                got = self._keys.get_nowait()
-            except Empty:
+            if len(self._keys) == 0:
                 self._notify_host()
                 continue
 
-            (t, recv) = got
-
+            (t, recv) = self._keys.pop(0)
             if t < self._last_wake_at:
                 continue
 
@@ -52,28 +64,36 @@ class Client(object):
 
 
 class Host(Interactor):
-    def __init__(self, screen: Screen, thread: greenlet, keys: Queue):
+    def __init__(self, screen: Screen, thread: greenlet, updated: UpdateTracker, keys: list):
         assert isinstance(screen, Screen)
         assert isinstance(thread, greenlet)
-        assert isinstance(keys, Queue)
+        assert isinstance(updated, UpdateTracker)
+        assert isinstance(keys, list)
 
         self._screen = screen
         self._thread = thread
+        self._updated = updated
         self._keys = keys
 
     def view(self) -> (Screen, bool):
-        # TODO: Figure out if it's been updated
-        return (self._screen, True)
+        return self._screen, self._updated.pop_updated()
 
-    def handle_key(self, key: Key):
-        assert isinstance(key, Key)
+    def mark_updated(self):
+        self._updated.mark_updated()
+
+    def handle_keys(self, keys: List[Key]):
+        assert isinstance(keys, list) and all(isinstance(key, Key) for key in keys)
+
+        if len(keys) == 0:
+            return
+
         push_at = time.time()
-        self._keys.put((push_at, key))
+        self._keys.extend([(push_at, key) for key in keys])
 
         self._thread.switch()
 
     def should_quit(self) -> bool:
-        pass
+        return False
         # TODO
         # if not self._thread.is_alive():
             # return True
@@ -83,11 +103,12 @@ class Host(Interactor):
 def transact(screen: Screen, game_f, host_f):
     from .shorthand import IO
 
-    keys = Queue()
+    keys = []
 
+    updated = UpdateTracker()
     host_greenlet = greenlet(lambda: host_f(host))
-    client = Client(screen, host_greenlet, keys=keys)
+    client = Client(screen, host_greenlet, updated, keys=keys)
     game_greenlet = greenlet(lambda: game_f(IO(client)))
-    host = Host(screen, thread=game_greenlet, keys=keys)
+    host = Host(screen, game_greenlet, updated, keys=keys)
 
     game_greenlet.switch()

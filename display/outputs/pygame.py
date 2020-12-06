@@ -43,6 +43,7 @@ class Font(object):
         font_images = [font_image.convert_alpha() for i in range(Colors.N)]
         for i in range(Colors.N):
             font_images[i].fill((*Colors.SWATCH[i], 255), special_flags=pygame.BLEND_MULT)
+            font_images[i] = font_images[i].convert_alpha()
 
         return Font(font_images, tile_size, V2.new(width_in_tiles, height_in_tiles))
 
@@ -75,15 +76,20 @@ def start(interactor: Interactor):
     pygame_screen = pygame.display.set_mode(list(screen.bounds.size * tile_size), flags=pygame.SCALED)
     font = Font.load("vga_8x16.png", tile_size)
 
+    interactor.mark_updated()
     while not interactor.should_quit():
         screen, changed = interactor.view()
 
-        if changed or True:  # TODO: For now, always redraw
+        old_cells = {}
+        if changed:  # TODO: For now, always redraw
             with screen.lock():
-                pygame_screen.fill(Colors.SWATCH[Colors.TermBG.color])
                 for xy in screen.bounds:
-                    cell = screen[xy]
-                    font.draw(pygame_screen, xy, cell.bg, cell.fg, cell.character)
+                    new_cell = screen[xy]
+                    old_cell = old_cells.get(xy)
+                    old_cells[xy] = new_cell
+                    if old_cell != new_cell:
+                        # pygame_screen.fill(Colors.SWATCH[Colors.TermBG.color])
+                        font.draw(pygame_screen, xy, new_cell.bg, new_cell.fg, new_cell.character)
 
                 pygame.display.flip()
 
@@ -104,8 +110,7 @@ def start(interactor: Interactor):
         if quit:
             break
 
-        for key in keys:
-            interactor.handle_key(key)
+        interactor.handle_keys(keys)
 
 
 _GENERIC_KEYS = set(map(ord, "abcdefghijklmnopqrstuvwxyz`0123456789-=[]\\;',./"))
