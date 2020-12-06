@@ -44,15 +44,13 @@ class Client(object):
         return self._screen.draw()
 
     def getch(self) -> Key:
-        self._updated.mark_updated()
         while True:
             if len(self._keys) == 0:
+                self._updated.mark_updated()
                 self._notify_host()
                 continue
 
-            (t, recv) = self._keys.pop(0)
-            if t < self._last_wake_at:
-                continue
+            recv = self._keys.pop(0)
 
             if isinstance(recv, Key):
                 return recv
@@ -87,9 +85,7 @@ class Host(Interactor):
         if len(keys) == 0:
             return
 
-        push_at = time.time()
-        self._keys.extend([(push_at, key) for key in keys])
-
+        self._keys.extend(keys)
         self._thread.switch()
 
     def should_quit(self) -> bool:
