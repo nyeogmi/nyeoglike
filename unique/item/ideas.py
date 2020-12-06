@@ -7,10 +7,6 @@
 # - Graphing calculator
 #
 # Snacks:
-# - Ice cream
-# - Nachos
-# - Pizza
-# - Sushi
 # - Steak (+Blood)
 # - Falafel
 # - Salt

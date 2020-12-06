@@ -2,7 +2,7 @@ from unique.item.common.furniture import BED
 from ..tools import InteriorDesigner, RoomType, SpawnType
 
 
-def apartment(interior: InteriorDesigner):
+def residence(interior: InteriorDesigner):
     for br in interior.ident_rooms(RoomType.Bedroom):
         br.boundary(BED)
         br.mark_spawn(SpawnType.Sleep)

@@ -75,7 +75,25 @@ class UnloadedLevel(object):
 
             found_spot = find_spot()
             assert found_spot is not None
-            npc_sites.add(found_spot, npc.npc)
+
+            if any(npc_sites.get_bs(found_spot)):
+                neighbors = [n for n in found_spot.neighbors() if n not in self._blocks]
+                random.shuffle(neighbors)
+                for n in neighbors:
+                    if n in self._blocks:
+                        continue
+
+                    if n in self._items:
+                        if any(item.occludes_walk for item in self._items[n]):
+                            continue
+
+                    if not any(npc_sites.get_bs(n)):
+                        npc_sites.add(n, npc.npc)
+                        break
+                else:
+                    npc_sites.add(found_spot, npc.npc)
+            else:
+                npc_sites.add(found_spot, npc.npc)
 
         return LoadedLevel(
             blocks=dict(self._blocks),

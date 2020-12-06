@@ -5,7 +5,7 @@ import random
 from ..tools import Cardinal, Carve, DoorSpread, LinkType, RoomType, Rule, Snake
 
 
-def apartment() -> Carve:
+def residence() -> Carve:
     cell_sz_x = random.randint(3, 4)
 
     carve = Carve(DoorSpread(x=cell_sz_x + 1, y=cell_sz_x + 1, cx=random.randrange(cell_sz_x + 1), cy=random.randrange(cell_sz_x + 1)))
