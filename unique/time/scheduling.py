@@ -56,7 +56,7 @@ class Schedule(object):
             return self._calculated_location[npch]
 
         dependency = None
-        if False and (npch in breadcrumbs):
+        if npch in breadcrumbs:
             result = world.households.get_home(world, world.households.household_of(npch))
 
         else:
