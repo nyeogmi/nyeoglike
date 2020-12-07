@@ -36,6 +36,9 @@ class Friendships(object):
             if self._likes.has(likee, npc):
                 yield likee
 
+    def npc_likes(self, npc1: NPCHandle, npc2: NPCHandle):
+        return self._likes.has(npc1, npc2)
+
     def mingle(self, world: "World", friends_per_npc: int):
         npcs = list(world.npcs.all())
         for f in range(friends_per_npc):

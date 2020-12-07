@@ -9,7 +9,7 @@ from .level import UnloadedLevel, LoadedLevel, SpawnNPC
 from .worldmap import Levels, LevelHandle
 from .notifications import Notifications, Notification
 from .npc import NPCs, NPC, NPCHandle
-from .social import Friendships, Households, HouseholdHandle
+from .social import Friendships, Enterprises, Households, HouseholdHandle
 from .time import Clock, Schedules
 
 import random
@@ -22,6 +22,7 @@ N_HOUSEHOLD_NPCS = (1, 5)
 class World(object):
     def __init__(self):
         self.clock = Clock()
+        self.enterprises = Enterprises()
         self.eventmonitors = EventMonitors()
         self.friendships = Friendships()
         self.interest = InterestTracker()
@@ -39,9 +40,9 @@ class World(object):
 
     @classmethod
     def generate(cls):
+        from .bigprocs.worldgen import main
         world = cls()
-        for i in range(N_HOUSEHOLDS):
-            world.households.generate(world, random.randint(*N_HOUSEHOLD_NPCS))
+        main(world)
         return world
 
     def advance_time(self):

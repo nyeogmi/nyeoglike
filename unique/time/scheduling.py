@@ -63,10 +63,18 @@ class Schedule(object):
             rule = SCHEDULE_ITEMS.get(schedule_item.name).destination_rule
             if rule == DestinationRule.MyHousehold:
                 result = world.households.get_home(world, world.households.household_of(npch))
-            elif rule == DestinationRule.FollowNPC:
-                assert isinstance(schedule_item.arg, NPCHandle)
-                result = recurse(schedule_item.arg)
-                dependency = npch
+            elif rule == DestinationRule.Follow:
+                from ..social import EnterpriseHandle
+                from ..worldmap import LevelHandle
+                if isinstance(schedule_item.arg, NPCHandle):
+                    result = recurse(schedule_item.arg)
+                    dependency = npch
+                elif isinstance(schedule_item.arg, EnterpriseHandle):
+                    result = world.enterprises.get_site(world, schedule_item.arg)
+                elif isinstance(schedule_item.arg, LevelHandle):
+                    result = schedule_item.arg
+                else:
+                    raise AssertionError("don't know how to follow: {}", schedule_item.arg)
             else:
                 raise AssertionError("unrecognized rule: {}".format(rule))
 
@@ -118,22 +126,39 @@ class Schedules(object):
 
         # TODO: NPCs who have nighttime jobs
 
-        not_sleepy = set()
+        busy = set()
         for npc in world.npcs.all():
+            shifts_now = [
+                shift
+                for shift in world.enterprises.get_shifts_worked_by(npc)
+                if world.enterprises.shift_active_at(shift, time_of_day)
+            ]
+            if not shifts_now:
+                continue
+
+            go_to = random.choice(shifts_now)
+            next_schedule[npc] = schedule_items.GoToWork(go_to.enterprise)
+            busy.add(npc)
+
+        up_for_fun = set()
+        for npc in world.npcs.all():
+            if npc in busy:  # don't interrupt their job
+                continue
+
             sleepy = random.choice([False, True])  # TODO: Smarter way to calculate this
             if sleepy:
                 next_schedule[npc] = schedule_items.HomeSleep
             else:
                 next_schedule[npc] = schedule_items.HomeFun
-                not_sleepy.add(npc)
+                up_for_fun.add(npc)
 
-        for npc in not_sleepy:
+        for npc in up_for_fun:
             # write the friends in random order
             some_friends = list(world.friendships.friends(npc))
             random.shuffle(some_friends)
 
             for possible_engagement in some_friends:
-                if possible_engagement in not_sleepy:
+                if possible_engagement in up_for_fun:
                     date = possible_engagement
                     # it's a date!
                     break
@@ -152,4 +177,5 @@ class Schedules(object):
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..world import World
+    from ..social import EnterpriseHandle
     from ..worldmap import LevelHandle

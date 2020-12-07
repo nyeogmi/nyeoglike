@@ -13,13 +13,17 @@ def main(io: IO):
     w = World.generate()
     print([w.npcs.get(i).name for i in w.npcs._all.keys()])  # TODO: Better way to do this for non-debugging in the future
 
-    house1 = w.households.generate(w, 3)
-    w.friendships.mingle(w, 5)  # every NPC gets 5 friends
-
-    # level = w.households.get_home(w, house1)
+    """
+    house1 = next(w.households.all())
+    level = w.households.get_home(w, house1)
+    w.start_time_period()
+    """
+    job1 = next(w.enterprises.all())
+    level = w.enterprises.get_site(w, job1)
+    print(level)
     w.start_time_period()
 
-    level = w.levels.zone(ZoneType.Restaurant, Demand())
+    # level = w.levels.zone(ZoneType.Restaurant, Demand())
     w.activate_level(level)
 
     sitemode(io, w)

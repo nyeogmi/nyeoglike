@@ -1,6 +1,6 @@
 from ds.gensym import Gensym, Sym
 from ds.relational import OneToOne, OneToMany
-from typing import NamedTuple, Optional, Iterator
+from typing import NamedTuple, Optional, Iterator, List
 
 from ..npc import NPCHandle
 from ..worldmap import LevelHandle, Demand, ZoneType
@@ -20,17 +20,29 @@ class Households(object):
         self._members: OneToMany[HouseholdHandle, NPCHandle] = OneToMany()
         self._lives_at: OneToOne[HouseholdHandle, LevelHandle] = OneToOne()
 
-    def generate(self, world: "World", n_npcs: int) -> HouseholdHandle:
+    def create(self, world: "World", npcs: List[NPCHandle]) -> HouseholdHandle:
         # TODO: Consider having NPCs share a last name
         from ..world import World
         assert isinstance(world, World)
-        assert isinstance(n_npcs, int)
+        assert isinstance(npcs, list)
 
         handle = HouseholdHandle(self._sym.gen())
-        for i in range(n_npcs):
-            self._members.add(handle, world.npcs.generate())
+        for npc in npcs: self._members.add(handle, npc)
 
         return handle
+
+    def add_member(self, handle: HouseholdHandle, npc: NPCHandle):
+        assert isinstance(handle, HouseholdHandle)
+        assert isinstance(npc, NPCHandle)
+        self._members.add(handle, npc)
+
+    def evict(self, npc: NPCHandle):
+        assert isinstance(npc, NPCHandle)
+        self._members.remove_b(npc)
+
+    def all(self) -> Iterator[HouseholdHandle]:
+        for hh in self._members.all_as():
+            yield hh
 
     def get_home(self, world: "World", household: HouseholdHandle) -> LevelHandle:
         from ..world import World

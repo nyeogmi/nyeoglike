@@ -209,16 +209,16 @@ class Room(object):
             if v in hint_table:
                 yield v
 
-    def door(self, item: Item) -> bool:
+    def door(self, item: Optional[Item] = None) -> bool:
         return self._add(self._doors, item)
 
-    def boundary(self, item: Item) -> bool:
+    def boundary(self, item: Optional[Item] = None) -> bool:
         return self._add(self._boundary, item)
 
-    def center(self, item: Item) -> bool:
+    def center(self, item: Optional[Item] = None) -> bool:
         return self._add(self._center, item)
 
-    def at(self, v2: V2, item: Item) -> bool:
+    def at(self, v2: V2, item: Optional[Item] = None) -> bool:
         if v2 not in self._all_tiles: return False  # TODO: Keep a set of all tiles for this reason?
 
         return self._add([v2], item)
@@ -236,16 +236,17 @@ class Room(object):
             self._interior._player_start_xy = i
             self._interior._exits.discard(i)
 
-    def _add(self, v2s: List[V2], item: Item) -> bool:
+    def _add(self, v2s: List[V2], item: Optional[Item]) -> bool:
         assert isinstance(v2s, list)
-        assert isinstance(item, Item)
+        assert item is None or isinstance(item, Item)
 
         if len(v2s) == 0: return False
 
         v2 = v2s.pop()
-        cell_objs = self._interior._cell_objects
-        cell_objs[v2] = cell_objs.get(v2, [])
-        cell_objs[v2].append(item)
+        if item:
+            cell_objs = self._interior._cell_objects
+            cell_objs[v2] = cell_objs.get(v2, [])
+            cell_objs[v2].append(item)
         self._last_location = v2
 
         return True

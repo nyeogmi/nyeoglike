@@ -1,6 +1,5 @@
 from .block import Block
 from ..item import Item
-from ..time import schedule_items, ScheduleItem
 
 from enum import Enum
 
@@ -17,11 +16,12 @@ import random
 class SpawnType(Enum):
     Sleep = 0
     Bedside = 1
+    Employee = 2
 
 
 class SpawnNPC(NamedTuple):
     npc: NPCHandle
-    schedule: ScheduleItem
+    schedule: "ScheduleItem"
 
 
 class UnloadedLevel(object):
@@ -103,16 +103,23 @@ class UnloadedLevel(object):
         )
 
 
-def spawn_type_compatible(schedule_item: ScheduleItem, spawn_type: SpawnType, lax=False) -> bool:
-    if schedule_item == schedule_items.HomeSleep:
+def spawn_type_compatible(schedule_item: "ScheduleItem", spawn_type: SpawnType, lax=False) -> bool:
+    # TODO: Sleepover types
+
+    from ..time import schedule_items
+    if schedule_item.name == schedule_items.HomeSleep.name:
         if spawn_type == SpawnType.Sleep:
             return True
         if lax and spawn_type == SpawnType.Bedside:
             return True
 
-    elif schedule_item == schedule_items.HomeFun:
+    elif schedule_item.name == schedule_items.HomeFun.name:
         # more fun than sleep, I guess
         if lax and spawn_type == SpawnType.Bedside:
+            return True
+
+    elif schedule_item.name == schedule_items.GoToWork.name:
+        if spawn_type == SpawnType.Employee:
             return True
 
     return False
@@ -121,3 +128,4 @@ def spawn_type_compatible(schedule_item: ScheduleItem, spawn_type: SpawnType, la
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..world import World
+    from ..time import ScheduleItem

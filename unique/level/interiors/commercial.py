@@ -23,6 +23,12 @@ def commercial(interior: InteriorDesigner):
         for i in rm.hinted(Hint.Counterside):
             rm.at(i, CHAIR)
 
+    for rm in interior.ident_rooms(RoomType.Kitchen):
+        for i in rm.hinted(Hint.Counterside):
+            rm.at(i)
+            rm.mark_spawn(SpawnType.Employee)
+
+
     # place tables in pods
     spacing_dist = 4
     spacing_constant_x = random.randrange(spacing_dist)

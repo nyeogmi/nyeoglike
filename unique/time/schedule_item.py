@@ -6,7 +6,7 @@ from typing import Optional, NamedTuple, Type
 
 class DestinationRule(Enum):
     MyHousehold = 0
-    FollowNPC = 1
+    Follow = 1
 
 
 class _Verb(NamedTuple):
@@ -25,8 +25,11 @@ class ScheduleItem(NamedTuple):
     arg: object
 
     def to_text(self, world: "World") -> str:
+        from ..social.enterprises import EnterpriseHandle
         if isinstance(self.arg, NPCHandle):
             tx = world.npcs.get(self.arg).name
+        elif isinstance(self.arg, EnterpriseHandle):
+            tx = world.enterprises.get_name(self.arg)
         else:
             tx = str(self.arg)
 
@@ -51,6 +54,5 @@ ALL = _Verbs()
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..social import HouseholdHandle
     from ..world import World
 
