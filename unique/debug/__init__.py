@@ -27,9 +27,21 @@ def dump_world(w: World):
         )
         obj.add("plan", schedule_s)
 
-        obj.add("flags", " ".join([
+        obj.add("flags", ", ".join([
             *if_(npc.asleep, "asleep"),
             *if_(npc.seen, "seen"),
+            *(
+                ["very sleepy"] if w.rhythms.is_very_sleepy(npch) else
+                ["sleepy"] if w.rhythms.is_sleepy(npch) else
+                ["can sleep"] if w.rhythms.can_sleep(npch) else
+                []
+            ),
+            *(
+                ["very hungry"] if w.rhythms.is_very_hungry(npch) else
+                ["hungry"] if w.rhythms.is_hungry(npch) else
+                ["can eat"] if w.rhythms.can_eat(npch) else
+                []
+            ),
         ]))
 
         with obj.prefix("household"):

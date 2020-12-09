@@ -124,8 +124,18 @@ class Schedules(object):
 
         next_schedule = Schedule()
 
+        # emergencies
+        all_npcs = set(world.npcs.all())
+        no_emergency = set()
+        for npc in all_npcs:
+            if world.rhythms.is_very_sleepy(npc):
+                next_schedule[npc] = schedule_items.HomeSleep
+            else:
+                no_emergency.add(npc)
+
+        # otherwise, try to go to work
         not_busy = set()
-        for npc in world.npcs.all():
+        for npc in no_emergency:
             shifts_now = [
                 shift
                 for shift in world.enterprises.get_shifts_worked_by(npc)
@@ -138,9 +148,10 @@ class Schedules(object):
             go_to = random.choice(shifts_now)
             next_schedule[npc] = schedule_items.GoToWork(go_to.enterprise)
 
+        # otherwise, find something to do
         up_for_fun = set()
         for npc in not_busy:
-            sleepy = random.choice([False, True])  # TODO: Smarter way to calculate this
+            sleepy = world.rhythms.can_sleep(npc)
             if sleepy:
                 next_schedule[npc] = schedule_items.HomeSleep
             else:

@@ -6,7 +6,8 @@ class TimeOfDay(Enum):
     Dusk = 1
     Midnight = 2
     Dawn = 3
-    Morning = 4  # TODO: Purely cosmetic transitions seems bad to me
+    Morning = 4
+    Afternoon = 5
 
     def display(self) -> str:
         return self.name
@@ -21,4 +22,6 @@ class TimeOfDay(Enum):
         if self == TimeOfDay.Dawn:
             return TimeOfDay.Morning
         if self == TimeOfDay.Morning:
-            raise ValueError("it should never be morning")
+            return TimeOfDay.Afternoon
+        if self == TimeOfDay.Afternoon:
+            return TimeOfDay.Evening

@@ -17,7 +17,7 @@ class Clock(object):
     @property
     def weekday(self):
         return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][
-            (self._night + (1 if self._time_of_day in [TimeOfDay.Midnight, TimeOfDay.Morning, TimeOfDay.Dawn] else 0)) % 7
+            (self._night + (1 if self._time_of_day in [TimeOfDay.Midnight, TimeOfDay.Dawn, TimeOfDay.Morning, TimeOfDay.Afternoon] else 0)) % 7
         ]
 
     @property
@@ -35,10 +35,9 @@ class Clock(object):
     def advance_time(self):
         self._started = False
         self._time_of_day = self._time_of_day.next()
-        if self._time_of_day == TimeOfDay.Morning:
+        if self._time_of_day == TimeOfDay.Evening:
             # TODO: Don't advance immediately, so we can do a report
             self.advance_night()
 
     def advance_night(self):
         self._night += 1
-        self._time_of_day = TimeOfDay.Evening

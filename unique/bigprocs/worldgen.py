@@ -3,6 +3,8 @@ from ..worldmap import ZoneType
 
 from . import jobs_and_houses
 
+import random
+
 
 N_NPCS = 50
 N_ENTERPRISES = 1
@@ -10,7 +12,9 @@ N_ENTERPRISES = 1
 
 def main(w: World):
     for i in range(N_NPCS):
-        w.npcs.generate()
+        npc = w.npcs.generate()
+        w.rhythms.feed(npc, random.randint(5, 10))
+        w.rhythms.sleep(npc, random.randint(5, 10))
 
     for i in range(N_ENTERPRISES):
         w.enterprises.generate(w, ZoneType.Restaurant)  # TODO: Generate other enterprises

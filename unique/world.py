@@ -1,6 +1,7 @@
 from ds.vecs import V2
 import os.path
 
+from .biology import Rhythms
 from .event import Event, Verbs
 from .eventmonitor import EventMonitors, EventMonitor
 from .interest import InterestTracker
@@ -25,11 +26,12 @@ class World(object):
         self.enterprises = Enterprises()
         self.eventmonitors = EventMonitors()
         self.friendships = Friendships()
-        self.interest = InterestTracker()
         self.households = Households()
+        self.interest = InterestTracker()
         self.levels = Levels()
         self.notifications = Notifications()
         self.npcs = NPCs()
+        self.rhythms = Rhythms()
         self.schedules = Schedules()
 
         self.camera_xy: V2 = V2.zero()
@@ -54,6 +56,7 @@ class World(object):
         if not self.clock.started:
             # This can be called more than once
             self.clock.start()
+            self.rhythms.advance_time()
             self.schedules.calculate_schedules(self, self.clock.time_of_day.next())
 
     def end_time_period(self):
