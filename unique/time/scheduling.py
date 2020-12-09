@@ -124,27 +124,22 @@ class Schedules(object):
 
         next_schedule = Schedule()
 
-        # TODO: NPCs who have nighttime jobs
-
-        busy = set()
+        not_busy = set()
         for npc in world.npcs.all():
             shifts_now = [
                 shift
                 for shift in world.enterprises.get_shifts_worked_by(npc)
-                if world.enterprises.shift_active_at(shift, time_of_day)
+                if world.enterprises.get_shift(shift).active_at(time_of_day)
             ]
             if not shifts_now:
+                not_busy.add(npc)
                 continue
 
             go_to = random.choice(shifts_now)
             next_schedule[npc] = schedule_items.GoToWork(go_to.enterprise)
-            busy.add(npc)
 
         up_for_fun = set()
-        for npc in world.npcs.all():
-            if npc in busy:  # don't interrupt their job
-                continue
-
+        for npc in not_busy:
             sleepy = random.choice([False, True])  # TODO: Smarter way to calculate this
             if sleepy:
                 next_schedule[npc] = schedule_items.HomeSleep

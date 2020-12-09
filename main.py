@@ -2,6 +2,7 @@ import display.outputs.pygame
 
 from display import DoubleWide, Key, Screen, transact, IO
 from ds.vecs import V2
+from unique.debug import dump_world
 from unique.level import UnloadedLevel, SpawnNPC
 from unique.time import ScheduleItem
 from unique.sitemode import sitemode
@@ -20,8 +21,9 @@ def main(io: IO):
     """
     job1 = next(w.enterprises.all())
     level = w.enterprises.get_site(w, job1)
-    print(level)
     w.start_time_period()
+
+    print(dump_world(w))
 
     # level = w.levels.zone(ZoneType.Restaurant, Demand())
     w.activate_level(level)

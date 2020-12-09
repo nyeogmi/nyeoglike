@@ -26,13 +26,13 @@ class Shift(Enum):
     def active_at(self, time_of_day: "TimeOfDay"):
         from ..time import TimeOfDay
         if self == Shift.EveningDusk:
-            return time_of_day == TimeOfDay.Evening or TimeOfDay == TimeOfDay.Dusk
+            return time_of_day == TimeOfDay.Evening or time_of_day == TimeOfDay.Dusk
         elif self == Shift.DuskMidnight:
-            return time_of_day == TimeOfDay.Dusk or TimeOfDay == TimeOfDay.Midnight
+            return time_of_day == TimeOfDay.Dusk or time_of_day == TimeOfDay.Midnight
         elif self == Shift.MidnightDawn:
-            return time_of_day == TimeOfDay.Midnight or TimeOfDay == TimeOfDay.Dawn
+            return time_of_day == TimeOfDay.Midnight or time_of_day == TimeOfDay.Dawn
         elif self == Shift.DawnEvening:
-            return time_of_day == TimeOfDay.Dawn or TimeOfDay == TimeOfDay.Evening
+            return time_of_day == TimeOfDay.Dawn or time_of_day == TimeOfDay.Evening
         else:
             raise AssertionError("don't know when {} is active".format(self))
 
@@ -116,8 +116,8 @@ class Enterprises(object):
 
         return level
 
-    def shift_active_at(self, shift: ShiftHandle, time: "TimeOfDay") -> bool:
-        return self._all[shift.enterprise]._shifts[shift.shift].active_at(time)
+    def get_shift(self, shift: ShiftHandle) -> Shift:
+        return self._all[shift.enterprise]._shifts[shift.shift]
 
     def employ(self, shift: ShiftHandle, npc: NPCHandle):
         assert isinstance(shift, ShiftHandle)

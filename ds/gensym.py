@@ -5,6 +5,9 @@ class Sym(NamedTuple):
     prefix: str
     ix: int
 
+    def __repr__(self):
+        return ".".join([self.prefix, str(self.ix)])
+
     def __str__(self):
         return ".".join([self.prefix, str(self.ix)])
 

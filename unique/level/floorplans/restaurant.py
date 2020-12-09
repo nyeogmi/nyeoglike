@@ -69,7 +69,7 @@ def restaurant() -> Carve:
     carve.build_links()
 
     # randomize rotation/flip
-    # carve.permute_at_random()
+    carve.permute_at_random()
 
     return carve
 
