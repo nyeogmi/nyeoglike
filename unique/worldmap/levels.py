@@ -1,11 +1,11 @@
-from ds.gensym import Gensym, Sym
+from enum import Enum
 from typing import Dict, NamedTuple
+
+from ds.gensym import Gensym, Sym
 
 from ..level import UnloadedLevel
 from ..level.gen import residence, restaurant
 from .realtor import Demand, Realtor
-
-from enum import Enum
 
 
 class LevelHandle(NamedTuple):

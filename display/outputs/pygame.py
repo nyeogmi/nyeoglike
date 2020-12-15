@@ -1,12 +1,13 @@
+import os.path
+import time
+from typing import Optional
+
 import pygame
 import pygame.image
+
 from display import Interactor, Key, Keycodes
 from ds.vecs import V2
 
-import os.path
-import time
-
-from typing import Optional
 from ..palette import Colors
 
 #  N_TILES = 256

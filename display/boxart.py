@@ -1,5 +1,6 @@
+from ds.vecs import R2, V2
+
 from .screen import Drawer
-from ds.vecs import V2, R2
 
 
 class Single(object):

@@ -1,4 +1,4 @@
-from typing import Callable, NamedTuple, Generic, TypeVar, Union
+from typing import Callable, Generic, NamedTuple, TypeVar, Union
 
 _REGISTRY = {}
 

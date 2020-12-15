@@ -1,2 +1,2 @@
-from .transactional import transact, Host, Client
 from .shorthand import IO
+from .transactional import Client, Host, transact

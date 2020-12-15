@@ -1,11 +1,10 @@
 import display.outputs.pygame
-
-from display import DoubleWide, Key, Screen, transact, IO
+from display import IO, DoubleWide, Key, Screen, transact
 from ds.vecs import V2
 from unique.debug import dump_world
-from unique.level import UnloadedLevel, SpawnNPC
-from unique.time import ScheduleItem
+from unique.level import SpawnNPC, UnloadedLevel
 from unique.sitemode import sitemode
+from unique.time import ScheduleItem
 from unique.world import World
 from unique.worldmap import Demand, ZoneType
 

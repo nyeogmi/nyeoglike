@@ -1,10 +1,12 @@
-import random
-from ..social import EnterpriseHandle, HouseholdHandle
-from ..npc import NPCHandle
-from ..world import World
-from typing import NamedTuple, Set
-from ds.gale_shapley import GaleShapley
 import itertools
+import random
+from typing import NamedTuple, Set
+
+from ds.gale_shapley import GaleShapley
+
+from ..npc import NPCHandle
+from ..social import EnterpriseHandle, HouseholdHandle
+from ..world import World
 
 
 class _Sets(NamedTuple):

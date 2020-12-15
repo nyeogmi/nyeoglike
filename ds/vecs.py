@@ -1,4 +1,4 @@
-from typing import NamedTuple, Iterator, Union, List
+from typing import Iterator, List, NamedTuple, Union
 
 
 class V2(NamedTuple):

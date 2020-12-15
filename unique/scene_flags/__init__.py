@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Set, Iterator
+from typing import Dict, Iterator, Set
 
 from ..npc import NPCHandle
 

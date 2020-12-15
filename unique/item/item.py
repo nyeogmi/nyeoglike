@@ -1,6 +1,7 @@
-from display import Color, Colors
-from typing import NamedTuple, Optional, runtime_checkable, Tuple, Union
 from enum import Enum
+from typing import NamedTuple, Optional, Tuple, Union, runtime_checkable
+
+from display import Color, Colors
 
 
 class Resource(Enum):

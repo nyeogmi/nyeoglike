@@ -1,16 +1,14 @@
-from .block import Block
-from ..item import Item
-
+import random
 from enum import Enum
+from typing import Dict, List, NamedTuple, Set
 
 from ds.relational import OneToMany
 from ds.vecs import V2
-from typing import Dict, Set, List, NamedTuple
 
-from .loaded_level import LoadedLevel
+from ..item import Item
 from ..npc import NPCHandle
-
-import random
+from .block import Block
+from .loaded_level import LoadedLevel
 
 
 class SpawnType(Enum):
@@ -133,5 +131,5 @@ def spawn_type_compatible(
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..world import World
     from ..time import ScheduleItem
+    from ..world import World

@@ -1,7 +1,8 @@
-from display import Colors, DoubleWide, Key, Keycodes, IO
-from .window import draw_window
+from display import IO, Colors, DoubleWide, Key, Keycodes
+
 from ..item import Resource, Resources
 from ..world import World
+from .window import draw_window
 
 
 def show(io: IO, world: World):

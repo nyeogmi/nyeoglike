@@ -1,14 +1,14 @@
-from display import Colors, Drawer, DoubleWide, Key, Keycodes, IO, measure_wrap
-from ds.vecs import V2, R2
-from .scrollbar import Scrollbar, ScrollbarData
-from .window import draw_window
+from enum import Enum
+from typing import Optional, Protocol, Set, runtime_checkable
+
+from display import IO, Colors, DoubleWide, Drawer, Key, Keycodes, measure_wrap
+from ds.vecs import R2, V2
 
 from ..item import Resource, Resources
 from ..npc import NPCHandle
 from ..world import World
-
-from typing import Set, Optional, Protocol, runtime_checkable
-from enum import Enum
+from .scrollbar import Scrollbar, ScrollbarData
+from .window import draw_window
 
 
 def show(io: IO, world: World):

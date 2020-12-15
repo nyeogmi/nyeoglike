@@ -1,9 +1,6 @@
-from ds.gensym import Gensym, Sym
-
-from .event import Event, Verbs
-from .notifications import NotificationReason
 from enum import Enum
 from typing import (
+    TYPE_CHECKING,
     Callable,
     Dict,
     List,
@@ -12,8 +9,12 @@ from typing import (
     Protocol,
     Set,
     runtime_checkable,
-    TYPE_CHECKING,
 )
+
+from ds.gensym import Gensym, Sym
+
+from .event import Event, Verbs
+from .notifications import NotificationReason
 
 
 class EMHandle(NamedTuple):

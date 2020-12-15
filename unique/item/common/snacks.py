@@ -1,6 +1,6 @@
-from unique.item.item import Item, Resource, Profile
-from unique.item.item_list import ItemList
 from display import Color, Colors
+from unique.item.item import Item, Profile, Resource
+from unique.item.item_list import ItemList
 
 _SNACK_SMALL = dict(res0=Resource.Snack, n0=10)
 _SNACK_MEDIUM = dict(res0=Resource.Snack, n0=50)

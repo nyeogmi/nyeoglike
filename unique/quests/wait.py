@@ -1,9 +1,9 @@
+from typing import Optional
+
 from ..event import Event, Verbs
-from ..eventmonitor import EventMonitor, EMHandle, Done, QuestOutcome, QuestStatus
+from ..eventmonitor import Done, EMHandle, EventMonitor, QuestOutcome, QuestStatus
 from ..npc import NPCHandle
 from ..world import World
-
-from typing import Optional
 
 
 class WaitQuest(EventMonitor):

@@ -1,11 +1,12 @@
+import random
 from typing import List, NamedTuple, Optional
+
 from ds.gensym import Gensym, Sym
 from ds.vecs import V2
-import random
 
-from .event import Event, Verbs
-from .eventmonitor import Done, EventMonitor, QuestStatus, QuestOutcome
 from . import namegen
+from .event import Event, Verbs
+from .eventmonitor import Done, EventMonitor, QuestOutcome, QuestStatus
 
 
 class NPCHandle(NamedTuple):

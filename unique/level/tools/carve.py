@@ -1,8 +1,8 @@
-from .carve_op import *
-from .recs import *
-
 from typing import Set
+
+from .carve_op import *
 from .interior_designer import InteriorDesigner
+from .recs import *
 
 
 # TODO: Support random rotation/mirroring of this

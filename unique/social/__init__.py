@@ -1,3 +1,3 @@
-from .enterprises import Enterprises, EnterpriseHandle
+from .enterprises import EnterpriseHandle, Enterprises
 from .friendships import Friendships
-from .households import Households, HouseholdHandle
+from .households import HouseholdHandle, Households

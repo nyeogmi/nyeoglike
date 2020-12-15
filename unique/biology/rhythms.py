@@ -1,8 +1,8 @@
-from ..npc import NPCHandle
 from enum import Enum
-from typing import Dict
 from functools import total_ordering
+from typing import Dict
 
+from ..npc import NPCHandle
 
 # Notes:
 # Each "_quantity" is 4 hours worth.

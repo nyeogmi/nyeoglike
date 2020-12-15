@@ -1,6 +1,7 @@
 from typing import List, NamedTuple, Optional
 
 from ds.vecs import V2
+
 from ..npc import NPCHandle
 
 

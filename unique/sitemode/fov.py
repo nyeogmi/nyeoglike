@@ -1,6 +1,7 @@
-from ds.vecs import R2, V2
-from typing import Callable, Dict, Optional
 from math import sqrt
+from typing import Callable, Dict, Optional
+
+from ds.vecs import R2, V2
 
 # Port of Eben Howard's implementation:
 # http://www.roguebasin.com/index.php?title=FOV_using_recursive_shadowcasting_-_improved

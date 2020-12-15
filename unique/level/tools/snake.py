@@ -1,14 +1,12 @@
-from enum import Enum
-from .carve import Carve
-from .recs import RoomHandle, LinkType, RoomType, Rule
-
+import random
 from contextlib import contextmanager
-
+from enum import Enum
 from typing import List, Optional
 
-
-import random
 from ds.vecs import V2
+
+from .carve import Carve
+from .recs import LinkType, RoomHandle, RoomType, Rule
 
 
 class Cardinal(Enum):

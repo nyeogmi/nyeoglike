@@ -1,11 +1,11 @@
 from typing import Dict, NamedTuple
-from .item import Item, Resource
 
-from ds.relational import OneToMany
 from ds.gensym import Gensym, Sym
+from ds.relational import OneToMany
 
 from .event import Event, Verbs
 from .eventmonitor import EMHandle
+from .item import Item, Resource
 
 
 class Inventory(object):

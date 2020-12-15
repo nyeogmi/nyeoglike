@@ -1,6 +1,6 @@
-from ds.vecs import V2, R2
-
 import random
+
+from ds.vecs import R2, V2
 
 from ..tools import Cardinal, Carve, Grid, LinkType, RoomType, Rule, Snake
 

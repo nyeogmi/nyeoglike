@@ -1,5 +1,6 @@
 from typing import NamedTuple, Optional
-from display import Color, Colors, Drawer, IO
+
+from display import IO, Color, Colors, Drawer
 
 
 class Window(NamedTuple):

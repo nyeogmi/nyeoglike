@@ -1,7 +1,7 @@
-from display import Drawer
-from ds.vecs import V2, R2
+from typing import Optional, Protocol, Set, runtime_checkable
 
-from typing import Set, Optional, Protocol, runtime_checkable
+from display import Drawer
+from ds.vecs import R2, V2
 
 
 class Scrollbar(object):

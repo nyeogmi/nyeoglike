@@ -1,6 +1,7 @@
-from ds.vecs import V2
 from enum import Enum
 from typing import NamedTuple
+
+from ds.vecs import V2
 
 from ..unloaded_level import SpawnType
 

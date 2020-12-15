@@ -1,4 +1,5 @@
 from unique.item.common.furniture import BED
+
 from ..tools import InteriorDesigner, RoomType, SpawnType
 
 

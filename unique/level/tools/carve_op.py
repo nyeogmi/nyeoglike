@@ -1,14 +1,14 @@
-from ds.relational import OneToMany
-from ds.vecs import V2, R2
-from ds.gensym import FastGensym
-from enum import Enum
-from typing import Dict, List, NamedTuple, Optional, Union
-from io import StringIO
-
 import random
 from contextlib import contextmanager
+from enum import Enum
+from io import StringIO
+from typing import Dict, List, NamedTuple, Optional, Union
 
-from .recs import RoomHandle, RoomType, LinkType
+from ds.gensym import FastGensym
+from ds.relational import OneToMany
+from ds.vecs import R2, V2
+
+from .recs import LinkType, RoomHandle, RoomType
 
 
 class CreateRoom(NamedTuple):

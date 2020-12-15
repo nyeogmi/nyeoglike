@@ -1,19 +1,17 @@
-from display import Colors, DoubleWide, Key, Keycodes, IO
-
+from display import IO, Colors, DoubleWide, Key, Keycodes
 from ds.vecs import V2
 
 from ..event import Event, Verbs
-from ..eventmonitor import EMHandle, QuestStatus, QuestOutcome
+from ..eventmonitor import EMHandle, QuestOutcome, QuestStatus
 from ..interest import Interest
 from ..item import Resource, common
 from ..level import Block
 from ..notifications import NotificationReason
-from ..npc import NPCs, NPC, NPCHandle
+from ..npc import NPC, NPCHandle, NPCs
 from ..world import World
-
 from . import fly_screen, fov, inventory_screen
-from .targeter import Targeter, Target
-from .window import draw_window, Window
+from .targeter import Target, Targeter
+from .window import Window, draw_window
 
 
 def sitemode(io: IO, world: World):

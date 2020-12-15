@@ -1,6 +1,6 @@
 from typing import Callable, List, NamedTuple
-from ..level import UnloadedLevel, Veto
 
+from ..level import UnloadedLevel, Veto
 
 N_PROPERTIES = 20
 MAX_TIMES_UNSOLD = 5

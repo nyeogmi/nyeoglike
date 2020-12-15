@@ -1,10 +1,12 @@
+import os.path
+from typing import Dict, Iterator, List, Optional, Set
+
 from ds.relational import OneToMany
 from ds.vecs import V2
-from typing import Dict, List, Set, Iterator, Optional
-import os.path
-from .block import Block
+
 from ..item import Item, common
 from ..npc import NPCHandle
+from .block import Block
 
 
 class LoadedLevel(object):

@@ -1,6 +1,6 @@
-from unique.item.item import Item, Resource, Profile
-from unique.item.item_list import ItemList
 from display import Color, Colors
+from unique.item.item import Item, Profile, Resource
+from unique.item.item_list import ItemList
 
 ALL = ItemList()
 

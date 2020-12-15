@@ -1,6 +1,7 @@
-from ds.gensym import Gensym, Sym
 from enum import Enum
-from typing import Dict, List, NamedTuple, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, NamedTuple, Optional, Union
+
+from ds.gensym import Gensym, Sym
 
 
 class NotificationHandle(NamedTuple):

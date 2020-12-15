@@ -1,9 +1,10 @@
+from typing import Iterator, List, NamedTuple, Optional
+
 from ds.gensym import Gensym, Sym
-from ds.relational import OneToOne, OneToMany
-from typing import NamedTuple, Optional, Iterator, List
+from ds.relational import OneToMany, OneToOne
 
 from ..npc import NPCHandle
-from ..worldmap import LevelHandle, Demand, ZoneType
+from ..worldmap import Demand, LevelHandle, ZoneType
 
 
 class HouseholdHandle(NamedTuple):

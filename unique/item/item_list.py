@@ -1,6 +1,6 @@
-from .item import Item
-
 from typing import Optional
+
+from .item import Item
 
 
 class ItemList(object):

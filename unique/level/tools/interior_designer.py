@@ -1,13 +1,14 @@
+import random
+from io import StringIO
+from typing import Dict, Iterator, List, Optional, Set
+
 from ds.relational import OneToMany
 from ds.vecs import V2
 from unique.item import Item
-import random
-from typing import Dict, Iterator, List, Set, Optional
-from io import StringIO
-
 from unique.level.unloaded_level import UnloadedLevel
+
 from ..block import Block
-from .recs import RoomHandle, RoomType, Spawn, SpawnType, Hint
+from .recs import Hint, RoomHandle, RoomType, Spawn, SpawnType
 
 
 # TODO: Item spawns that are randomized at level load time

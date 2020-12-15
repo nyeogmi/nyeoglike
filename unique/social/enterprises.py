@@ -1,11 +1,12 @@
+import random
+from enum import Enum
+from typing import Dict, Iterator, List, NamedTuple, Optional
+
 from ds.gensym import Gensym, Sym
 from ds.relational import OneToMany, OneToOne
 
-from enum import Enum
-from typing import Dict, List, NamedTuple, Optional, Iterator
 from ..npc import NPCHandle
-from ..worldmap import LevelHandle, Demand, ZoneType
-import random
+from ..worldmap import Demand, LevelHandle, ZoneType
 
 
 class EnterpriseHandle(NamedTuple):
@@ -165,5 +166,5 @@ class Enterprises(object):
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..world import World
     from ..time import TimeOfDay
+    from ..world import World

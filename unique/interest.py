@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Dict, Iterator
 
 from display import Color, Colors
+
 from .npc import NPCHandle
 
 

@@ -1,7 +1,7 @@
-from ds.relational import ManyToMany
+import random
 from typing import Iterator, List
 
-import random
+from ds.relational import ManyToMany
 
 from ..npc import NPCHandle
 

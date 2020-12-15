@@ -1,10 +1,12 @@
-from ds.code_registry import ref, ref_unnamed, ref_named
-from ds.grid import Grid
-from ds.vecs import V2, R2
-from typing import NamedTuple, Optional, Union
-from .palette import Colors, Color
 import threading
 from contextlib import contextmanager
+from typing import NamedTuple, Optional, Union
+
+from ds.code_registry import ref, ref_named, ref_unnamed
+from ds.grid import Grid
+from ds.vecs import R2, V2
+
+from .palette import Color, Colors
 
 
 class Cell(NamedTuple):

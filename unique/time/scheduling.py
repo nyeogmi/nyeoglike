@@ -1,14 +1,13 @@
-from ..npc import NPCHandle
-from .schedule_item import ScheduleItem
-from .time_of_day import TimeOfDay
-from . import schedule_items
+import random
+from typing import Dict, List, Optional
 
 from ds.relational import OneToMany
-from typing import Dict, List, Optional
-from .schedule_item import ALL as SCHEDULE_ITEMS
-from .schedule_item import DestinationRule
 
-import random
+from ..npc import NPCHandle
+from . import schedule_items
+from .schedule_item import ALL as SCHEDULE_ITEMS
+from .schedule_item import DestinationRule, ScheduleItem
+from .time_of_day import TimeOfDay
 
 
 class Schedule(object):
@@ -202,6 +201,6 @@ class Schedules(object):
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..world import World
     from ..social import EnterpriseHandle
+    from ..world import World
     from ..worldmap import LevelHandle

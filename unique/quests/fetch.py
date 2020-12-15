@@ -1,12 +1,13 @@
+from enum import Enum
+from typing import Optional
+
+from ds.vecs import V2
+
 from ..event import Event, Verbs
-from ..eventmonitor import EventMonitor, EMHandle, Done, QuestOutcome, QuestStatus
+from ..eventmonitor import Done, EMHandle, EventMonitor, QuestOutcome, QuestStatus
 from ..inventory import ClaimHandle
 from ..npc import NPCHandle
 from ..world import World
-
-from ds.vecs import V2
-from enum import Enum
-from typing import Optional
 
 
 class FetchQuest(EventMonitor):

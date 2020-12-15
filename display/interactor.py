@@ -1,9 +1,9 @@
+from typing import List, Protocol, runtime_checkable
+
 from ds.vecs import V2
 
 from .keys import Key
 from .screen import Screen
-
-from typing import List, Protocol, runtime_checkable
 
 
 @runtime_checkable

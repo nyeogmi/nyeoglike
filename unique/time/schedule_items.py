@@ -1,6 +1,6 @@
 from ..npc import NPCHandle
 from ..social import EnterpriseHandle
-from .schedule_item import ScheduleItem, _Verb, ALL, DestinationRule
+from .schedule_item import ALL, DestinationRule, ScheduleItem, _Verb
 
 HomeFun: ScheduleItem = ALL.verb(
     "HomeFun", type(None), "home, not sleepy", DestinationRule.MyHousehold

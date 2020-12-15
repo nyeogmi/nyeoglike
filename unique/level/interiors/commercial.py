@@ -1,7 +1,9 @@
-from unique.item.common.furniture import BED, CHAIR, COUNTER, TABLE
-from ..tools import InteriorDesigner, RoomType, SpawnType, Hint
 import random
-from ds.vecs import V2, R2
+
+from ds.vecs import R2, V2
+from unique.item.common.furniture import BED, CHAIR, COUNTER, TABLE
+
+from ..tools import Hint, InteriorDesigner, RoomType, SpawnType
 
 
 def commercial(interior: InteriorDesigner):

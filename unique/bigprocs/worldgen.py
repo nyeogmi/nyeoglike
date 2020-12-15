@@ -1,10 +1,8 @@
-from ..world import World
-from ..worldmap import ZoneType
-
-from . import jobs_and_houses
-
 import random
 
+from ..world import World
+from ..worldmap import ZoneType
+from . import jobs_and_houses
 
 N_NPCS = 50
 N_ENTERPRISES = 1

@@ -1,13 +1,14 @@
+# TODO: Use plain lists instead
+import time
+from typing import Callable, List
+
+from greenlet import greenlet
+
+from ds.vecs import V2
+
 from ..interactor import Interactor
 from ..keys import Key
 from ..screen import Drawer, Screen
-from ds.vecs import V2
-from typing import Callable
-from greenlet import greenlet
-
-# TODO: Use plain lists instead
-import time
-from typing import List
 
 
 class UpdateTracker(object):

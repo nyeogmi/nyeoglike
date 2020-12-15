@@ -1,21 +1,21 @@
-from ds.vecs import V2
 import os.path
+import random
+from typing import List, Optional
+
+from ds.vecs import V2
 
 from .biology import Rhythms
 from .event import Event, Verbs
-from .eventmonitor import EventMonitors, EventMonitor
+from .eventmonitor import EventMonitor, EventMonitors
 from .interest import InterestTracker
 from .inventory import Inventory
-from .level import UnloadedLevel, LoadedLevel, SpawnNPC
-from .worldmap import Levels, LevelHandle
-from .notifications import Notifications, Notification
-from .npc import NPCs, NPC, NPCHandle
+from .level import LoadedLevel, SpawnNPC, UnloadedLevel
+from .notifications import Notification, Notifications
+from .npc import NPC, NPCHandle, NPCs
 from .scene_flags import SceneFlags
-from .social import Friendships, Enterprises, Households, HouseholdHandle
+from .social import Enterprises, Friendships, HouseholdHandle, Households
 from .time import Clock, Schedules
-
-import random
-from typing import Optional, List
+from .worldmap import LevelHandle, Levels
 
 N_HOUSEHOLDS = 30
 N_HOUSEHOLD_NPCS = (1, 5)

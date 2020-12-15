@@ -1,7 +1,7 @@
 from enum import Enum
-from ..npc import NPCHandle
+from typing import NamedTuple, Optional, Type
 
-from typing import Optional, NamedTuple, Type
+from ..npc import NPCHandle
 
 
 class DestinationRule(Enum):
