@@ -52,7 +52,10 @@ class SceneFlags(object):
         from ..time.scheduling import schedule_items
 
         for npc in world.npcs.all():
-            schedule = world.schedules.next_schedule(npc)
+            schedule = world.schedules.prev_schedule(npc)
+
+            if schedule is None:
+                continue
 
             if schedule.name == schedule_items.HomeSleep.name:
                 self.add_scene_flag(world, npc, SceneFlag.GotSleep)

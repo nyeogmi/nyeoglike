@@ -10,6 +10,7 @@ from ..notifications import NotificationReason
 from ..npc import NPC, NPCHandle, NPCs
 from ..world import World
 from . import fly_screen, fov, inventory_screen
+from .npcview import NPCView
 from .targeter import Target, Targeter
 from .window import Window, draw_window
 
@@ -32,6 +33,7 @@ class Sitemode(object):
         self.world = world
         self.targets = Targeter()
         self.lightmap: fov.Lightmap = fov.Lightmap({})
+        self.npc_view = NPCView(self.world)
 
     @property
     def camera_world_rect(self):
@@ -164,6 +166,9 @@ class Sitemode(object):
             player_xy=self.world.player_xy, possible_targets=possible_targets
         )
 
+        # update npc view
+        self.npc_view.select(self.targets.target)
+
     def draw(self):
         self.draw_grid()
         self.draw_targeted_user()
@@ -267,26 +272,7 @@ class Sitemode(object):
                 ).puts(tip)
 
     def draw_targeted_user(self):
-        target_handle = self.targets.target
-        if target_handle is not None:
-            target = self.world.npcs.get(target_handle)
-            interest = self.world.interest[target_handle]
-
-            window = draw_window(
-                self.io.draw().goto(30, 2).box(76, 6), fg=interest.color()
-            )
-            window.title_bar.copy().fg(Colors.TermFGBold).puts(target.name)
-            if interest != Interest.No:
-                b2 = (
-                    window.title_bar.copy()
-                    .goto(len(target.name) + 1, 0)
-                    .fg(Colors.TermFG)
-                )
-                b2.puts("({})".format(interest.name))
-
-            window.title_bar.copy().goto(
-                window.title_bar.bounds.size.x - len("A - Mark"), 0
-            ).fg(Colors.TermFGBold).puts("A - Mark")
+        self.npc_view.draw(self.io.draw())
 
     def draw_notifications(self):
         notifications = self.world.notifications.active_notifications()[-12:]

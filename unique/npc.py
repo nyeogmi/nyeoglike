@@ -102,5 +102,5 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .eventmonitor import EMHandle
-    from .world import World
     from .scene_flags import SceneFlag
+    from .world import World

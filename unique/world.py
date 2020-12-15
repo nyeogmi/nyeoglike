@@ -66,7 +66,9 @@ class World(object):
             self.rhythms.advance_time()
             self.schedules.calculate_schedules(self, self.clock.time_of_day.next())
             self.scene_flags.reset()
-            self.scene_flags.populate_from_schedules(self)
+            self.scene_flags.populate_from_schedules(
+                self
+            )  # (calculated from their prev. schedules, which they are acting out now)
 
     def end_time_period(self):
         if not self.clock.started:

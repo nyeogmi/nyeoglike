@@ -1,8 +1,8 @@
 from enum import Enum
 from functools import total_ordering
 from typing import Dict
-from ..event import Event, Verbs
 
+from ..event import Event, Verbs
 from ..npc import NPCHandle
 
 # Notes:
@@ -103,7 +103,7 @@ class Rhythms(object):
 
     def can_sleep(self, npc: NPCHandle) -> bool:
         # NOTE: Check this against the NPC's sleep schedule, don't say "yes" unless it's sleeping time
-        return self.get_sleepiness(npc) >= Spectrum.Satisfied
+        return self.get_sleepiness(npc) >= Spectrum.Scheduled
 
     def is_sleepy(self, npc: NPCHandle) -> bool:
         return self.get_sleepiness(npc) >= Spectrum.Desperate

@@ -123,6 +123,12 @@ class Schedules(object):
     def next_schedule(self, npch: NPCHandle) -> ScheduleItem:
         return self._next_schedule[npch]
 
+    def prev_schedule(self, npch: NPCHandle) -> Optional[ScheduleItem]:
+        try:
+            return self._prev_schedule[npch]
+        except KeyError:
+            return None
+
     def next_location(self, world: "World", npch: NPCHandle) -> "LevelHandle":
         from ..world import World
 
