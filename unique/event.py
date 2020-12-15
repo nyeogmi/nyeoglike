@@ -11,11 +11,14 @@ class Event(NamedTuple):
         from .inventory import ClaimBox
         from .notifications import NotificationHandle
         from .npc import NPCHandle
+        from .scene_flags import SceneFlag
 
         assert verb in Verbs.ALL
         assert isinstance(args, Tuple)
         assert all(
-            isinstance(a, (str, EMHandle, NotificationHandle, NPCHandle, ClaimBox))
+            isinstance(
+                a, (str, EMHandle, NotificationHandle, NPCHandle, ClaimBox, SceneFlag)
+            )
             for a in args
         )
 
@@ -25,8 +28,9 @@ class Event(NamedTuple):
 class Verbs(object):
     Claim = "Claim"
     Tick = "Tick"
+    AddFlag = "AddFlag"
 
-    ALL = {Claim, Tick}
+    ALL = {Claim, Tick, AddFlag}
     QUEST_ONLY = {Claim}
 
     @classmethod
@@ -42,6 +46,7 @@ if TYPE_CHECKING:
     from .inventory import ClaimBox
     from .notifications import NotificationHandle
     from .npc import NPCHandle
+    from .scene_flags import SceneFlag
 
     Arg = Union[
         str,
@@ -49,4 +54,5 @@ if TYPE_CHECKING:
         NotificationHandle,
         NPCHandle,
         ClaimBox,
+        SceneFlag,
     ]

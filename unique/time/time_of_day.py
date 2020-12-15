@@ -12,6 +12,13 @@ class TimeOfDay(Enum):
     def display(self) -> str:
         return self.name
 
+    def sun_out(self):
+        if self == TimeOfDay.Morning:
+            return True
+        if self == TimeOfDay.Afternoon:
+            return True
+        return False
+
     def next(self):
         if self == TimeOfDay.Evening:
             return TimeOfDay.Dusk

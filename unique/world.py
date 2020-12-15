@@ -33,6 +33,7 @@ class World(object):
         self.notifications = Notifications()
         self.npcs = NPCs()
         self.rhythms = Rhythms()
+        self.scene_flags = SceneFlags()
         self.schedules = Schedules()
 
         self.camera_xy: V2 = V2.zero()
@@ -40,6 +41,9 @@ class World(object):
         self.inventory: Inventory = Inventory()
 
         self.level: Optional[LoadedLevel] = None
+
+        self._notifying = False
+        self._notify_queue = []
 
     @classmethod
     def generate(cls):
@@ -57,15 +61,22 @@ class World(object):
     def start_time_period(self):
         if not self.clock.started:
             # This can be called more than once
+
             self.clock.start()
             self.rhythms.advance_time()
             self.schedules.calculate_schedules(self, self.clock.time_of_day.next())
+            self.scene_flags.reset()
+            self.scene_flags.populate_from_schedules(self)
 
     def end_time_period(self):
+        if not self.clock.started:
+            return
+
+        # TODO: Provide rewards for scene flags, like sleep?
+        # Although those should generally be awarded as soon as they are added
         pass
 
     def follow_npc(self, npc: NPCHandle):
-        # TODO: Figure out where the NPC will be using their schedule
         location = self.schedules.next_location(self, npc)
         self.activate_level(location)
 
@@ -95,9 +106,21 @@ class World(object):
         self.level = level.load(npcs)
 
     def notify(self, event: Event):
-        if Verbs.quest_only(event.verb):
-            # No need for NPCs to know. This event pertains to quests
-            self.eventmonitors.notify(self, event)
-        else:
-            self.eventmonitors.notify(self, event)
-            self.npcs.notify(self, event)
+        self._notify_queue.append(event)
+        if self._notifying:
+            return
+
+        self._notifying = True
+        try:
+            while any(self._notify_queue):
+                event = self._notify_queue.pop(0)
+                if Verbs.quest_only(event.verb):
+                    # No need for NPCs to know. This event pertains to quests
+                    self.eventmonitors.notify(self, event)
+                else:
+                    self.eventmonitors.notify(self, event)
+                    self.npcs.notify(self, event)
+                    self.rhythms.notify(self, event)
+                    self.scene_flags.notify(self, event)
+        finally:
+            self._notifying = False

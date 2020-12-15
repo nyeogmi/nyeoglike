@@ -24,7 +24,7 @@ def main(io: IO):
     level = w.enterprises.get_site(w, job1)
     w.start_time_period()
 
-    print(dump_world(w))
+    # print(dump_world(w))
 
     # level = w.levels.zone(ZoneType.Restaurant, Demand())
     w.activate_level(level)

@@ -36,13 +36,25 @@ class NPCs(object):
         assert isinstance(world, World)
         assert isinstance(event, Event)
 
-        for npc in list(world.level.loaded_npcs()):
-            xy = world.level.npc_location(npc)
+        if event.verb == Verbs.AddFlag:
+            npcs = [event.args[0]]  # only notify npcs themselves when they get a flag
+        else:
+            npcs = world.npcs.all()
+
+        for npc in npcs:
+            if world.level:
+                xy = world.level.npc_location(npc)
+            else:
+                xy = None
             self.get(npc).notify(world, Me(me_xy=xy), event)
 
 
 class Me(NamedTuple):
-    me_xy: V2
+    me_xy: Optional[V2]
+
+    @property
+    def loaded(self) -> bool:
+        return self.me_xy is not None
 
 
 class NPC(object):
@@ -73,6 +85,11 @@ class NPC(object):
         assert isinstance(me, Me)
         assert isinstance(event, Event)
 
+        from .scene_flags import SceneFlag
+
+        if not me.loaded:
+            return
+
         if world.player_xy.manhattan(me.me_xy) <= 1:
             # offer a quest
             # world.eventmonitors.add(world, lambda handle: TestQuest(handle, self._ident))
@@ -86,3 +103,4 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .eventmonitor import EMHandle
     from .world import World
+    from .scene_flags import SceneFlag

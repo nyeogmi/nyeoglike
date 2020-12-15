@@ -1,6 +1,7 @@
 from enum import Enum
 from functools import total_ordering
 from typing import Dict
+from ..event import Event, Verbs
 
 from ..npc import NPCHandle
 
@@ -72,6 +73,21 @@ class Rhythms(object):
     def advance_time(self):
         self._sleepiness.advance_time()
         self._hunger.advance_time()
+
+    def notify(self, world: "World", event: Event):
+        from ..scene_flags import SceneFlag
+
+        # TODO: Also check if at any tick an NPC is asleep
+        if event.verb == Verbs.AddFlag:
+            npc, flag = event.args
+            assert isinstance(npc, NPCHandle)
+            assert isinstance(flag, SceneFlag)
+
+            if flag == SceneFlag.GotSleep:
+                if world.clock.time_of_day.sun_out():
+                    self.sleep(npc, 2)
+                else:
+                    self.sleep(npc, 3)
 
     def sleep(self, npc: NPCHandle, quantity: int):
         self._sleepiness.feed(npc, quantity)
