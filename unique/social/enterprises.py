@@ -25,6 +25,7 @@ class Shift(Enum):
 
     def active_at(self, time_of_day: "TimeOfDay"):
         from ..time import TimeOfDay
+
         if self == Shift.EveningDusk:
             return time_of_day == TimeOfDay.Evening or time_of_day == TimeOfDay.Dusk
         elif self == Shift.DuskMidnight:
@@ -38,7 +39,9 @@ class Shift(Enum):
 
 
 class Enterprise(object):
-    def __init__(self, ident: EnterpriseHandle, zone_type: ZoneType, shifts: List[Shift]):
+    def __init__(
+        self, ident: EnterpriseHandle, zone_type: ZoneType, shifts: List[Shift]
+    ):
         assert isinstance(ident, EnterpriseHandle)
         assert isinstance(zone_type, ZoneType)
         assert isinstance(shifts, list)
@@ -59,18 +62,17 @@ class Enterprise(object):
         assert isinstance(ident, EnterpriseHandle)
         needed_at_once = random.randint(1, 3)
 
-        way_of_operation = random.choice([
-            [Shift.EveningDusk, Shift.MidnightDawn],
-            [Shift.DuskMidnight, Shift.DawnEvening],
-        ])
+        way_of_operation = random.choice(
+            [
+                [Shift.EveningDusk, Shift.MidnightDawn],
+                [Shift.DuskMidnight, Shift.DawnEvening],
+            ]
+        )
 
         return Enterprise(ident, zone_type, way_of_operation * needed_at_once)
 
     def all_shifts(self) -> List[ShiftHandle]:
-        return [
-            ShiftHandle(self._ident, i)
-            for i, shift in enumerate(self._shifts)
-        ]
+        return [ShiftHandle(self._ident, i) for i, shift in enumerate(self._shifts)]
 
 
 class Enterprises(object):
@@ -83,6 +85,7 @@ class Enterprises(object):
 
     def generate(self, world: "World", zone_type: ZoneType) -> EnterpriseHandle:
         from ..world import World
+
         assert isinstance(world, World)
         assert isinstance(zone_type, ZoneType)
 
@@ -108,7 +111,7 @@ class Enterprises(object):
             real_enterprise = self._all[enterprise]
             self._located_at.add(
                 enterprise,
-                world.levels.zone(real_enterprise.zone_type, self._demand(enterprise))
+                world.levels.zone(real_enterprise.zone_type, self._demand(enterprise)),
             )
 
         level = self._located_at.get_b(enterprise)
@@ -160,6 +163,7 @@ class Enterprises(object):
 
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ..world import World
     from ..time import TimeOfDay

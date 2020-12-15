@@ -21,11 +21,7 @@ class Cell(NamedTuple):
         # assert character in string.printable
         # assert character not in "\r\n\t"
 
-        return Cell(
-            bg=bg,
-            fg=fg,
-            character=character
-        )
+        return Cell(bg=bg, fg=fg, character=character)
 
 
 class Screen(object):
@@ -57,11 +53,7 @@ class Screen(object):
 
 @ref
 def default_cell(v2: V2) -> Cell:
-    return Cell.new(
-        bg=Colors.TermBG.color,
-        fg=Colors.TermFG.color,
-        character=" "
-    )
+    return Cell.new(bg=Colors.TermBG.color, fg=Colors.TermFG.color, character=" ")
 
 
 @ref
@@ -76,11 +68,20 @@ def measure(s: str) -> int:
 
 def measure_wrap(s: str, width: int) -> int:
     # Rely on the fact that measure() doesn't use the screen if actually_put is false
-    return Drawer(None, V2.zero().to(V2.new(width, 100000)), None, V2.zero(), V2.zero()).measure(s, wrap=True)
+    return Drawer(
+        None, V2.zero().to(V2.new(width, 100000)), None, V2.zero(), V2.zero()
+    ).measure(s, wrap=True)
 
 
 class Drawer(object):
-    def __init__(self, screen: Optional[Screen], bounds: Optional[R2], actual_bounds: Optional[R2], offset: V2, cursor: V2):
+    def __init__(
+        self,
+        screen: Optional[Screen],
+        bounds: Optional[R2],
+        actual_bounds: Optional[R2],
+        offset: V2,
+        cursor: V2,
+    ):
         assert screen is None or isinstance(screen, Screen)
         assert bounds is None or isinstance(bounds, R2)
         assert actual_bounds is None or isinstance(actual_bounds, R2)
@@ -105,7 +106,9 @@ class Drawer(object):
         return self._bounds
 
     def copy(self) -> "Drawer":
-        d = Drawer(self._screen, self._bounds, self._actual_bounds, self._offset, self._xy)
+        d = Drawer(
+            self._screen, self._bounds, self._actual_bounds, self._offset, self._xy
+        )
         d._fg = self._fg
         d._bg = self._bg
         return d
@@ -137,7 +140,9 @@ class Drawer(object):
 
     def offset_v2(self, v2: V2) -> "Drawer":
         self._bounds = R2.new(self._bounds.top + v2, self._bounds.size)
-        self._actual_bounds = R2.new(self._actual_bounds.top + v2, self._actual_bounds.size)
+        self._actual_bounds = R2.new(
+            self._actual_bounds.top + v2, self._actual_bounds.size
+        )
         self._offset = self._offset - v2
         self._xy -= v2
         return self
@@ -233,7 +238,9 @@ class Drawer(object):
 
         old_xy = self._xy
         new_xy = self._puts(s, wrap, actually_put=False)
-        return new_xy.y + (0 if new_xy.x == old_xy.x else 1)  # if we just wrapped, don't include that too
+        return new_xy.y + (
+            0 if new_xy.x == old_xy.x else 1
+        )  # if we just wrapped, don't include that too
 
     def _puts(self, s: str, wrap: bool, actually_put: bool) -> V2:
         assert isinstance(s, str)
@@ -262,7 +269,9 @@ class Drawer(object):
                 if chars_to_next_break[i] == 0:
                     chars_in_word[i] = 0
                 else:
-                    chars_in_word[i] = max(0 if i == 0 else chars_in_word[i - 1], chars_to_next_break[i])
+                    chars_in_word[i] = max(
+                        0 if i == 0 else chars_in_word[i - 1], chars_to_next_break[i]
+                    )
 
         for i, c in enumerate(s):
             if c == "\r":
@@ -273,30 +282,36 @@ class Drawer(object):
             elif c == "\n":
                 just_wrapped = False
                 new_xy = V2.new(start_xy.x, new_xy.y + 1)
-            elif c == " " and just_wrapped: # collapse one space right after wrapping
+            elif c == " " and just_wrapped:  # collapse one space right after wrapping
                 just_wrapped = False
                 continue
             else:
                 if (
-                    wrap and
-                    chars_in_word[i] < self.bounds.size.x - start_xy.x and
-                    chars_to_next_break[i] > self.bounds.bot_exclusive.x - new_xy.x
+                    wrap
+                    and chars_in_word[i] < self.bounds.size.x - start_xy.x
+                    and chars_to_next_break[i] > self.bounds.bot_exclusive.x - new_xy.x
                 ):
                     new_xy = V2.new(start_xy.x, new_xy.y + 1)
 
                 # if it's a space and the next word will wrap, wrap now
                 if (
-                    wrap and
-                    c == " " and i < len(s) - 1 and
-                    chars_in_word[i + 1] < self.bounds.size.x - start_xy.x and
-                    chars_to_next_break[i + 1] > self.bounds.bot_exclusive.x - new_xy.x
+                    wrap
+                    and c == " "
+                    and i < len(s) - 1
+                    and chars_in_word[i + 1] < self.bounds.size.x - start_xy.x
+                    and chars_to_next_break[i + 1]
+                    > self.bounds.bot_exclusive.x - new_xy.x
                 ):
                     new_xy = V2.new(start_xy.x, new_xy.y + 1)
                     just_wrapped = True
                     continue
 
                 just_wrapped = False
-                if actually_put and new_xy in self._bounds and new_xy in self._actual_bounds:
+                if (
+                    actually_put
+                    and new_xy in self._bounds
+                    and new_xy in self._actual_bounds
+                ):
                     old_cell = self._screen._cells[new_xy + self._offset]
                     new_cell = self._putc_of(old_cell, c)
                     self._screen._cells[new_xy + self._offset] = new_cell
@@ -333,11 +348,12 @@ class Drawer(object):
         return Cell.new(
             bg=self._bg.color if self._bg is not None else old.bg,
             fg=self._fg.color if self._fg is not None else old.fg,
-            character=new_char
+            character=new_char,
         )
 
     def etch(self, double=False) -> "Drawer":
         from . import boxart
+
         boxart.draw(self, self._bounds, double=double)
         return self
 

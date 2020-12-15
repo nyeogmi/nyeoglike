@@ -18,6 +18,7 @@ def residence() -> UnloadedLevel:
 
 def restaurant() -> UnloadedLevel:
     from .floorplans.restaurant import restaurant as res_floorplan
+
     # TODO: Generalized commercial interior
     from .interiors.commercial import commercial as res_interior
 

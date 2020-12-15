@@ -15,6 +15,7 @@ class Inventory(object):
 
     def add(self, world: "World", item: Item):
         from .world import World
+
         assert isinstance(world, World)
         assert isinstance(item, Item)
 
@@ -100,5 +101,6 @@ class ClaimBox(object):
 
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .world import World

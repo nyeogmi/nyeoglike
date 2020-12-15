@@ -12,7 +12,7 @@ class LoadedLevel(object):
         self,
         blocks: Dict[V2, Block],
         items: Dict[V2, List[Item]],
-        npc_sites: OneToMany[V2, NPCHandle]
+        npc_sites: OneToMany[V2, NPCHandle],
     ):
         self.blocks: Dict[V2, Block] = blocks
         self.seen: Set[V2] = set()  # every time the player sees a tile, add it to this
@@ -29,5 +29,6 @@ class LoadedLevel(object):
 
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ..world import World

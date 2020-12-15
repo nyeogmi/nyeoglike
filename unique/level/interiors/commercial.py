@@ -3,6 +3,7 @@ from ..tools import InteriorDesigner, RoomType, SpawnType, Hint
 import random
 from ds.vecs import V2, R2
 
+
 def commercial(interior: InteriorDesigner):
     galleries = list(interior.ident_rooms(RoomType.Gallery))
     first_gallery = galleries[0]
@@ -13,8 +14,8 @@ def commercial(interior: InteriorDesigner):
     del first_gallery
     del gallery
 
-    for rm in (
-        interior.ident_rooms(RoomType.Kitchen) + interior.ident_rooms(RoomType.Gallery)
+    for rm in interior.ident_rooms(RoomType.Kitchen) + interior.ident_rooms(
+        RoomType.Gallery
     ):
         for i in rm.hinted(Hint.Counter):
             rm.at(i, COUNTER)
@@ -27,7 +28,6 @@ def commercial(interior: InteriorDesigner):
         for i in rm.hinted(Hint.Counterside):
             rm.at(i)
             rm.mark_spawn(SpawnType.Employee)
-
 
     # place tables in pods
     spacing_dist = 4
@@ -61,15 +61,19 @@ def commercial(interior: InteriorDesigner):
                 bounds_inside = v.sized(V2(tsx, tsy))
                 bounds = bounds_inside.expand(V2.new(1, 1))
                 corners = set(bounds.inclusive_corners())
-                if any(t not in all_safe_tiles or t in counterside_expanded for t in bounds):
+                if any(
+                    t not in all_safe_tiles or t in counterside_expanded for t in bounds
+                ):
                     continue
 
                 for b in bounds_inside:
                     rm.at(b, TABLE)
 
                 for b in bounds:
-                    if b in bounds_inside: continue
-                    if b in corners: continue
+                    if b in bounds_inside:
+                        continue
+                    if b in corners:
+                        continue
                     rm.at(b, CHAIR)
 
                 for b in bounds:

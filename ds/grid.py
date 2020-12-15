@@ -38,7 +38,9 @@ class Grid(Generic[T]):
         default = self._default.resolve()
 
         old_grid = self._grid
-        new_grid = [[None for y in range(new_bounds.size.y)] for x in range(new_bounds.size.x)]
+        new_grid = [
+            [None for y in range(new_bounds.size.y)] for x in range(new_bounds.size.x)
+        ]
 
         for xy in new_bounds:
             x_, y_ = xy - new_bounds.top
@@ -69,7 +71,8 @@ class Grid(Generic[T]):
         self._grid[x][y] = value
 
     def delete_region(self, region: R2):
-        for v in region: del self[v]
+        for v in region:
+            del self[v]
 
     def get_region(self, region: R2) -> "Grid[T]":
         assert self.bounds.contains(region)

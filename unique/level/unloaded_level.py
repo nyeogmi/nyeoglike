@@ -30,7 +30,7 @@ class UnloadedLevel(object):
         player_start_xy: V2,
         blocks: Dict[V2, Block],
         items: Dict[V2, List[Item]],
-        npc_spawns: Dict[SpawnType, Set[V2]]
+        npc_spawns: Dict[SpawnType, Set[V2]],
     ):
         assert isinstance(player_start_xy, V2)
         assert isinstance(blocks, dict)
@@ -61,7 +61,9 @@ class UnloadedLevel(object):
             # TODO: Give bedside spawn points an equivalence class so NPCs avoid spawning two next to the same bed
             checks = [
                 lambda spawn_type: spawn_type_compatible(npc.schedule, spawn_type),
-                lambda spawn_type: spawn_type_compatible(npc.schedule, spawn_type, lax=True),
+                lambda spawn_type: spawn_type_compatible(
+                    npc.schedule, spawn_type, lax=True
+                ),
                 lambda spawn_type: True,
             ]
 
@@ -103,10 +105,13 @@ class UnloadedLevel(object):
         )
 
 
-def spawn_type_compatible(schedule_item: "ScheduleItem", spawn_type: SpawnType, lax=False) -> bool:
+def spawn_type_compatible(
+    schedule_item: "ScheduleItem", spawn_type: SpawnType, lax=False
+) -> bool:
     # TODO: Sleepover types
 
     from ..time import schedule_items
+
     if schedule_item.name == schedule_items.HomeSleep.name:
         if spawn_type == SpawnType.Sleep:
             return True
@@ -126,6 +131,7 @@ def spawn_type_compatible(schedule_item: "ScheduleItem", spawn_type: SpawnType, 
 
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ..world import World
     from ..time import ScheduleItem

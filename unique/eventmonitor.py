@@ -3,7 +3,17 @@ from ds.gensym import Gensym, Sym
 from .event import Event, Verbs
 from .notifications import NotificationReason
 from enum import Enum
-from typing import Callable, Dict, List, NamedTuple, Optional, Protocol, Set, runtime_checkable, TYPE_CHECKING
+from typing import (
+    Callable,
+    Dict,
+    List,
+    NamedTuple,
+    Optional,
+    Protocol,
+    Set,
+    runtime_checkable,
+    TYPE_CHECKING,
+)
 
 
 class EMHandle(NamedTuple):
@@ -13,7 +23,9 @@ class EMHandle(NamedTuple):
 class EventMonitors(object):
     def __init__(self):
         self._active: Dict[EMHandle, "EventMonitor"] = {}
-        self._active_keys: Set = set()  # arbitrary set populated by calling key() on EventMonitors
+        self._active_keys: Set = (
+            set()
+        )  # arbitrary set populated by calling key() on EventMonitors
         self._sym = Gensym("EM")
 
         self._most_recent_status: Dict[EMHandle, QuestStatus] = {}
@@ -21,8 +33,11 @@ class EventMonitors(object):
         self._failed_quests: List[EMHandle] = []
         self._succeeded_quests: List[EMHandle] = []
 
-    def add(self, world: "World", constructor: Callable[[EMHandle], "EventMonitor"]) -> Optional[EMHandle]:
+    def add(
+        self, world: "World", constructor: Callable[[EMHandle], "EventMonitor"]
+    ) -> Optional[EMHandle]:
         from .world import World
+
         assert isinstance(world, World)
 
         handle = EMHandle(self._sym.gen())
@@ -37,7 +52,9 @@ class EventMonitors(object):
 
         quest_status = self._active[handle].quest_status(world)
         if quest_status:
-            world.notifications.send(handle, NotificationReason.AnnounceQuest, quest_status.assigner)
+            world.notifications.send(
+                handle, NotificationReason.AnnounceQuest, quest_status.assigner
+            )
             self._accepted_quests.append(handle)
 
             self._most_recent_status[handle] = quest_status
@@ -112,7 +129,9 @@ class EventMonitors(object):
                 self._most_recent_status[handle] = quest_status
 
             # Don't let anyone else look at this Claim if it's all claimed
-            if verb == Verbs.Claim and all(i.taken for i in event.args if isinstance(i, ClaimBox)):
+            if verb == Verbs.Claim and all(
+                i.taken for i in event.args if isinstance(i, ClaimBox)
+            ):
                 break
 
         for d in sorted(done_ems):
@@ -120,10 +139,17 @@ class EventMonitors(object):
             world.notifications.remove_for(d, NotificationReason.AnnounceQuest)
             del self._active[d]
 
-    def send_finalize_quest(self, world: "World", handle: EMHandle, quest_status: "QuestStatus"):
-        if handle in self._accepted_quests or quest_status.outcome == QuestOutcome.Succeeded:
+    def send_finalize_quest(
+        self, world: "World", handle: EMHandle, quest_status: "QuestStatus"
+    ):
+        if (
+            handle in self._accepted_quests
+            or quest_status.outcome == QuestOutcome.Succeeded
+        ):
             # NOTE: Show successes even if the user didn't accept the quest
-            world.notifications.send(handle, NotificationReason.FinalizeQuest, quest_status.assigner)
+            world.notifications.send(
+                handle, NotificationReason.FinalizeQuest, quest_status.assigner
+            )
         else:
             # don't wait for the user
             self.finalize_quest(handle)
@@ -169,4 +195,3 @@ class QuestStatus(NamedTuple):
 if TYPE_CHECKING:
     from .npc import NPCHandle
     from .world import World
-

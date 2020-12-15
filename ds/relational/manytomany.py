@@ -32,7 +32,8 @@ class ManyToMany(Generic[A, B]):
         return b in self.a_to_bs[a]
 
     def remove_a(self, a: A):
-        if a not in self.a_to_bs: return
+        if a not in self.a_to_bs:
+            return
         bs = self.a_to_bs.pop(a)
         for b in bs:
             self.b_to_as[b].remove(a)
@@ -41,7 +42,8 @@ class ManyToMany(Generic[A, B]):
                 del self.b_to_as[b]
 
     def remove_b(self, b: B):
-        if b not in self.b_to_as: return
+        if b not in self.b_to_as:
+            return
         as_ = self.b_to_as.pop(b)
         for a in as_:
             self.a_to_bs[a].remove(b)

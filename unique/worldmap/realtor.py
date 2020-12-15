@@ -29,11 +29,16 @@ class Realtor(object):
     def gen(self, demand: Demand) -> UnloadedLevel:
         self._restock()
 
-        best_property_ix = max(range(len(self._properties)), key=lambda i: demand.score(self._properties[i]))
+        best_property_ix = max(
+            range(len(self._properties)),
+            key=lambda i: demand.score(self._properties[i]),
+        )
         property = self._properties.pop(best_property_ix)
 
         for i in range(len(self._properties)):
-            self._properties[i] = self._properties[i]._replace(times_unsold=self._properties[i].times_unsold + 1)
+            self._properties[i] = self._properties[i]._replace(
+                times_unsold=self._properties[i].times_unsold + 1
+            )
 
         return property.level
 
@@ -63,4 +68,8 @@ class Realtor(object):
                 continue
 
         else:
-            raise AssertionError("couldn't generate {} properties in {} tries".format(properties_needed, max_tries))
+            raise AssertionError(
+                "couldn't generate {} properties in {} tries".format(
+                    properties_needed, max_tries
+                )
+            )

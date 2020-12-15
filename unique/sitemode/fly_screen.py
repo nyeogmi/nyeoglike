@@ -84,11 +84,15 @@ class FlyScreen(object):
                     self.done = True
 
     def draw(self):
-        window = draw_window(self.io.draw().goto(4, 7).box(26, 25), fg=Colors.MSGSystem, double=True)
+        window = draw_window(
+            self.io.draw().goto(4, 7).box(26, 25), fg=Colors.MSGSystem, double=True
+        )
         window.title_bar.copy().fg(Colors.TermFGBold).puts("Fly")
 
         window.content.copy().goto(0, 0).fg(Colors.TermFGBold).puts("F - Follow")
-        self.follow_npcs.draw(window.content.copy().goto(0, 1).box(window.content.bounds.size.x, 11))
+        self.follow_npcs.draw(
+            window.content.copy().goto(0, 1).box(window.content.bounds.size.x, 11)
+        )
 
         window.content.copy().goto(0, 12).fg(Colors.TermFGBold).puts("R - Recent")
 
@@ -99,7 +103,13 @@ class Follow(ScrollbarData):
 
     def text(self, npch):
         npc = self.fly.world.npcs.get(npch)
-        return npc.name + "\n" + "(" + self.fly.world.schedules.next_schedule(npch).to_text(self.fly.world) + ")"
+        return (
+            npc.name
+            + "\n"
+            + "("
+            + self.fly.world.schedules.next_schedule(npch).to_text(self.fly.world)
+            + ")"
+        )
 
     def measure_item(self, npch, width: int) -> V2:
         # TODO: Measure NPC name
@@ -110,8 +120,14 @@ class Follow(ScrollbarData):
         npc = self.fly.world.npcs.get(npch)
         color = self.fly.world.interest[npch].color()
         if selected:
-            draw.bg(Colors.TermHighlightBG if self.fly._state == FlyScreenState.Follow else Colors.TermHighlightBGInactive)
-        draw.goto(0, 0).fg(color).puts("\xf9 ").fg(Colors.TermFG).puts(self.text(npch), wrap=True)
+            draw.bg(
+                Colors.TermHighlightBG
+                if self.fly._state == FlyScreenState.Follow
+                else Colors.TermHighlightBGInactive
+            )
+        draw.goto(0, 0).fg(color).puts("\xf9 ").fg(Colors.TermFG).puts(
+            self.text(npch), wrap=True
+        )
 
 
 class FlyScreenState(Enum):

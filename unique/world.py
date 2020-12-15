@@ -43,6 +43,7 @@ class World(object):
     @classmethod
     def generate(cls):
         from .bigprocs.worldgen import main
+
         world = cls()
         main(world)
         return world
@@ -74,7 +75,9 @@ class World(object):
         for npch in self.npcs.all():
             # TODO: Move this to schedules object
             if self.schedules.next_location(self, npch) == level:
-                spawns.append(SpawnNPC(npc=npch, schedule=self.schedules.next_schedule(npch)))
+                spawns.append(
+                    SpawnNPC(npc=npch, schedule=self.schedules.next_schedule(npch))
+                )
 
         lvl = self.levels.get(level)
         self._activate_level(lvl, spawns)

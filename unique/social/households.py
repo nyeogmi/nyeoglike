@@ -23,11 +23,13 @@ class Households(object):
     def create(self, world: "World", npcs: List[NPCHandle]) -> HouseholdHandle:
         # TODO: Consider having NPCs share a last name
         from ..world import World
+
         assert isinstance(world, World)
         assert isinstance(npcs, list)
 
         handle = HouseholdHandle(self._sym.gen())
-        for npc in npcs: self._members.add(handle, npc)
+        for npc in npcs:
+            self._members.add(handle, npc)
 
         return handle
 
@@ -46,13 +48,14 @@ class Households(object):
 
     def get_home(self, world: "World", household: HouseholdHandle) -> LevelHandle:
         from ..world import World
+
         assert isinstance(world, World)
         assert isinstance(household, HouseholdHandle)
 
         if self._lives_at.get_b(household) is None:
             self._lives_at.add(
                 household,
-                world.levels.zone(ZoneType.Residence, self._demand(household))
+                world.levels.zone(ZoneType.Residence, self._demand(household)),
             )
 
         level = self._lives_at.get_b(household)
@@ -81,5 +84,6 @@ class Households(object):
 
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ..world import World

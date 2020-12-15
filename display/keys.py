@@ -1,19 +1,23 @@
 from typing import NamedTuple, Optional
 
 # maps uncaps to caps
-_LETTERS = dict(zip(
-    "abcdefghijklmnopqrstuvwxyz",
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-))
+_LETTERS = dict(
+    zip(
+        "abcdefghijklmnopqrstuvwxyz",
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    )
+)
 
 # maps uncaps to caps
 _UNLETTERS = {v: k for k, v in _LETTERS.items()}
 
 # maps uncaps to caps
-_SYMS = dict(zip(
-    "`1234567890-=[]\\;',./",
-    "~!@#$%^&*()_+{}|:\"<>?",
-))
+_SYMS = dict(
+    zip(
+        "`1234567890-=[]\\;',./",
+        '~!@#$%^&*()_+{}|:"<>?',
+    )
+)
 
 # maps uncaps to caps
 _UNSYMS = {v: k for k, v in _SYMS.items()}
@@ -29,9 +33,7 @@ class Key(NamedTuple):
 
     @classmethod
     def new(
-        cls,
-        keycode,
-        control=False, shift=False, alt=False, caps_lock=False
+        cls, keycode, control=False, shift=False, alt=False, caps_lock=False
     ) -> "Key":
         assert keycode in Keycodes.ALL
 
@@ -43,13 +45,17 @@ class Key(NamedTuple):
         return Key(keycode, control, shift, alt, caps_lock)
 
     def __str__(self) -> str:
-        return "<{}>".format("".join([
-            "C-" if self.control else "",
-            "S-" if self.shift else "",
-            "A-" if self.alt else "",
-            self.keycode,
-            "!" if self.caps_lock else ""
-        ]))
+        return "<{}>".format(
+            "".join(
+                [
+                    "C-" if self.control else "",
+                    "S-" if self.shift else "",
+                    "A-" if self.alt else "",
+                    self.keycode,
+                    "!" if self.caps_lock else "",
+                ]
+            )
+        )
 
     def text(self) -> Optional[str]:
         # for UI forms -- this is what's being _typed_ by a character
@@ -78,12 +84,11 @@ class Key(NamedTuple):
 
     def match(self, pattern: "Key"):
         return (
-            pattern.keycode == self.keycode and
-            pattern.control == self.control and
-            pattern.shift == self.shift and
-            pattern.alt == self.alt
+            pattern.keycode == self.keycode
+            and pattern.control == self.control
+            and pattern.shift == self.shift
+            and pattern.alt == self.alt
         )
-
 
 
 class Keycodes(object):
@@ -102,9 +107,20 @@ class Keycodes(object):
     Left = "LEFT"
     Right = "RIGHT"
 
-    ALL = list(_SYMS.keys()) + list(_LETTERS.keys()) + [
-        Nothing, Space,
-        Escape, Tab, Enter,
-        Backspace, Delete,
-        Up, Down, Left, Right,
-    ]
+    ALL = (
+        list(_SYMS.keys())
+        + list(_LETTERS.keys())
+        + [
+            Nothing,
+            Space,
+            Escape,
+            Tab,
+            Enter,
+            Backspace,
+            Delete,
+            Up,
+            Down,
+            Left,
+            Right,
+        ]
+    )

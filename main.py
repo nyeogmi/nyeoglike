@@ -12,7 +12,9 @@ from unique.worldmap import Demand, ZoneType
 
 def main(io: IO):
     w = World.generate()
-    print([w.npcs.get(i).name for i in w.npcs._all.keys()])  # TODO: Better way to do this for non-debugging in the future
+    print(
+        [w.npcs.get(i).name for i in w.npcs._all.keys()]
+    )  # TODO: Better way to do this for non-debugging in the future
 
     """
     house1 = next(w.households.all())

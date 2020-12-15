@@ -39,7 +39,9 @@ class Levels(object):
         if level not in self._generation:
             assert level in self._zoning
             zoning = self._zoning[level]
-            self._generation[level] = self._realtors[zoning.zone_type].gen(zoning.demand)
+            self._generation[level] = self._realtors[zoning.zone_type].gen(
+                zoning.demand
+            )
 
         return self._generation[level]
 

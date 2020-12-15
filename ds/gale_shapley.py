@@ -7,7 +7,6 @@ B = TypeVar("B")
 class GaleShapley(Generic[A, B]):
     def __init__(
         self,
-
         # returns the preference level. (None if this A would never invite this B)
         pref_a_b: Callable[[A, B], Optional[int]],
         pref_b_a: Callable[[B, A], int],
@@ -21,9 +20,14 @@ class GaleShapley(Generic[A, B]):
 
         a_invitelists = {
             a: sorted(
-                [b for b in range(n_bs) if self._pref_a_b(lst_a[a], lst_b[b]) is not None],
-                key=lambda b: self._pref_a_b(lst_a[a], lst_b[b])
-            ) for a in range(n_as)
+                [
+                    b
+                    for b in range(n_bs)
+                    if self._pref_a_b(lst_a[a], lst_b[b]) is not None
+                ],
+                key=lambda b: self._pref_a_b(lst_a[a], lst_b[b]),
+            )
+            for a in range(n_as)
         }
 
         matched_a_s = set()
@@ -32,9 +36,12 @@ class GaleShapley(Generic[A, B]):
         def invite(new_a, b):
             old_a = mailboxes_b[b]
             use_a, discard_a = (
-                (new_a, old_a) if old_a is None else
-                (new_a, old_a) if self._pref_b_a(lst_b[b], lst_a[new_a]) > self._pref_b_a(lst_b[b], lst_a[old_a]) else
-                (old_a, new_a)
+                (new_a, old_a)
+                if old_a is None
+                else (new_a, old_a)
+                if self._pref_b_a(lst_b[b], lst_a[new_a])
+                > self._pref_b_a(lst_b[b], lst_a[old_a])
+                else (old_a, new_a)
             )
             mailboxes_b[b] = use_a
             return discard_a

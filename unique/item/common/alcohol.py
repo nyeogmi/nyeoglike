@@ -9,18 +9,23 @@ _DRINK_HUGE = dict(res0=Resource.Snack, n0=100)
 
 ALL = ItemList()
 
-BEER = ALL.add(Item.new(
-    Profile.new(name="beer", icon="\x97", ascii_icon="b", fg=Colors.Yellow),
-    **_DRINK_MEDIUM,
-))
+BEER = ALL.add(
+    Item.new(
+        Profile.new(name="beer", icon="\x97", ascii_icon="b", fg=Colors.Yellow),
+        **_DRINK_MEDIUM,
+    )
+)
 
-CIDER = ALL.add(Item.new(
-    Profile.new(name="cider", icon="\x95", ascii_icon="b", fg=Colors.Yellow),
-    **_DRINK_MEDIUM,
-))
+CIDER = ALL.add(
+    Item.new(
+        Profile.new(name="cider", icon="\x95", ascii_icon="b", fg=Colors.Yellow),
+        **_DRINK_MEDIUM,
+    )
+)
 
-VODKA = ALL.add(Item.new(
-    Profile.new(name="vodka", icon="\xa7", ascii_icon="v", fg=Colors.BrightWhite),
-    **_DRINK_HUGE,
-))
-
+VODKA = ALL.add(
+    Item.new(
+        Profile.new(name="vodka", icon="\xa7", ascii_icon="v", fg=Colors.BrightWhite),
+        **_DRINK_HUGE,
+    )
+)

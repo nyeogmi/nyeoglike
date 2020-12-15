@@ -15,7 +15,9 @@ class Schedule(object):
     def __init__(self):
         self._items: Dict[NPCHandle, ScheduleItem] = {}
         self._calculated_location: Dict[NPCHandle, LevelHandle] = {}
-        self._calculated_location_determines: OneToMany[NPCHandle, NPCHandle] = OneToMany()
+        self._calculated_location_determines: OneToMany[
+            NPCHandle, NPCHandle
+        ] = OneToMany()
 
     def __getitem__(self, npch: NPCHandle) -> ScheduleItem:
         assert isinstance(npch, NPCHandle)
@@ -38,8 +40,11 @@ class Schedule(object):
     def get_location(self, world: "World", npch: NPCHandle) -> "LevelHandle":
         return self._get_location(world, npch, [])
 
-    def _get_location(self, world: "World", npch: NPCHandle, breadcrumbs: List[NPCHandle]) -> "LevelHandle":
+    def _get_location(
+        self, world: "World", npch: NPCHandle, breadcrumbs: List[NPCHandle]
+    ) -> "LevelHandle":
         from ..world import World
+
         assert isinstance(world, World)
         assert isinstance(npch, NPCHandle)
         assert isinstance(breadcrumbs, list)
@@ -57,15 +62,20 @@ class Schedule(object):
 
         dependency = None
         if npch in breadcrumbs:
-            result = world.households.get_home(world, world.households.household_of(npch))
+            result = world.households.get_home(
+                world, world.households.household_of(npch)
+            )
 
         else:
             rule = SCHEDULE_ITEMS.get(schedule_item.name).destination_rule
             if rule == DestinationRule.MyHousehold:
-                result = world.households.get_home(world, world.households.household_of(npch))
+                result = world.households.get_home(
+                    world, world.households.household_of(npch)
+                )
             elif rule == DestinationRule.Follow:
                 from ..social import EnterpriseHandle
                 from ..worldmap import LevelHandle
+
                 if isinstance(schedule_item.arg, NPCHandle):
                     result = recurse(schedule_item.arg)
                     dependency = npch
@@ -74,7 +84,9 @@ class Schedule(object):
                 elif isinstance(schedule_item.arg, LevelHandle):
                     result = schedule_item.arg
                 else:
-                    raise AssertionError("don't know how to follow: {}", schedule_item.arg)
+                    raise AssertionError(
+                        "don't know how to follow: {}", schedule_item.arg
+                    )
             else:
                 raise AssertionError("unrecognized rule: {}".format(rule))
 
@@ -87,6 +99,7 @@ class Schedule(object):
 
     def set_location(self, npch: NPCHandle, level_handle: "LevelHandle"):
         from ..worldmap import LevelHandle
+
         assert isinstance(npch, NPCHandle)
         assert isinstance(level_handle, LevelHandle)
         self.clear_location(npch)
@@ -113,12 +126,14 @@ class Schedules(object):
 
     def next_location(self, world: "World", npch: NPCHandle) -> "LevelHandle":
         from ..world import World
+
         assert isinstance(world, World)
         assert isinstance(npch, NPCHandle)
         return self._next_schedule.get_location(world, npch)
 
     def calculate_schedules(self, world: "World", time_of_day: TimeOfDay):
         from ..world import World
+
         assert isinstance(world, World)
         assert isinstance(time_of_day, TimeOfDay)
 
@@ -175,12 +190,17 @@ class Schedules(object):
 
             # NOTE: This is the only group activity right now
             next_schedule[npc] = schedule_items.SleepOver(date)
-            next_schedule[date] = schedule_items.HostSleepOver  # it doesn't make sense for the sleepover guy to be asleep for his own party
+            next_schedule[
+                date
+            ] = (
+                schedule_items.HostSleepOver
+            )  # it doesn't make sense for the sleepover guy to be asleep for his own party
 
         self._prev_schedule, self._next_schedule = self._next_schedule, next_schedule
 
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ..world import World
     from ..social import EnterpriseHandle

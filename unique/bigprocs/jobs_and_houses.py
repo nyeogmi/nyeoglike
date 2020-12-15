@@ -53,12 +53,9 @@ def _tabulate_sets(w: World) -> _Sets:
         all_npcs=all_npcs,
         all_households=all_households,
         all_enterprises=all_enterprises,
-
         household_npcs=household_npcs,
         job_npcs=job_npcs,
-
         resented_npcs=resented_npcs,
-
         no_household_npcs=no_household_npcs,
         no_job_npcs=no_job_npcs,
     )
@@ -80,7 +77,9 @@ def create_seed_households(w: World):
     sets = _tabulate_sets(w)
 
     no_household_npcs = shuffled(sets.no_household_npcs)
-    incomplete_npcs = no_household_npcs[:len(no_household_npcs) // 3]  # limit number of seed households
+    incomplete_npcs = no_household_npcs[
+        : len(no_household_npcs) // 3
+    ]  # limit number of seed households
 
     for n in incomplete_npcs:
         w.households.create(w, [n])
@@ -109,7 +108,6 @@ def recruit_npcs_to_incomplete_households(w: World):
 
         # TODO: There may be other cases where a plus one is needed
 
-
     # == Gale-Shapley between households and unpicked NPCs ==
     def ranked_friends(npc):
         return shuffled(w.friendships.friends(npc))
@@ -121,16 +119,23 @@ def recruit_npcs_to_incomplete_households(w: World):
         invitable_people = []
         for m in members:
             for f in ranked_friends(m):
-                if f in invitable_people: continue
+                if f in invitable_people:
+                    continue
                 invitable_people.append(f)
         invitable_people.reverse()
         household_npc_preference[h] = {npc: i for i, npc in enumerate(invitable_people)}
 
     gale_shapley = GaleShapley(
-        lambda household, npc: household_npc_preference[household].get(npc), # will be 0, otherwise a higher index for more desirable npcs
+        lambda household, npc: household_npc_preference[household].get(
+            npc
+        ),  # will be 0, otherwise a higher index for more desirable npcs
         lambda npc, household:  # NPCs like households with more friends
-            # TODO: Scale down by n members in household?
-            sum(1 for member in w.households.members(household) if w.friendships.npc_likes(npc, member))
+        # TODO: Scale down by n members in household?
+        sum(
+            1
+            for member in w.households.members(household)
+            if w.friendships.npc_likes(npc, member)
+        ),
     )
 
     match_households = shuffled(incomplete_households)
@@ -145,7 +150,11 @@ def recruit_npcs_to_jobs(w: World):
     #  (ex. are homeless, are living above their means, are resented by their household for being idle)
     sets = _tabulate_sets(w)
 
-    incomplete_shifts = set(shift for shift in w.enterprises.all_shifts() if w.enterprises.get_employee(shift) is None)
+    incomplete_shifts = set(
+        shift
+        for shift in w.enterprises.all_shifts()
+        if w.enterprises.get_employee(shift) is None
+    )
     incomplete_npcs = set()
     for npc in sets.all_npcs:
         # TODO: "Homeless," "above their means," "_wants_ a job" as reasons to seek work
@@ -157,8 +166,12 @@ def recruit_npcs_to_jobs(w: World):
     gale_shapley = GaleShapley(
         lambda shift, npc: 1,  # TODO: Give enterprises a reason to prefer one NPC over another
         lambda npc, shift:  # NPCs like households with more friends
-            # TODO: Scale down by n members in household?
-            sum(1 for member in w.enterprises.get_employees(shift.enterprise) if w.friendships.npc_likes(npc, member))
+        # TODO: Scale down by n members in household?
+        sum(
+            1
+            for member in w.enterprises.get_employees(shift.enterprise)
+            if w.friendships.npc_likes(npc, member)
+        ),
     )
 
     match_shifts = shuffled(incomplete_shifts)

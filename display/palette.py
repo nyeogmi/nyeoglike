@@ -11,13 +11,24 @@ def load(s: str):
 
 
 class Colors(object):
-    SWATCH = tuple(map(load, [
-        "171712", "1E1F1F", "27292A", "5D6F6F",
-        "DDDADB", "FFFFFF",
-
-        "FCB97D", "FF4A59", "8C5DEA", "DCED31",
-        "E03616"
-    ]))
+    SWATCH = tuple(
+        map(
+            load,
+            [
+                "171712",
+                "1E1F1F",
+                "27292A",
+                "5D6F6F",
+                "DDDADB",
+                "FFFFFF",
+                "FCB97D",
+                "FF4A59",
+                "8C5DEA",
+                "DCED31",
+                "E03616",
+            ],
+        )
+    )
     N = len(SWATCH)
 
     DarkestBlack = Color(0)
@@ -34,7 +45,7 @@ class Colors(object):
     BrightPurp = Color(8)
     BrightGreen = Color(9)
 
-    BrightOrange = Yellow # TODO: Different
+    BrightOrange = Yellow  # TODO: Different
 
     BloodRed = Color(10)
 

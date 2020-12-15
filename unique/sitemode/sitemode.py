@@ -75,7 +75,8 @@ class Sitemode(object):
             if notif and notif.reason == NotificationReason.AnnounceQuest:
                 self.world.notifications.acknowledge(self.world, notif.ident, False)
         elif input.match(Key.new("a")):
-            if self.targets.target: self.world.interest.tab(self.targets.target)
+            if self.targets.target:
+                self.world.interest.tab(self.targets.target)
 
         elif input.match(Key.new("i")):
             inventory_screen.show(self.io, self.world)
@@ -88,7 +89,9 @@ class Sitemode(object):
             if len(items) == 0:
                 pass  # nothing to grab
             else:
-                if len(items) == 1:  # TODO: Only autopick the item if it would not be stealing
+                if (
+                    len(items) == 1
+                ):  # TODO: Only autopick the item if it would not be stealing
                     ix = 0
                 else:
                     # TODO: Let the player pick their item
@@ -96,7 +99,9 @@ class Sitemode(object):
 
                 item = items.pop()
                 if len(items) == 0:
-                    del self.world.level.items[self.world.player_xy]  # TODO: This should be abstracted around
+                    del self.world.level.items[
+                        self.world.player_xy
+                    ]  # TODO: This should be abstracted around
                 self.world.inventory.add(self.world, item)
 
         # move the player
@@ -158,8 +163,7 @@ class Sitemode(object):
             self.world.npcs.get(tar.npc).seen = True
 
         self.targets.update_possible(
-            player_xy=self.world.player_xy,
-            possible_targets=possible_targets
+            player_xy=self.world.player_xy, possible_targets=possible_targets
         )
 
     def draw(self):
@@ -176,13 +180,19 @@ class Sitemode(object):
 
         draw_world.bg(Colors.TermBG).fg(Colors.TermFG).fillc(" ")  # base color
 
-        viewport_xys = (V2.new(x, y) for y in range(VIEW.y) for x in range(0, VIEW.x, 2))
+        viewport_xys = (
+            V2.new(x, y) for y in range(VIEW.y) for x in range(0, VIEW.x, 2)
+        )
 
         tooltip_xy = None
         tooltip_lst = []
         for world_xy, viewport_xy in zip(self.camera_world_rect, viewport_xys):
             if self.lightmap[world_xy] == 0:
-                draw_tile = draw_world.goto(viewport_xy).bg(Colors.WorldUnseenBG).fg(Colors.WorldUnseenFG)
+                draw_tile = (
+                    draw_world.goto(viewport_xy)
+                    .bg(Colors.WorldUnseenBG)
+                    .fg(Colors.WorldUnseenFG)
+                )
                 draw_tile.copy().putdw(DoubleWide.Blank)
                 # don't draw what we can't see
                 # except blocks, if seen before
@@ -200,7 +210,9 @@ class Sitemode(object):
                         draw_tile.copy().putdw(DoubleWide.Exit)
 
             else:
-                draw_tile = draw_world.goto(viewport_xy).bg(Colors.WorldBG).fg(Colors.WorldFG)
+                draw_tile = (
+                    draw_world.goto(viewport_xy).bg(Colors.WorldBG).fg(Colors.WorldFG)
+                )
                 draw_tile.copy().putdw(DoubleWide.Blank)
 
                 block = self.world.level.blocks.get(world_xy)
@@ -214,14 +226,18 @@ class Sitemode(object):
                 for item in self.world.level.items.get(world_xy, []):
                     profile = item.profile
                     dt = draw_tile.copy()
-                    if profile.bg is not None: dt.bg(profile.bg)
-                    if profile.fg is not None: dt.fg(profile.fg)
+                    if profile.bg is not None:
+                        dt.bg(profile.bg)
+                    if profile.fg is not None:
+                        dt.fg(profile.fg)
 
                     if profile.double_icon:
                         dt.goto(viewport_xy).puts(profile.double_icon, wrap=False)
                     else:
                         dt.goto(viewport_xy + V2(1, 0)).puts(profile.icon)
-                        (resource_fg, resource_icon) = item.contributions[0].resource.display()
+                        (resource_fg, resource_icon) = item.contributions[
+                            0
+                        ].resource.display()
                         dt.goto(viewport_xy).fg(resource_fg).puts(resource_icon)
 
                     if world_xy == self.world.player_xy:
@@ -233,9 +249,13 @@ class Sitemode(object):
                     interest = self.world.interest[npc]
                     # npc_sites
                     if npc == self.targets.target:
-                        draw_tile.copy().bg(interest.color()).fg(Colors.WorldBG).putdw(DoubleWide.At)
+                        draw_tile.copy().bg(interest.color()).fg(Colors.WorldBG).putdw(
+                            DoubleWide.At
+                        )
                     else:
-                        draw_tile.copy().bg(Colors.WorldBG).fg(interest.color()).putdw(DoubleWide.At)
+                        draw_tile.copy().bg(Colors.WorldBG).fg(interest.color()).putdw(
+                            DoubleWide.At
+                        )
 
                 if world_xy == self.world.player_xy:
                     draw_tile.copy().fg(Colors.Player).putdw(DoubleWide.Bat)
@@ -244,7 +264,9 @@ class Sitemode(object):
         if tooltip_xy is not None and tooltip_lst:
             draw_tooltips = self.io.draw().goto(tooltip_xy)
             for i, tip in enumerate(tooltip_lst):
-                draw_tooltips.goto(tooltip_xy + V2.new(0, i)).fg(Colors.TermFGBold).puts(tip)
+                draw_tooltips.goto(tooltip_xy + V2.new(0, i)).fg(
+                    Colors.TermFGBold
+                ).puts(tip)
 
     def draw_targeted_user(self):
         target_handle = self.targets.target
@@ -252,19 +274,27 @@ class Sitemode(object):
             target = self.world.npcs.get(target_handle)
             interest = self.world.interest[target_handle]
 
-            window = draw_window(self.io.draw().goto(30, 2).box(76, 6), fg=interest.color())
+            window = draw_window(
+                self.io.draw().goto(30, 2).box(76, 6), fg=interest.color()
+            )
             window.title_bar.copy().fg(Colors.TermFGBold).puts(target.name)
             if interest != Interest.No:
-                b2 = window.title_bar.copy().goto(len(target.name) + 1, 0).fg(Colors.TermFG)
+                b2 = (
+                    window.title_bar.copy()
+                    .goto(len(target.name) + 1, 0)
+                    .fg(Colors.TermFG)
+                )
                 b2.puts("({})".format(interest.name))
 
-            window.title_bar.copy().goto(window.title_bar.bounds.size.x - len("A - Mark"), 0).fg(Colors.TermFGBold).puts("A - Mark")
+            window.title_bar.copy().goto(
+                window.title_bar.bounds.size.x - len("A - Mark"), 0
+            ).fg(Colors.TermFGBold).puts("A - Mark")
 
     def draw_notifications(self):
         notifications = self.world.notifications.active_notifications()[-12:]
         if notifications:
             for y, (i, n) in enumerate(enumerate(notifications), 7):
-                last = (i == len(notifications) - 1)
+                last = i == len(notifications) - 1
                 if last:
                     height = 4  # TODO: Real height
                 else:
@@ -275,29 +305,47 @@ class Sitemode(object):
                 else:
                     color = Colors.MSGSystem
 
-                window = draw_window(self.io.draw().goto(4, y).box(26, y + height), fg=color)
+                window = draw_window(
+                    self.io.draw().goto(4, y).box(26, y + height), fg=color
+                )
 
                 if isinstance(n.message, EMHandle):
                     if n.reason == NotificationReason.AnnounceQuest:
-                        quest_status: QuestStatus = self.world.eventmonitors.most_recent_status(n.message)
+                        quest_status: QuestStatus = (
+                            self.world.eventmonitors.most_recent_status(n.message)
+                        )
                         assert quest_status is not None
 
-                        window.title_bar.copy().fg(Colors.TermFGBold).puts(quest_status.name)
+                        window.title_bar.copy().fg(Colors.TermFGBold).puts(
+                            quest_status.name
+                        )
                         window.content.copy().puts(quest_status.description, wrap=True)
                         yes = "Z - OK"
                         window.button_bar.copy().fg(Colors.TermFGBold).puts(yes)
                         no = "X - Ignore"
-                        window.button_bar.copy().fg(Colors.TermFGBold).goto(window.button_bar.bounds.size.x - len(no), 0).puts(no)
+                        window.button_bar.copy().fg(Colors.TermFGBold).goto(
+                            window.button_bar.bounds.size.x - len(no), 0
+                        ).puts(no)
                     elif n.reason == NotificationReason.FinalizeQuest:
-                        quest_status: QuestStatus = self.world.eventmonitors.most_recent_status(n.message)
+                        quest_status: QuestStatus = (
+                            self.world.eventmonitors.most_recent_status(n.message)
+                        )
                         assert quest_status is not None
 
                         if quest_status.outcome == QuestOutcome.Failed:
-                            window.border.copy().fg(Colors.QuestFailed).etch(double=True)
-                            window.title_bar.copy().fg(Colors.TermFGBold).puts("Failed: " + quest_status.name)
+                            window.border.copy().fg(Colors.QuestFailed).etch(
+                                double=True
+                            )
+                            window.title_bar.copy().fg(Colors.TermFGBold).puts(
+                                "Failed: " + quest_status.name
+                            )
                         else:
-                            window.border.copy().fg(Colors.QuestSucceeded).etch(double=True)
-                            window.title_bar.copy().fg(Colors.TermFGBold).puts("Succeeded: " + quest_status.name)
+                            window.border.copy().fg(Colors.QuestSucceeded).etch(
+                                double=True
+                            )
+                            window.title_bar.copy().fg(Colors.TermFGBold).puts(
+                                "Succeeded: " + quest_status.name
+                            )
 
                         window.content.copy().puts(quest_status.description, wrap=True)
                         yes = "Z - OK"
@@ -314,14 +362,23 @@ class Sitemode(object):
         draw_quests_ui = self.io.draw()
         quest_emhs = self.world.eventmonitors.accepted_quests()
         if quest_emhs:
-            marked_quests = [(emh, self.world.eventmonitors.most_recent_status(emh)) for emh in quest_emhs]
-            marked_quests.sort(key=lambda q: (
-                q[1].outcome != QuestOutcome.InProgress, self.world.interest[q[1].assigner], q[0]
-            ))
+            marked_quests = [
+                (emh, self.world.eventmonitors.most_recent_status(emh))
+                for emh in quest_emhs
+            ]
+            marked_quests.sort(
+                key=lambda q: (
+                    q[1].outcome != QuestOutcome.InProgress,
+                    self.world.interest[q[1].assigner],
+                    q[0],
+                )
+            )
             marked_quests.reverse()
 
             y = 7
-            draw_quests_ui.copy().goto(50, y).bg(Colors.TermBG).fg(Colors.TermFGBold).puts("Q - Quests")
+            draw_quests_ui.copy().goto(50, y).bg(Colors.TermBG).fg(
+                Colors.TermFGBold
+            ).puts("Q - Quests")
             y += 1
             for (_, quest) in marked_quests:
                 if y >= 29:  # screen height
@@ -336,13 +393,24 @@ class Sitemode(object):
                 else:
                     color = self.world.interest[quest.assigner].color()
 
-                dq2 = draw_quests_ui.copy().goto(52, y).bg(Colors.TermBG).fg(color).puts("\xf9 ").fg(Colors.TermFG)
+                dq2 = (
+                    draw_quests_ui.copy()
+                    .goto(52, y)
+                    .bg(Colors.TermBG)
+                    .fg(color)
+                    .puts("\xf9 ")
+                    .fg(Colors.TermFG)
+                )
                 start_x = dq2.xy.x
                 dq2.puts(quest.oneliner, wrap=True)
-                y = dq2.xy.y + (1 if dq2.xy.x != start_x else 0)  # drop once if we didn't wrap
+                y = dq2.xy.y + (
+                    1 if dq2.xy.x != start_x else 0
+                )  # drop once if we didn't wrap
 
     def draw_my_hud(self):
-        window = draw_window(self.io.draw().goto(4, 2).box(26, 5), double=True, fg=Colors.MSGSystem)
+        window = draw_window(
+            self.io.draw().goto(4, 2).box(26, 5), double=True, fg=Colors.MSGSystem
+        )
 
         window.title_bar.copy().fg(Colors.TermFGBold).puts("Fivey Fox")
         # window.title_bar.copy().fg(Colors.TermFGBold).puts("Nyeogmi Choi")
@@ -350,13 +418,23 @@ class Sitemode(object):
         window.content.copy().goto(0, 0).puts("$").fg(Colors.TermFGBold).puts(
             "{:,.2f}".format(self.world.inventory.get(Resource.Money) / 100)
         )
-        window.content.copy().goto(0, 1).puts("[").bg(Colors.BloodRed).puts(" " * 20).bg(Colors.TermBG).fg(Colors.TermFG).puts("]")
+        window.content.copy().goto(0, 1).puts("[").bg(Colors.BloodRed).puts(
+            " " * 20
+        ).bg(Colors.TermBG).fg(Colors.TermFG).puts("]")
         window.content.copy().goto(0, 2).puts("[").bg(Colors.BrightGreen).puts(
             " " * 20
         ).bg(Colors.TermBG).fg(Colors.TermFG).puts("]")
 
     def draw_timeinfo(self):
-        txt = self.world.clock.time_of_day.display() + ", " + str(self.world.clock.weekday)
-        window = draw_window(self.io.draw().goto(4, 27).box(4 + len(txt), 28), double=True, fg=Colors.MSGSystem)
+        txt = (
+            self.world.clock.time_of_day.display()
+            + ", "
+            + str(self.world.clock.weekday)
+        )
+        window = draw_window(
+            self.io.draw().goto(4, 27).box(4 + len(txt), 28),
+            double=True,
+            fg=Colors.MSGSystem,
+        )
 
         window.content.copy().goto(0, 0).puts(txt)

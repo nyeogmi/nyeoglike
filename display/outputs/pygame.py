@@ -11,6 +11,7 @@ from ..palette import Colors
 
 #  N_TILES = 256
 
+
 class Font(object):
     def __init__(self, font_images, tile_size: V2, res_in_tiles: V2):
         assert isinstance(font_images, list) and len(font_images) == Colors.N
@@ -31,18 +32,22 @@ class Font(object):
         assert isinstance(filename, str)
         assert isinstance(tile_size, V2)
 
-        font_image = pygame.image.load(os.path.join("images/fonts", filename)).convert_alpha()
+        font_image = pygame.image.load(
+            os.path.join("images/fonts", filename)
+        ).convert_alpha()
         tile_width, tile_height = tile_size
         full_width, full_height = font_image.get_size()
 
-        width_in_tiles = full_width//tile_width
-        height_in_tiles = full_height//tile_height
+        width_in_tiles = full_width // tile_width
+        height_in_tiles = full_height // tile_height
 
         #  assert width_in_tiles * height_in_tiles == N_TILES
 
         font_images = [font_image.convert_alpha() for i in range(Colors.N)]
         for i in range(Colors.N):
-            font_images[i].fill((*Colors.SWATCH[i], 255), special_flags=pygame.BLEND_MULT)
+            font_images[i].fill(
+                (*Colors.SWATCH[i], 255), special_flags=pygame.BLEND_MULT
+            )
             font_images[i] = font_images[i].convert_alpha()
 
         return Font(font_images, tile_size, V2.new(width_in_tiles, height_in_tiles))
@@ -73,7 +78,9 @@ def start(interactor: Interactor):
     tile_size = V2(8, 16)
 
     screen, _ = interactor.view()
-    pygame_screen = pygame.display.set_mode(list(screen.bounds.size * tile_size), flags=pygame.SCALED)
+    pygame_screen = pygame.display.set_mode(
+        list(screen.bounds.size * tile_size), flags=pygame.SCALED
+    )
     font = Font.load("vga_8x16.png", tile_size)
 
     interactor.mark_updated()
@@ -89,7 +96,13 @@ def start(interactor: Interactor):
                     old_cells[xy] = new_cell
                     if old_cell != new_cell:
                         # pygame_screen.fill(Colors.SWATCH[Colors.TermBG.color])
-                        font.draw(pygame_screen, xy, new_cell.bg, new_cell.fg, new_cell.character)
+                        font.draw(
+                            pygame_screen,
+                            xy,
+                            new_cell.bg,
+                            new_cell.fg,
+                            new_cell.character,
+                        )
 
                 pygame.display.flip()
 
@@ -117,26 +130,47 @@ _GENERIC_KEYS = set(map(ord, "abcdefghijklmnopqrstuvwxyz`0123456789-=[]\\;',./")
 
 # the other side of the tuple is shift
 _SPECIAL_KEYS = {
-    **{ord(k): (v, True) for k, v in [
-        "~`", "!1", "@2", "#3", "$4", "%5", "^6", "&7", "*8", "(9", ")0", "_-", "+=",
-        "{[", "}]", "|\\", ":;", "\"'", "<,", ">.", "?/",
-    ]},
-
-    **{k: (v, False) for k, v in {
-        pygame.K_SPACE: Keycodes.Space,
-
-        pygame.K_ESCAPE: Keycodes.Escape,
-        pygame.K_TAB: Keycodes.Tab,
-        pygame.K_RETURN: Keycodes.Enter,
-
-        pygame.K_BACKSPACE: Keycodes.Backspace,
-        pygame.K_DELETE: Keycodes.Delete,
-
-        pygame.K_UP: Keycodes.Up,
-        pygame.K_DOWN: Keycodes.Down,
-        pygame.K_LEFT: Keycodes.Left,
-        pygame.K_RIGHT: Keycodes.Right,
-    }.items()}
+    **{
+        ord(k): (v, True)
+        for k, v in [
+            "~`",
+            "!1",
+            "@2",
+            "#3",
+            "$4",
+            "%5",
+            "^6",
+            "&7",
+            "*8",
+            "(9",
+            ")0",
+            "_-",
+            "+=",
+            "{[",
+            "}]",
+            "|\\",
+            ":;",
+            "\"'",
+            "<,",
+            ">.",
+            "?/",
+        ]
+    },
+    **{
+        k: (v, False)
+        for k, v in {
+            pygame.K_SPACE: Keycodes.Space,
+            pygame.K_ESCAPE: Keycodes.Escape,
+            pygame.K_TAB: Keycodes.Tab,
+            pygame.K_RETURN: Keycodes.Enter,
+            pygame.K_BACKSPACE: Keycodes.Backspace,
+            pygame.K_DELETE: Keycodes.Delete,
+            pygame.K_UP: Keycodes.Up,
+            pygame.K_DOWN: Keycodes.Down,
+            pygame.K_LEFT: Keycodes.Left,
+            pygame.K_RIGHT: Keycodes.Right,
+        }.items()
+    },
 }
 
 
@@ -155,10 +189,4 @@ def identify_key(event: pygame) -> Optional[Key]:
     else:
         return None
 
-    return Key.new(
-        keycode=code,
-        control=control,
-        shift=shift,
-        alt=alt,
-        caps_lock=caps
-    )
+    return Key.new(keycode=code, control=control, shift=shift, alt=alt, caps_lock=caps)

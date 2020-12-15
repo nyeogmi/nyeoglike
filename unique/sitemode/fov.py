@@ -50,7 +50,9 @@ class _FOV(object):
             self._cast_light(1, 1.0, 0.0, 0, dx, dy, 0)
             self._cast_light(1, 1.0, 0.0, dx, 0, 0, dy)
 
-    def _cast_light(self, row: int, start: float, end: float, xx: int, xy: int, yx: int, yy: int):
+    def _cast_light(
+        self, row: int, start: float, end: float, xx: int, xy: int, yx: int, yy: int
+    ):
         new_start = 0.0
         if start < end:
             return
@@ -59,8 +61,10 @@ class _FOV(object):
         distance = row - 1
         while True:
             distance += 1
-            if distance > self._radius: break
-            if blocked: break
+            if distance > self._radius:
+                break
+            if blocked:
+                break
 
             delta_y = -distance
             for delta_x in range(-distance, 0 + 1):
@@ -70,7 +74,9 @@ class _FOV(object):
                 left_slope = (delta_x - 0.5) / (delta_y + 0.5)
                 right_slope = (delta_x + 0.5) / (delta_y - 0.5)
 
-                if (self._view_rect and current not in self._view_rect) or start < right_slope:
+                if (
+                    self._view_rect and current not in self._view_rect
+                ) or start < right_slope:
                     continue
                 elif end > left_slope:
                     break
@@ -89,10 +95,11 @@ class _FOV(object):
                 else:
                     if self._has_wall(current) and distance < self._radius:
                         blocked = True
-                        self._cast_light(distance + 1, start, left_slope, xx, xy, yx, yy)
+                        self._cast_light(
+                            distance + 1, start, left_slope, xx, xy, yx, yy
+                        )
                         new_start = right_slope
 
     def _r_strat(self, dx: float, dy: float):
         #  TODO: Use squared distances only?
-        return sqrt(dx**2 + dy**2)
-
+        return sqrt(dx ** 2 + dy ** 2)

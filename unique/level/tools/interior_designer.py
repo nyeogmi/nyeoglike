@@ -86,12 +86,20 @@ class InteriorDesigner(object):
             else:
                 center.add(v)
 
-        return Room(self, room_handle, all_tiles=list(all_tiles), doors=list(doors), boundary=list(boundary), center=list(center))
+        return Room(
+            self,
+            room_handle,
+            all_tiles=list(all_tiles),
+            doors=list(doors),
+            boundary=list(boundary),
+            center=list(center),
+        )
 
     def ident_rooms(self, room_type: RoomType) -> List["Room"]:
         found = []
         for rh in self._room_tiles.all_as():
-            if self._room_types[rh] != room_type: continue
+            if self._room_types[rh] != room_type:
+                continue
             found.append(self._rooms[rh])
 
         return found
@@ -136,8 +144,10 @@ class InteriorDesigner(object):
                         blocks[xy] = Block.Normal
 
         for spawn in self._npc_spawns:
-            if spawn.location not in carved: continue
-            if any(i.occludes_walk for i in items.get(spawn.location, [])): continue
+            if spawn.location not in carved:
+                continue
+            if any(i.occludes_walk for i in items.get(spawn.location, [])):
+                continue
 
             spawns[spawn.spawn_type] = spawns.get(spawn.spawn_type, set())
             spawns[spawn.spawn_type].add(spawn.location)
@@ -156,7 +166,6 @@ class Room(object):
         self,
         interior: InteriorDesigner,
         room_handle: RoomHandle,
-
         all_tiles: List[V2],
         doors: List[V2],
         boundary: List[V2],
@@ -219,7 +228,8 @@ class Room(object):
         return self._add(self._center, item)
 
     def at(self, v2: V2, item: Optional[Item] = None) -> bool:
-        if v2 not in self._all_tiles: return False  # TODO: Keep a set of all tiles for this reason?
+        if v2 not in self._all_tiles:
+            return False  # TODO: Keep a set of all tiles for this reason?
 
         return self._add([v2], item)
 
@@ -240,7 +250,8 @@ class Room(object):
         assert isinstance(v2s, list)
         assert item is None or isinstance(item, Item)
 
-        if len(v2s) == 0: return False
+        if len(v2s) == 0:
+            return False
 
         v2 = v2s.pop()
         if item:
@@ -253,14 +264,16 @@ class Room(object):
 
     def mark_spawn(self, spawn_type: SpawnType) -> bool:
         assert isinstance(spawn_type, SpawnType)
-        if self._last_location is None: return False
+        if self._last_location is None:
+            return False
 
         self._mark_spawn_at(spawn_type, self._last_location)
         return True
 
     def mark_spawn_neighbors(self, spawn_type: SpawnType) -> bool:
         assert isinstance(spawn_type, SpawnType)
-        if self._last_location is None: return False
+        if self._last_location is None:
+            return False
 
         for n in self._last_location.neighbors():
             self._mark_spawn_at(spawn_type, self._last_location)

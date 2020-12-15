@@ -26,6 +26,7 @@ class ScheduleItem(NamedTuple):
 
     def to_text(self, world: "World") -> str:
         from ..social.enterprises import EnterpriseHandle
+
         if isinstance(self.arg, NPCHandle):
             tx = world.npcs.get(self.arg).name
         elif isinstance(self.arg, EnterpriseHandle):
@@ -40,7 +41,9 @@ class _Verbs(object):
     def __init__(self):
         self._all = {}
 
-    def verb(self, name: str, arg_type: Type, format: str, destination_rule: DestinationRule) -> _Verb:
+    def verb(
+        self, name: str, arg_type: Type, format: str, destination_rule: DestinationRule
+    ) -> _Verb:
         assert name not in self._all
         self._all[name] = _Verb(name, arg_type, format, destination_rule)
         return self._all[name]
@@ -53,6 +56,6 @@ ALL = _Verbs()
 
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ..world import World
-

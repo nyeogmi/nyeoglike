@@ -14,7 +14,10 @@ class Event(NamedTuple):
 
         assert verb in Verbs.ALL
         assert isinstance(args, Tuple)
-        assert all(isinstance(a, (str, EMHandle, NotificationHandle, NPCHandle, ClaimBox)) for a in args)
+        assert all(
+            isinstance(a, (str, EMHandle, NotificationHandle, NPCHandle, ClaimBox))
+            for a in args
+        )
 
         return cls(verb, args)
 
@@ -23,10 +26,7 @@ class Verbs(object):
     Claim = "Claim"
     Tick = "Tick"
 
-    ALL = {
-        Claim,
-        Tick
-    }
+    ALL = {Claim, Tick}
     QUEST_ONLY = {Claim}
 
     @classmethod
@@ -50,5 +50,3 @@ if TYPE_CHECKING:
         NPCHandle,
         ClaimBox,
     ]
-
-

@@ -17,9 +17,13 @@ def main(w: World):
         w.rhythms.sleep(npc, random.randint(5, 10))
 
     for i in range(N_ENTERPRISES):
-        w.enterprises.generate(w, ZoneType.Restaurant)  # TODO: Generate other enterprises
+        w.enterprises.generate(
+            w, ZoneType.Restaurant
+        )  # TODO: Generate other enterprises
 
-    print([w.npcs.get(i).name for i in w.npcs._all.keys()])  # TODO: Better way to do this for non-debugging in the future
+    print(
+        [w.npcs.get(i).name for i in w.npcs._all.keys()]
+    )  # TODO: Better way to do this for non-debugging in the future
 
     w.friendships.mingle(w, 5)  # every NPC gets 5 friends
     jobs_and_houses.run(w)

@@ -93,7 +93,8 @@ class Rule(Enum):
     # #####
 
 
-class Veto(Exception): pass
+class Veto(Exception):
+    pass
 
 
 class VetoBox(object):
@@ -109,4 +110,3 @@ class VetoBox(object):
 
     def __bool__(self):
         return self.vetoed
-

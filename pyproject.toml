@@ -1,0 +1,11 @@
+[tool.black]
+exclude='''
+/(
+    \.git
+  | \.idea
+
+  # Both of these are p. common and will never exist in the project itself
+  | venv
+  | \.venv
+)/
+'''

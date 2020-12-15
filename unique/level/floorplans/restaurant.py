@@ -8,7 +8,14 @@ from ..tools import Cardinal, Carve, Grid, LinkType, RoomType, Rule, Snake
 def restaurant() -> Carve:
     cell_sz_x = random.randint(3, 4)
 
-    carve = Carve(Grid(x=cell_sz_x + 1, y=cell_sz_x + 1, cx=random.randrange(cell_sz_x + 1), cy=random.randrange(cell_sz_x + 1)))
+    carve = Carve(
+        Grid(
+            x=cell_sz_x + 1,
+            y=cell_sz_x + 1,
+            cx=random.randrange(cell_sz_x + 1),
+            cy=random.randrange(cell_sz_x + 1),
+        )
+    )
 
     # TODO: RNG from a few of these
     build_basic_layout(carve)
@@ -19,7 +26,15 @@ def restaurant() -> Carve:
             size = V2.new(sz_x, 3)
 
             with snake.veto_point() as vetoed:
-                carve.freeze(snake.tunnel(size, room_type, LinkType.Door, min_contact=min(cell_sz_x, sz_x - 1), rule=Rule.Dense))
+                carve.freeze(
+                    snake.tunnel(
+                        size,
+                        room_type,
+                        LinkType.Door,
+                        min_contact=min(cell_sz_x, sz_x - 1),
+                        rule=Rule.Dense,
+                    )
+                )
 
             if not vetoed:
                 return True
@@ -31,10 +46,11 @@ def restaurant() -> Carve:
     consumer_bathroom_rooms = [
         *carve.ident_rooms(RoomType.Gallery),
         *carve.ident_rooms(RoomType.Antechamber),
-        *carve.ident_rooms(RoomType.Antechamber)
+        *carve.ident_rooms(RoomType.Antechamber),
     ]
     for try_ in range(10):
-        if len(carve.ident_rooms(RoomType.Bathroom)) >= 2: break
+        if len(carve.ident_rooms(RoomType.Bathroom)) >= 2:
+            break
 
         random_room = random.choice(consumer_bathroom_rooms)
         for card in Cardinal.all_shuffled():
@@ -48,7 +64,8 @@ def restaurant() -> Carve:
         *carve.ident_rooms(RoomType.Kitchen),
     ]
     for try_ in range(10):
-        if len(carve.ident_rooms(RoomType.Bathroom)) - prev_bathrooms >= 1: break
+        if len(carve.ident_rooms(RoomType.Bathroom)) - prev_bathrooms >= 1:
+            break
 
         random_room = random.choice(employee_bathroom_rooms)
         for card in Cardinal.all_shuffled():
@@ -76,10 +93,12 @@ def restaurant() -> Carve:
 
 def build_basic_layout(carve: Carve):
     gallery_width = random.randint(9, 12)
-    gallery_height, gallery_corner_width = random.choice([
-        ((gallery_width * 2) // 3, (gallery_width * 1) // 3),
-        ((gallery_width * 1) // 3, (gallery_width * 2) // 3),
-    ])
+    gallery_height, gallery_corner_width = random.choice(
+        [
+            ((gallery_width * 2) // 3, (gallery_width * 1) // 3),
+            ((gallery_width * 1) // 3, (gallery_width * 2) // 3),
+        ]
+    )
     gallery_corner_depthback = random.randint(2, 5)
 
     galleries = []
@@ -88,24 +107,28 @@ def build_basic_layout(carve: Carve):
     )
 
     snake_2 = carve.snake(gallery, Cardinal.East)
-    galleries.append(snake_2.tunnel(
-        V2.new(gallery_height, gallery_corner_width),
-        RoomType.Gallery,
-        LinkType.Complete,
-        min_contact=gallery_height
-    ))
+    galleries.append(
+        snake_2.tunnel(
+            V2.new(gallery_height, gallery_corner_width),
+            RoomType.Gallery,
+            LinkType.Complete,
+            min_contact=gallery_height,
+        )
+    )
 
     snakes = [snake_2]
 
     pct = random.randrange(100)
     if pct in range(0, 50):
         snake_1 = carve.snake(gallery, Cardinal.West)
-        galleries.append(snake_1.tunnel(
-            V2.new(gallery_height, gallery_corner_width),
-            RoomType.Gallery,
-            LinkType.Complete,
-            min_contact=gallery_height
-        ))
+        galleries.append(
+            snake_1.tunnel(
+                V2.new(gallery_height, gallery_corner_width),
+                RoomType.Gallery,
+                LinkType.Complete,
+                min_contact=gallery_height,
+            )
+        )
         snake_1.turn_right()
         snakes.append(snake_1)
 
@@ -118,12 +141,14 @@ def build_basic_layout(carve: Carve):
         pass
 
     for snake in snakes:
-        galleries.append(snake.tunnel(
-            V2.new(gallery_corner_width, gallery_corner_depthback),
-            RoomType.Gallery,
-            LinkType.Complete,
-            min_contact=gallery_corner_width,
-        ))
+        galleries.append(
+            snake.tunnel(
+                V2.new(gallery_corner_width, gallery_corner_depthback),
+                RoomType.Gallery,
+                LinkType.Complete,
+                min_contact=gallery_corner_width,
+            )
+        )
 
     kitchen_snake = carve.snake(gallery, Cardinal.North)
     kitchen_snake.tunnel(
@@ -149,8 +174,10 @@ def build_basic_layout(carve: Carve):
     else:
         raise AssertionError("impossible")
 
-    for rm in carve.ident_rooms(RoomType.Gallery): carve.freeze(rm)
-    for rm in carve.ident_rooms(RoomType.Kitchen): carve.freeze(rm)
+    for rm in carve.ident_rooms(RoomType.Gallery):
+        carve.freeze(rm)
+    for rm in carve.ident_rooms(RoomType.Kitchen):
+        carve.freeze(rm)
 
     snake_2.turn_right()
     pct = random.randrange(100)

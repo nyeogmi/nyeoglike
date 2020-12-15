@@ -52,11 +52,15 @@ class Rhythm(object):
 
         value = self._quantity.get(npc, 0)
         return (
-            Spectrum.Capped if value >= 10 else
-            Spectrum.Satisfied if value >= 8 else
-            Spectrum.Scheduled if value >= 6 else
-            Spectrum.Desperate if value >= 3 else
-            Spectrum.Emergency
+            Spectrum.Capped
+            if value >= 10
+            else Spectrum.Satisfied
+            if value >= 8
+            else Spectrum.Scheduled
+            if value >= 6
+            else Spectrum.Desperate
+            if value >= 3
+            else Spectrum.Emergency
         )
 
 

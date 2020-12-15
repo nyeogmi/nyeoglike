@@ -62,7 +62,15 @@ class Snake(object):
     def turn_left(self):
         self._direction = self._direction.left()
 
-    def tunnel(self, size: V2, room_type: RoomType, link_type: LinkType, min_contact: Optional[int] = None, use_ignore: bool = False, rule: Rule = Rule.RNG):
+    def tunnel(
+        self,
+        size: V2,
+        room_type: RoomType,
+        link_type: LinkType,
+        min_contact: Optional[int] = None,
+        use_ignore: bool = False,
+        rule: Rule = Rule.RNG,
+    ):
         assert isinstance(size, V2)
         assert isinstance(room_type, RoomType)
         assert isinstance(link_type, LinkType)
@@ -75,17 +83,44 @@ class Snake(object):
             size = V2.new(size.y, size.x)
 
         if self._direction == Cardinal.North:
-            room = self._carve.tunnel_north(self._room, size, room_type, min_contact=min_contact, use_ignore=use_ignore, rule=rule)
+            room = self._carve.tunnel_north(
+                self._room,
+                size,
+                room_type,
+                min_contact=min_contact,
+                use_ignore=use_ignore,
+                rule=rule,
+            )
         elif self._direction == Cardinal.East:
-            room = self._carve.tunnel_east(self._room, size, room_type, min_contact=min_contact, use_ignore=use_ignore, rule=rule)
+            room = self._carve.tunnel_east(
+                self._room,
+                size,
+                room_type,
+                min_contact=min_contact,
+                use_ignore=use_ignore,
+                rule=rule,
+            )
         elif self._direction == Cardinal.South:
-            room = self._carve.tunnel_south(self._room, size, room_type, min_contact=min_contact, use_ignore=use_ignore, rule=rule)
+            room = self._carve.tunnel_south(
+                self._room,
+                size,
+                room_type,
+                min_contact=min_contact,
+                use_ignore=use_ignore,
+                rule=rule,
+            )
         elif self._direction == Cardinal.West:
-            room = self._carve.tunnel_west(self._room, size, room_type, min_contact=min_contact, use_ignore=use_ignore, rule=rule)
+            room = self._carve.tunnel_west(
+                self._room,
+                size,
+                room_type,
+                min_contact=min_contact,
+                use_ignore=use_ignore,
+                rule=rule,
+            )
         else:
             raise AssertionError("direction: {}".format(self._direction))
 
         self._carve.link_rooms(link_type, self._room, room)
         self._room = room
         return room
-

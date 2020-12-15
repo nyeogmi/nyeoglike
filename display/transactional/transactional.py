@@ -24,7 +24,9 @@ class UpdateTracker(object):
 
 
 class Client(object):
-    def __init__(self, screen: Screen, host_thread: greenlet, updated: UpdateTracker, keys: list):
+    def __init__(
+        self, screen: Screen, host_thread: greenlet, updated: UpdateTracker, keys: list
+    ):
         assert isinstance(screen, Screen)
         assert isinstance(host_thread, greenlet)
         assert isinstance(updated, UpdateTracker)
@@ -62,7 +64,9 @@ class Client(object):
 
 
 class Host(Interactor):
-    def __init__(self, screen: Screen, thread: greenlet, updated: UpdateTracker, keys: list):
+    def __init__(
+        self, screen: Screen, thread: greenlet, updated: UpdateTracker, keys: list
+    ):
         assert isinstance(screen, Screen)
         assert isinstance(thread, greenlet)
         assert isinstance(updated, UpdateTracker)
@@ -92,7 +96,7 @@ class Host(Interactor):
         return False
         # TODO
         # if not self._thread.is_alive():
-            # return True
+        # return True
         # return False
 
 

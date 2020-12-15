@@ -115,12 +115,20 @@ def spanish_feminine_first():
     return multi_pick(SPANISH_FEMININE_FIRST)
 
 
-def spanish_last(): return multi_pick(SPANISH_LAST)
+def spanish_last():
+    return multi_pick(SPANISH_LAST)
 
 
-def vietnamese_masculine_first(): return multi_pick(VIETNAMESE_MASCULINE_FIRST)
-def vietnamese_feminine_first(): return multi_pick(VIETNAMESE_FEMININE_FIRST)
-def vietnamese_last(): return multi_pick(VIETNAMESE_LAST)
+def vietnamese_masculine_first():
+    return multi_pick(VIETNAMESE_MASCULINE_FIRST)
+
+
+def vietnamese_feminine_first():
+    return multi_pick(VIETNAMESE_FEMININE_FIRST)
+
+
+def vietnamese_last():
+    return multi_pick(VIETNAMESE_LAST)
 
 
 def generate() -> str:

@@ -15,7 +15,8 @@ class OneToMany(Generic[A, B]):
 
         old_a = self.get_a(b)
 
-        if old_a: self.remove(old_a, b)
+        if old_a:
+            self.remove(old_a, b)
 
         self.a_to_bs[a] = self.a_to_bs.get(a, [])
         self.a_to_bs[a].append(b)
@@ -33,13 +34,15 @@ class OneToMany(Generic[A, B]):
         return self.b_to_a.get(b) == a
 
     def remove_a(self, a: A):
-        if a not in self.a_to_bs: return
+        if a not in self.a_to_bs:
+            return
         bs = self.a_to_bs.pop(a)
         for b in bs:
             self.b_to_a.pop(b)
 
     def remove_b(self, b: B):
-        if b not in self.b_to_a: return
+        if b not in self.b_to_a:
+            return
         a = self.b_to_a.pop(b)
         self.a_to_bs[a].remove(b)
 

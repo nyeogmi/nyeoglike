@@ -59,7 +59,8 @@ class Targeter(object):
         old_npcs = set(i.npc for i in self._targets)
         targets_to_add = sorted(
             [i for i in possible_targets if i.npc not in old_npcs],
-            key=lambda tar: player_xy.manhattan(tar.vec), reverse=True
+            key=lambda tar: player_xy.manhattan(tar.vec),
+            reverse=True,
         )
 
         new_targets = []
@@ -67,18 +68,20 @@ class Targeter(object):
         for i, old_tar in enumerate(self._targets):
             if old_tar.npc not in possible_corrected:
                 # remove it
-                if i == 0: new_targeting_0 = False
+                if i == 0:
+                    new_targeting_0 = False
                 continue
 
             correct_tar = possible_corrected[old_tar.npc]
 
             # shuffle new targets in
             while (
-                    any(targets_to_add) and  # w
-                    not (new_targeting_0 and i == 0) and  # never displace existing target
-
-                    # only add if the next is further away
-                    player_xy.manhattan(targets_to_add[-1].vec) < player_xy.manhattan(correct_tar.vec)
+                any(targets_to_add)
+                and not (new_targeting_0 and i == 0)  # w
+                and  # never displace existing target
+                # only add if the next is further away
+                player_xy.manhattan(targets_to_add[-1].vec)
+                < player_xy.manhattan(correct_tar.vec)
             ):
                 new_targets.append(targets_to_add.pop())
 

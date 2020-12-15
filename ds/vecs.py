@@ -58,7 +58,8 @@ class V2(NamedTuple):
     def neighbors(self) -> Iterator["V2"]:
         for y in range(self.y - 1, self.y + 2):
             for x in range(self.x - 1, self.x + 2):
-                if x == self.x and y == self.y: continue
+                if x == self.x and y == self.y:
+                    continue
                 yield V2.new(x, y)
 
 
@@ -114,8 +115,8 @@ class R2(NamedTuple):
     def __contains__(self, v: V2):
         assert isinstance(v, V2)
         return (
-            self.top.x <= v.x < self.top.x + self.size.x and
-            self.top.y <= v.y < self.top.y + self.size.y
+            self.top.x <= v.x < self.top.x + self.size.x
+            and self.top.y <= v.y < self.top.y + self.size.y
         )
 
     def contains(self, other: "R2") -> bool:

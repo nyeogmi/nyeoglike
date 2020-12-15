@@ -16,8 +16,10 @@ class OneToOne(Generic[A, B]):
         old_a = self.get_a(b)
         old_b = self.get_b(a)
 
-        if old_a: self.remove(old_a, b)
-        if old_b: self.remove(old_b, a)
+        if old_a:
+            self.remove(old_a, b)
+        if old_b:
+            self.remove(old_b, a)
 
         self.a_to_b[a] = b
         self.b_to_a[b] = a
@@ -31,12 +33,14 @@ class OneToOne(Generic[A, B]):
         return self.a_to_b.get(a) == b
 
     def remove_a(self, a: A):
-        if a not in self.a_to_b: return
+        if a not in self.a_to_b:
+            return
         b = self.a_to_b.pop(a)
         self.b_to_a.pop(b)
 
     def remove_b(self, b: B):
-        if b not in self.b_to_a: return
+        if b not in self.b_to_a:
+            return
         a = self.b_to_a.pop(b)
         self.a_to_b.pop(a)
 

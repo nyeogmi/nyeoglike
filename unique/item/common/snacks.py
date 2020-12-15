@@ -8,29 +8,40 @@ _SNACK_HUGE = dict(res0=Resource.Snack, n0=100)
 
 ALL = ItemList()
 
-ICE_CREAM = ALL.add(Item.new(
-    Profile.new(name="ice cream", icon="\xeb", ascii_icon="i", fg=Colors.CreamWhite),
-    **_SNACK_MEDIUM,
-))
+ICE_CREAM = ALL.add(
+    Item.new(
+        Profile.new(
+            name="ice cream", icon="\xeb", ascii_icon="i", fg=Colors.CreamWhite
+        ),
+        **_SNACK_MEDIUM,
+    )
+)
 
-MUSUBI = ALL.add(Item.new(
-    Profile.new(name="musubi", icon="\xf6", ascii_icon="m", fg=Colors.BrightPink),
-    **_SNACK_SMALL,
-))
+MUSUBI = ALL.add(
+    Item.new(
+        Profile.new(name="musubi", icon="\xf6", ascii_icon="m", fg=Colors.BrightPink),
+        **_SNACK_SMALL,
+    )
+)
 
-NACHOS = ALL.add(Item.new(
-    Profile.new(name="nachos", icon="\xa4", ascii_icon="n", fg=Colors.BrightOrange),
-    **_SNACK_MEDIUM,
-))
+NACHOS = ALL.add(
+    Item.new(
+        Profile.new(name="nachos", icon="\xa4", ascii_icon="n", fg=Colors.BrightOrange),
+        **_SNACK_MEDIUM,
+    )
+)
 
-PIZZA = ALL.add(Item.new(
-    # TODO: Better graphic?
-    Profile.new(name="pizza", icon="O", ascii_icon="p", fg=Colors.BloodRed),
-    **_SNACK_HUGE,
-))
+PIZZA = ALL.add(
+    Item.new(
+        # TODO: Better graphic?
+        Profile.new(name="pizza", icon="O", ascii_icon="p", fg=Colors.BloodRed),
+        **_SNACK_HUGE,
+    )
+)
 
-SUSHI = ALL.add(Item.new(
-    Profile.new(name="sushi", icon="\xed", ascii_icon="s", fg=Colors.BrightWhite),
-    **_SNACK_SMALL
-))
-
+SUSHI = ALL.add(
+    Item.new(
+        Profile.new(name="sushi", icon="\xed", ascii_icon="s", fg=Colors.BrightWhite),
+        **_SNACK_SMALL,
+    )
+)

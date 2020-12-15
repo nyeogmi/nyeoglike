@@ -29,7 +29,7 @@ class Notifications(object):
         self,
         msg: Union[str, "EMHandle"],
         reason: NotificationReason = NotificationReason.Misc,
-        source: Optional["NPCHandle"] = None
+        source: Optional["NPCHandle"] = None,
     ) -> NotificationHandle:
         from .eventmonitor import EMHandle
         from .npc import NPCHandle
@@ -39,7 +39,9 @@ class Notifications(object):
         assert source is None or isinstance(source, NPCHandle)
 
         handle = NotificationHandle(self._sym.gen())
-        self._active.append(Notification(ident=handle, message=msg, reason=reason, source=source))
+        self._active.append(
+            Notification(ident=handle, message=msg, reason=reason, source=source)
+        )
         return handle
 
     def acknowledge(self, world: "World", handle: NotificationHandle, yes):
@@ -76,13 +78,17 @@ class Notifications(object):
             return self._active[-1]
         return None
 
-    def remove_for(self, quest: "EMHandle", reason: Optional["NotificationReason"] = None):
+    def remove_for(
+        self, quest: "EMHandle", reason: Optional["NotificationReason"] = None
+    ):
         from .eventmonitor import EMHandle
+
         assert isinstance(quest, EMHandle)
         assert reason is None or isinstance(reason, NotificationReason)
 
         ixs = [
-            ix for ix, notif in enumerate(self._active)
+            ix
+            for ix, notif in enumerate(self._active)
             if notif.message == quest
             and (notif.reason == reason if reason is not None else True)
         ]

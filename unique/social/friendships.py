@@ -49,5 +49,6 @@ class Friendships(object):
 
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ..world import World

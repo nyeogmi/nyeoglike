@@ -65,7 +65,9 @@ class FetchQuest(EventMonitor):
         if state == _FQState.NotFetched:
             return QuestStatus(
                 name="{} ({})".format(self._item_name, npc_name),
-                description="{} wants you to get {} and bring it back to them.".format(npc_name, self._item_name),
+                description="{} wants you to get {} and bring it back to them.".format(
+                    npc_name, self._item_name
+                ),
                 oneliner="Get {} for {}".format(self._item_name, npc_name),
                 outcome=QuestOutcome.InProgress,
                 assigner=self._npc,
@@ -74,7 +76,9 @@ class FetchQuest(EventMonitor):
         elif state == _FQState.NotReturned:
             return QuestStatus(
                 name="{} ({})".format(self._item_name, npc_name),
-                description="Take the {} and return it to {}.".format(self._item_name, npc_name),
+                description="Take the {} and return it to {}.".format(
+                    self._item_name, npc_name
+                ),
                 oneliner="Bring {} to {}".format(self._item_name, npc_name),
                 outcome=QuestOutcome.InProgress,
                 assigner=self._npc,

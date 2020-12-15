@@ -39,7 +39,9 @@ class InventoryScreen(object):
             return
 
     def draw(self):
-        window = draw_window(self.io.draw().goto(4, 7).box(26, 25), fg=Colors.MSGSystem, double=True)
+        window = draw_window(
+            self.io.draw().goto(4, 7).box(26, 25), fg=Colors.MSGSystem, double=True
+        )
         window.title_bar.copy().fg(Colors.TermFGBold).puts("Inventory")
 
         window.content.copy().goto(0, 0).fg(Colors.TermFGBold).puts("Resources")
@@ -48,11 +50,21 @@ class InventoryScreen(object):
         y = 1
         for resource in Resource:
             amt = self.world.inventory.get(resource)
-            if resource in Resources.ESSENTIAL or True or self.world.inventory.get(resource) > 0:
-                window.content.copy().goto_xy(0, y).fg(Colors.MSGSystem).puts("\xf9 ").fg(Colors.TermFG).puts(resource.name)
+            if (
+                resource in Resources.ESSENTIAL
+                or True
+                or self.world.inventory.get(resource) > 0
+            ):
+                window.content.copy().goto_xy(0, y).fg(Colors.MSGSystem).puts(
+                    "\xf9 "
+                ).fg(Colors.TermFG).puts(resource.name)
 
                 if resource == Resource.Money:
-                    window.content.copy().goto_xy(11, y).fg(Colors.TermFG).puts("$").fg(Colors.TermFGBold).puts("{:,.2f}".format(amt / 100))
+                    window.content.copy().goto_xy(11, y).fg(Colors.TermFG).puts("$").fg(
+                        Colors.TermFGBold
+                    ).puts("{:,.2f}".format(amt / 100))
                 else:
-                    window.content.copy().goto_xy(12, y).fg(Colors.TermFGBold).puts(str(amt))
+                    window.content.copy().goto_xy(12, y).fg(Colors.TermFGBold).puts(
+                        str(amt)
+                    )
                 y += 1

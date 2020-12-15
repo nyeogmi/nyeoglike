@@ -75,7 +75,9 @@ class NPC(object):
         if world.player_xy.manhattan(me.me_xy) <= 1:
             # offer a quest
             # world.eventmonitors.add(world, lambda handle: TestQuest(handle, self._ident))
-            world.eventmonitors.add(world, lambda handle: FetchQuest(handle, self._ident, "pizza"))
+            world.eventmonitors.add(
+                world, lambda handle: FetchQuest(handle, self._ident, "pizza")
+            )
 
 
 from typing import TYPE_CHECKING

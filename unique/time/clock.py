@@ -9,22 +9,48 @@ class Clock(object):
         self._night = 0
 
     @property
-    def started(self): return self._started
+    def started(self):
+        return self._started
 
     @property
-    def tick(self): return self._tick
+    def tick(self):
+        return self._tick
 
     @property
     def weekday(self):
-        return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][
-            (self._night + (1 if self._time_of_day in [TimeOfDay.Midnight, TimeOfDay.Dawn, TimeOfDay.Morning, TimeOfDay.Afternoon] else 0)) % 7
+        return [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        ][
+            (
+                self._night
+                + (
+                    1
+                    if self._time_of_day
+                    in [
+                        TimeOfDay.Midnight,
+                        TimeOfDay.Dawn,
+                        TimeOfDay.Morning,
+                        TimeOfDay.Afternoon,
+                    ]
+                    else 0
+                )
+            )
+            % 7
         ]
 
     @property
-    def time_of_day(self): return self._time_of_day
+    def time_of_day(self):
+        return self._time_of_day
 
     @property
-    def night(self): return self._night
+    def night(self):
+        return self._night
 
     def start(self):
         self._started = True

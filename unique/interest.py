@@ -29,9 +29,11 @@ class InterestTracker(object):
     def tab(self, handle: NPCHandle) -> Interest:
         existing = self[handle]
         new = (
-            Interest.Friend if existing == Interest.No else
-            Interest.Love if existing == Interest.Friend else
-            Interest.No
+            Interest.Friend
+            if existing == Interest.No
+            else Interest.Love
+            if existing == Interest.Friend
+            else Interest.No
         )
         self[handle] = new
         return new
@@ -58,4 +60,3 @@ class InterestTracker(object):
                 del self._interest_level[handle]
         else:
             self._interest_level[handle] = interest
-
