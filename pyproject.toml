@@ -9,3 +9,7 @@ exclude='''
   | \.venv
 )/
 '''
+
+[tool.isort]
+profile = "black"
+src_paths = ["display", "ds", "unique"]

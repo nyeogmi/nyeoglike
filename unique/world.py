@@ -10,6 +10,7 @@ from .level import UnloadedLevel, LoadedLevel, SpawnNPC
 from .worldmap import Levels, LevelHandle
 from .notifications import Notifications, Notification
 from .npc import NPCs, NPC, NPCHandle
+from .scene_flags import SceneFlags
 from .social import Friendships, Enterprises, Households, HouseholdHandle
 from .time import Clock, Schedules
 
