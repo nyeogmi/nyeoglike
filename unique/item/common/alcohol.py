@@ -11,21 +11,21 @@ ALL = ItemList()
 
 BEER = ALL.add(
     Item.new(
-        Profile.new(name="beer", icon="\x97", ascii_icon="b", fg=Colors.YellowGreen0),
+        Profile.new(name="beer", icon="\x97", fg=Colors.YellowGreen0),
         **_DRINK_MEDIUM,
     )
 )
 
 CIDER = ALL.add(
     Item.new(
-        Profile.new(name="cider", icon="\x95", ascii_icon="b", fg=Colors.YellowGreen0),
+        Profile.new(name="cider", icon="\x95", fg=Colors.YellowGreen0),
         **_DRINK_MEDIUM,
     )
 )
 
 VODKA = ALL.add(
     Item.new(
-        Profile.new(name="vodka", icon="\xa7", ascii_icon="v", fg=Colors.White1),
+        Profile.new(name="vodka", icon="\xa7", fg=Colors.White1),
         **_DRINK_HUGE,
     )
 )

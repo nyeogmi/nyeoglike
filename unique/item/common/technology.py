@@ -6,7 +6,7 @@ ALL = ItemList()
 
 LAPTOP = ALL.add(
     Item.new(
-        Profile.new(name="laptop", ascii_icon="'"),
+        Profile.new(name="laptop", icon="'"),
         res0=Resource.Money,
         n0=29999,
     )
@@ -14,7 +14,7 @@ LAPTOP = ALL.add(
 
 PHONE = ALL.add(
     Item.new(
-        Profile.new(name="phone", ascii_icon="'"),
+        Profile.new(name="phone", icon="'"),
         res0=Resource.Money,
         n0=9999,
     )

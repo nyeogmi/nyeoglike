@@ -16,15 +16,15 @@ class Resource(Enum):
         if self == Resource.Money:
             return Colors.ResourceGeneric, "$"
         if self == Resource.Blood:
-            return Colors.BloodRed, "'"
+            return Colors.Red1, "'"
         if self == Resource.Spark:
-            return Colors.BrightGreen, "*"
+            return Colors.YellowGreen1, "*"
 
         if self == Resource.Snack:
             return Colors.ResourceGeneric, "%"
         if self == Resource.Furniture:
             return Colors.ResourceGeneric, "\xe9"
-        return Colors.DarkGray, "?"
+        return Colors.Grey0, "?"
 
 
 class Resources(object):
@@ -45,7 +45,6 @@ class Contribution(NamedTuple):
 class Profile(NamedTuple):
     name: str
     icon: str  # a string or a double-wide
-    ascii_icon: str
     double_icon: Optional[str]
     bg: Optional[Color]
     fg: Optional[Color]
@@ -54,21 +53,16 @@ class Profile(NamedTuple):
     def new(
         cls,
         name: str,
-        ascii_icon: str,
-        icon: Optional[str] = None,
+        icon: str,
         bg: Optional[int] = None,
         fg: Optional[int] = None,
     ):
         assert isinstance(name, str)
-        assert isinstance(ascii_icon, str) and len(ascii_icon) == 1
-
-        if icon is None:
-            icon = ascii_icon
         assert isinstance(icon, str) and len(icon) == 1
 
         assert bg is None or isinstance(bg, Color)
         assert fg is None or isinstance(fg, Color)
-        return Profile(name, icon, ascii_icon, None, bg, fg)
+        return Profile(name, icon, None, bg, fg)
 
     def with_double_icon(self, s) -> "Profile":
         assert isinstance(s, str)

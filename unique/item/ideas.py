@@ -7,40 +7,12 @@
 # - Graphing calculator
 #
 # Snacks:
-# - Chicken nuggets
-# - Steak (+Blood)
-# - Falafel
-# - Salt
-# - Popcorn
-# - Banh mi
-# - Tacos
-# - Soup (pho, carne en su jugo)
-# - Spare rib
-# - Waffles
-# - Fries
-# - Pomegranates
-# - Chips
-# - Galbi / Kalbijjim
-# - Bulgogi
-# - Bratwurst
-# - Tuna
-# - Peaches (other fruits?)
-# - Strawberries
-# - Pet food
-# - Burger
-# - Burrito
-# - Meatloaf
-# - Stroganoff
-# - Pad thai
-# - Chicken fettucine alfredo
-# - Curry
-# - Chicken tikka masala
-# - Fried ice cream
-# - Cinnamon buns
-# - Donuts (raised, jelly)
-# - Shrimp
-# - Tteokbokki
-# - Jeon
+# - ice cream
+# - musubi
+# - nachos
+# - pizza
+# - sushi
+
 #
 # Spark items:
 # - Dice

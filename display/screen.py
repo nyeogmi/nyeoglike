@@ -340,7 +340,9 @@ class Drawer(object):
 
     def clear(self) -> "Drawer":
         assert self._screen is not None
-        self._screen._cells.delete_region(self._bounds)
+        self._screen._cells.delete_region(
+            (self._bounds.top + self._offset).sized(self._bounds.size)
+        )
         return self
 
     def _putc_of(self, old: Cell, new_char: str) -> Cell:

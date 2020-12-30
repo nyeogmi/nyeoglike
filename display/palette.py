@@ -84,3 +84,47 @@ class Colors(object):
 
     QuestSucceeded = Fuchsia1
     QuestFailed = Red1
+
+
+# Re-export certain colors
+# If items have a color not in this list, that's suspicious
+class ItemColors(object):
+    Mundane = Colors.GreenNeg
+
+    Green0 = Colors.Green0
+    Green1 = Colors.Green1
+
+    Red0 = Colors.Red0
+    Red1 = Colors.Red1
+
+    # it's too purplish at low values to be blue
+    Sky0 = Colors.Sky0
+    Sky1 = Colors.Sky1
+
+    Fuchsia0 = Colors.Fuchsia0
+    Fuchsia1 = Colors.Fuchsia1
+
+    ALL = [Green0, Green1, Red0, Sky1, Mundane, Red1, Sky0, Fuchsia1, Fuchsia0]
+
+    @classmethod
+    def name(cls, value):
+        if value == cls.Mundane:
+            return "Mundane"
+        elif value == cls.Green0:
+            return "Green0"
+        elif value == cls.Green1:
+            return "Green1"
+        elif value == cls.Red0:
+            return "Red0"
+        elif value == cls.Red1:
+            return "Red1"
+        elif value == cls.Sky0:
+            return "Sky0"
+        elif value == cls.Sky1:
+            return "Sky1"
+        elif value == cls.Fuchsia0:
+            return "Fuchsia0"
+        elif value == cls.Fuchsia1:
+            return "Fuchsia1"
+
+        raise NotImplementedError("don't know how to name: {}".format(value))
