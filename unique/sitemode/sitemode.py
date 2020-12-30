@@ -402,10 +402,10 @@ class Sitemode(object):
         window.content.copy().goto(0, 0).puts("$").fg(Colors.TermFGBold).puts(
             "{:,.2f}".format(self.world.inventory.get(Resource.Money) / 100)
         )
-        window.content.copy().goto(0, 1).puts("[").bg(Colors.BloodRed).puts(
-            " " * 20
-        ).bg(Colors.TermBG).fg(Colors.TermFG).puts("]")
-        window.content.copy().goto(0, 2).puts("[").bg(Colors.BrightGreen).puts(
+        window.content.copy().goto(0, 1).puts("[").bg(Colors.Red1).puts(" " * 20).bg(
+            Colors.TermBG
+        ).fg(Colors.TermFG).puts("]")
+        window.content.copy().goto(0, 2).puts("[").bg(Colors.YellowGreen1).puts(
             " " * 20
         ).bg(Colors.TermBG).fg(Colors.TermFG).puts("]")
 
