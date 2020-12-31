@@ -186,7 +186,8 @@ class Sitemode(object):
         tooltip_xy = None
         tooltip_lst = []
         blocked = (
-            lambda rel: self.world.level.blocks.get(world_xy + rel) == Block.Normal
+            lambda rel: (world_xy + rel) in self.world.level.seen
+            and self.world.level.blocks.get(world_xy + rel) == Block.Normal
         )
         for world_xy, viewport_xy in zip(self.camera_world_rect, viewport_xys):
             if self.lightmap[world_xy] == 0:
@@ -200,16 +201,32 @@ class Sitemode(object):
                 # except blocks, if seen before
 
                 if world_xy in self.world.level.seen:
+                    block = self.world.level.blocks.get(world_xy)
                     # TODO: Use "memory of seen tiles."
                     # Right now it's just "if you saw a tile, you know if there's a wall there."
-                    block = self.world.level.blocks.get(world_xy)
-
                     if block == Block.Normal:
-                        # full block
-                        draw_tile.copy().puts("\xdb\xdb", wrap=False)
+                        self.draw_wallpaper(
+                            draw_tile.copy(),
+                            self.world.level.wallpaper.get(world_xy + V2.new(0, 1)),
+                            seen=self.lightmap[world_xy + V2.new(0, 1)] != 0
+                            and self.world.player_xy.y > world_xy.y,
+                        )
 
                     elif block == Block.Exit:
                         draw_tile.copy().putdw(DoubleWide.Exit)
+
+                # if this is right above a wall, draw a (seen) ceiling
+                if (
+                    blocked(V2.new(0, 1))
+                    and (world_xy + V2.new(0, 1)) in self.world.level.seen
+                ):
+                    self.draw_ceiling(
+                        draw_tile.copy(),
+                        self.world.level.wallpaper.default,
+                        # self.world.level.wallpaper.get(world_xy + V2.new(0, 1)),
+                        cutaway=False,
+                        seen=self.lightmap[world_xy + V2.new(0, 1)] > 0,
+                    )
 
             else:
                 draw_tile = (
@@ -219,62 +236,27 @@ class Sitemode(object):
 
                 block = self.world.level.blocks.get(world_xy)
                 if block == Block.Normal:
-                    # if we can see the block, and can't see the ceiling...
-                    draw_inner_wall = (
-                        self.world.player_xy.y >= world_xy.y
-                        and True  # and self.lightmap[world_xy + V2.new(0, 1)] > 0
-                        and not blocked(V2.new(0, 1))
+                    # inner wall
+                    self.draw_wallpaper(
+                        draw_tile,
+                        self.world.level.wallpaper.get(world_xy),
+                        # check if this side of the wall is unseen
+                        seen=self.lightmap[world_xy + V2.new(0, 1)] != 0
+                        and self.world.player_xy.y > world_xy.y,
                     )
-
-                    if draw_inner_wall:
-                        # inner wall
-                        if self.lightmap[world_xy + V2.new(0, 1)] == 0:
-                            # this side of the wall is unseen
-                            # TODO: Draw like this? Re-eval after making the ceiling effect more subtle on actually-seen tiles
-                            draw_tile.copy().fg(Colors.WorldUnseenFG).puts(
-                                "\xb0\xb0", wrap=False
-                            )
-                        else:
-                            draw_tile.copy().puts("\xb0\xb0", wrap=False)
-
-                        # TODO: Instead of filling the ceiling, swap the BG of the tile behind it?
-                        # That way you can see through it.
-
-                        # TODO: Unseen walls should project ceilings too
-
-                        # TODO: In the lightmapped cases, still draw a ceiling, but very transparent?
-                        if True:  # self.lightmap[world_xy + V2.new(0, -1)] == 0:
-                            # ceiling
-                            draw_tile.copy().goto(viewport_xy + V2.new(0, -1)).puts(
-                                "\xdb\xdb", wrap=False
-                            )
-
-                        if (
-                            True  # self.lightmap[world_xy + V2.new(-1, -1)] == 0
-                            and blocked(V2.new(-1, 0))
-                            and self.lightmap[world_xy + V2.new(-1, 0)] != 0
-                        ):
-                            # ceiling
-                            draw_tile.copy().goto(viewport_xy + V2.new(-2, -1)).puts(
-                                "\xdb\xdb", wrap=False
-                            )
-
-                        if (
-                            True  # self.lightmap[world_xy + V2.new(1, -1)] == 0
-                            and blocked(V2.new(1, 0))
-                            and self.lightmap[world_xy + V2.new(1, 0)] != 0
-                        ):
-                            # ceiling
-                            draw_tile.copy().goto(viewport_xy + V2.new(2, -1)).puts(
-                                "\xdb\xdb", wrap=False
-                            )
-
-                    else:
-                        # full block
-                        draw_tile.copy().puts("\xdb\xdb", wrap=False)
 
                 elif block == Block.Exit:
                     draw_tile.copy().putdw(DoubleWide.Exit)
+
+                # if this is right above a wall and is not walkable, draw a (seen) ceiling
+                if blocked(V2.new(0, 1)):
+                    self.draw_ceiling(
+                        draw_tile.copy(),
+                        self.world.level.wallpaper.default,
+                        # self.world.level.wallpaper.get(world_xy + V2.new(0, 1)),
+                        cutaway=not blocked(V2.new(0, 0)),
+                        seen=True,
+                    )
 
                 for spawn in self.world.level.items.view(world_xy):
                     profile = spawn.item.profile
@@ -472,3 +454,34 @@ class Sitemode(object):
         )
 
         window.content.copy().goto(0, 0).puts(txt)
+
+    def draw_wallpaper(self, drawer, walltile, seen: bool):
+        d = drawer.copy()
+
+        if not seen:  # TODO: Reinstate detailed rendering for unseen walls?
+            d.fg(Colors.WorldUnseenFG).puts("\xb0\xb0", wrap=False)
+            return
+
+        if walltile.flip:
+            d = d.bg(walltile.fg if seen else Colors.WorldUnseenFG).fg(
+                Colors.WorldBG if seen else Colors.WorldUnseenBG
+            )
+        else:
+            d = d.fg(walltile.fg if seen else Colors.WorldUnseenFG)
+
+        d.puts(
+            walltile.display
+            if seen
+            else "\xb0\xb0"
+            if walltile.display == "\xdb\xdb"
+            else walltile.display,
+            wrap=False,
+        )
+
+    def draw_ceiling(self, drawer, walltile, cutaway: bool, seen: bool):
+        if cutaway:
+            return
+
+        d = drawer.copy()
+        d.bg(walltile.fg if seen else Colors.WorldUnseenFG)
+        d.puts("  ", wrap=False)

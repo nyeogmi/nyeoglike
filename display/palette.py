@@ -128,3 +128,15 @@ class ItemColors(object):
             return "Fuchsia1"
 
         raise NotImplementedError("don't know how to name: {}".format(value))
+
+
+class WallColors(object):
+    Base = Colors.WorldFG
+    Green0 = Colors.Green0
+    Red0 = Colors.Red0
+    Sky0 = Colors.Sky0
+    Fuchsia0 = Colors.Fuchsia0
+
+    ALL = [Base, Green0, Red0, Sky0, Fuchsia0]
+    COLORFUL = [Green0, Red0, Sky0, Fuchsia0]
+    BANAL = [Base]

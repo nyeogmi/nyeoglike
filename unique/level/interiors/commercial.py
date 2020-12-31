@@ -4,9 +4,19 @@ from ds.vecs import R2, V2
 from raw.furniture import BED, CHAIR, COUNTER, TABLE
 
 from ..tools import Hint, InteriorDesigner, RoomType, SpawnType
+from ..wallpaper import WallTile
 
 
 def commercial(interior: InteriorDesigner):
+    interior.wallpaper.set_default(
+        random.choice([WallTile.generate_wallpaper(), WallTile.generate_paneling()])
+    )
+
+    for cl in interior.ident_rooms(RoomType.Bathroom):
+        interior.wallpaper.add(
+            cl.all_tiles_and_interior_wall(), WallTile.generate_bathroom_tile()
+        )
+
     galleries = list(interior.ident_rooms(RoomType.Gallery))
     first_gallery = galleries[0]
     for gallery in galleries[1:]:

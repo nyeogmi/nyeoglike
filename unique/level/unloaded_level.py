@@ -9,6 +9,7 @@ from ds.vecs import V2
 from ..item import Item
 from ..npc import NPCHandle
 from .block import Block
+from .wallpaper import Wallpaper
 from .loaded_level import LoadedLevel
 
 
@@ -27,18 +28,21 @@ class UnloadedLevel(object):
     def __init__(
         self,
         player_start_xy: V2,
+        wallpaper: Wallpaper,
         blocks: Dict[V2, Block],
         items: Dict[V2, List[Item]],
         npc_spawns: Dict[SpawnType, Set[V2]],
         ephemera_source: Ref[Callable[["World", LoadedLevel], None]],
     ):
         assert isinstance(player_start_xy, V2)
+        assert isinstance(wallpaper, Wallpaper)
         assert isinstance(blocks, dict)
         assert isinstance(items, dict)
         assert isinstance(npc_spawns, dict)
         assert isinstance(ephemera_source, Ref)
 
         self._player_start_xy = player_start_xy
+        self._wallpaper = wallpaper
         self._blocks = blocks
         self._items = items
         self._npc_spawns = npc_spawns
@@ -100,6 +104,7 @@ class UnloadedLevel(object):
                 npc_sites.add(found_spot, npc.npc)
 
         loaded_level = LoadedLevel(
+            wallpaper=self._wallpaper,
             blocks=dict(self._blocks),
             # TODO: Spawn temporary items?
             items={k: list(v) for k, v in self._items.items()},

@@ -8,6 +8,7 @@ from ds.vecs import V2
 from ..item import Item
 from ..npc import NPCHandle
 from .block import Block
+from .wallpaper import Wallpaper
 
 
 class SpawnHandle(NamedTuple):
@@ -54,10 +55,12 @@ class Items(object):
 class LoadedLevel(object):
     def __init__(
         self,
+        wallpaper: Wallpaper,
         blocks: Dict[V2, Block],
         items: Dict[V2, List[Item]],
         npc_sites: OneToMany[V2, NPCHandle],
     ):
+        self.wallpaper = wallpaper
         self.blocks: Dict[V2, Block] = blocks
         self.seen: Set[V2] = set()  # every time the player sees a tile, add it to this
         self.items: Items = Items()

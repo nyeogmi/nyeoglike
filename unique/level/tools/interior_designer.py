@@ -11,6 +11,7 @@ from unique.level.unloaded_level import UnloadedLevel
 
 from ..block import Block
 from .recs import Hint, RoomHandle, RoomType, Spawn, SpawnType
+from ..wallpaper import Wallpaper, WallTile
 
 
 # TODO: Item spawns that are randomized at level load time
@@ -26,6 +27,7 @@ class InteriorDesigner(object):
         assert isinstance(hints, dict)
 
         self._player_start_xy = V2(0, 0)
+        self._wallpaper: Wallpaper = Wallpaper(WallTile.default())
         self._room_tiles: OneToMany[RoomHandle, V2] = room_tiles
         self._room_types: Dict[RoomHandle, RoomType] = room_types
         self._cell_objects: Dict[V2, List[Item]] = dict()
@@ -45,6 +47,10 @@ class InteriorDesigner(object):
         for door in self._all_doors:
             for rh, room in self._rooms.items():
                 room.boundary_avoid_door(door)
+
+    @property
+    def wallpaper(self):
+        return self._wallpaper
 
     def merge_rooms(self, room0: "Room", room1: "Room"):
         rh0 = room0._room_handle
@@ -156,6 +162,7 @@ class InteriorDesigner(object):
             spawns[spawn.spawn_type].add(spawn.location)
 
         return UnloadedLevel(
+            wallpaper=self._wallpaper,
             player_start_xy=self._player_start_xy,
             blocks=blocks,
             items=items,
@@ -211,6 +218,16 @@ class Room(object):
     def all_tiles(self) -> Iterator[V2]:
         for t in self._all_tiles:
             yield t
+
+    def all_tiles_and_interior_wall(self) -> Set[V2]:
+        all_tiles = set()
+        for t in self._all_tiles:
+            all_tiles.add(t)
+            for n in [t + V2.new(0, -1)]:
+                if self._interior._room_tiles.get_a(n) is None:
+                    all_tiles.add(n)
+
+        return all_tiles
 
     def hinted(self, hint: Hint) -> Iterator[V2]:
         # TODO: Allow the user to also specify that it is in the doors, boundary, or center
