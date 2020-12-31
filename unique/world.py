@@ -105,7 +105,7 @@ class World(object):
 
         self.camera_xy = level.player_start_xy
         self.player_xy = level.player_start_xy
-        self.level = level.load(npcs)
+        self.level = level.load(self, npcs)
 
     def notify(self, event: Event):
         self._notify_queue.append(event)

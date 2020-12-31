@@ -1,7 +1,7 @@
 import random
 
 from ds.vecs import R2, V2
-from unique.item.common.furniture import BED, CHAIR, COUNTER, TABLE
+from raw.furniture import BED, CHAIR, COUNTER, TABLE
 
 from ..tools import Hint, InteriorDesigner, RoomType, SpawnType
 

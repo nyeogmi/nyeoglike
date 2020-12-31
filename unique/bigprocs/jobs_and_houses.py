@@ -3,6 +3,7 @@ import random
 from typing import NamedTuple, Set
 
 from ds.gale_shapley import GaleShapley
+from ds.lists import shuffled
 
 from ..npc import NPCHandle
 from ..social import EnterpriseHandle, HouseholdHandle
@@ -189,9 +190,3 @@ def evict_resented_npcs(w: World):
 
     for n in sets.resented_npcs:
         w.households.evict(n)
-
-
-def shuffled(xs):
-    lxs = list(xs)
-    random.shuffle(lxs)
-    return lxs

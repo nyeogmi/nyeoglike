@@ -58,7 +58,7 @@ class Colors(object):
     Fuchsia0 = Color(14)
     Fuchsia1 = Color(15)
 
-    TermBG = Black1
+    TermBG = Black0
     TermFG = White0
     TermFGBold = White1
 

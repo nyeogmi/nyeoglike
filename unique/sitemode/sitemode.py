@@ -4,7 +4,7 @@ from ds.vecs import V2
 from ..event import Event, Verbs
 from ..eventmonitor import EMHandle, QuestOutcome, QuestStatus
 from ..interest import Interest
-from ..item import Resource, common
+from ..item import Resource
 from ..level import Block
 from ..notifications import NotificationReason
 from ..npc import NPC, NPCHandle, NPCs
@@ -85,23 +85,19 @@ class Sitemode(object):
             fly_screen.show(self.io, self.world)
 
         elif input.match(Key.new("g")):
-            items = self.world.level.items.get(self.world.player_xy, [])
-            if len(items) == 0:
+            spawns = self.world.level.items.view(self.world.player_xy)
+            if len(spawns) == 0:
                 pass  # nothing to grab
             else:
                 if (
-                    len(items) == 1
+                    len(spawns) == 1
                 ):  # TODO: Only autopick the item if it would not be stealing
                     ix = 0
                 else:
                     # TODO: Let the player pick their item
                     ix = 0  # item = self.pick_item(items)
 
-                item = items.pop()
-                if len(items) == 0:
-                    del self.world.level.items[
-                        self.world.player_xy
-                    ]  # TODO: This should be abstracted around
+                item = self.world.level.items.take(spawns.pop(ix).handle)
                 self.world.inventory.add(self.world, item)
 
         # move the player
@@ -189,6 +185,9 @@ class Sitemode(object):
 
         tooltip_xy = None
         tooltip_lst = []
+        blocked = (
+            lambda rel: self.world.level.blocks.get(world_xy + rel) == Block.Normal
+        )
         for world_xy, viewport_xy in zip(self.camera_world_rect, viewport_xys):
             if self.lightmap[world_xy] == 0:
                 draw_tile = (
@@ -220,14 +219,65 @@ class Sitemode(object):
 
                 block = self.world.level.blocks.get(world_xy)
                 if block == Block.Normal:
-                    # full block
-                    draw_tile.copy().puts("\xdb\xdb", wrap=False)
+                    # if we can see the block, and can't see the ceiling...
+                    draw_inner_wall = (
+                        self.world.player_xy.y >= world_xy.y
+                        and True  # and self.lightmap[world_xy + V2.new(0, 1)] > 0
+                        and not blocked(V2.new(0, 1))
+                    )
+
+                    if draw_inner_wall:
+                        # inner wall
+                        if self.lightmap[world_xy + V2.new(0, 1)] == 0:
+                            # this side of the wall is unseen
+                            # TODO: Draw like this? Re-eval after making the ceiling effect more subtle on actually-seen tiles
+                            draw_tile.copy().fg(Colors.WorldUnseenFG).puts(
+                                "\xb0\xb0", wrap=False
+                            )
+                        else:
+                            draw_tile.copy().puts("\xb0\xb0", wrap=False)
+
+                        # TODO: Instead of filling the ceiling, swap the BG of the tile behind it?
+                        # That way you can see through it.
+
+                        # TODO: Unseen walls should project ceilings too
+
+                        # TODO: In the lightmapped cases, still draw a ceiling, but very transparent?
+                        if True:  # self.lightmap[world_xy + V2.new(0, -1)] == 0:
+                            # ceiling
+                            draw_tile.copy().goto(viewport_xy + V2.new(0, -1)).puts(
+                                "\xdb\xdb", wrap=False
+                            )
+
+                        if (
+                            True  # self.lightmap[world_xy + V2.new(-1, -1)] == 0
+                            and blocked(V2.new(-1, 0))
+                            and self.lightmap[world_xy + V2.new(-1, 0)] != 0
+                        ):
+                            # ceiling
+                            draw_tile.copy().goto(viewport_xy + V2.new(-2, -1)).puts(
+                                "\xdb\xdb", wrap=False
+                            )
+
+                        if (
+                            True  # self.lightmap[world_xy + V2.new(1, -1)] == 0
+                            and blocked(V2.new(1, 0))
+                            and self.lightmap[world_xy + V2.new(1, 0)] != 0
+                        ):
+                            # ceiling
+                            draw_tile.copy().goto(viewport_xy + V2.new(2, -1)).puts(
+                                "\xdb\xdb", wrap=False
+                            )
+
+                    else:
+                        # full block
+                        draw_tile.copy().puts("\xdb\xdb", wrap=False)
 
                 elif block == Block.Exit:
                     draw_tile.copy().putdw(DoubleWide.Exit)
 
-                for item in self.world.level.items.get(world_xy, []):
-                    profile = item.profile
+                for spawn in self.world.level.items.view(world_xy):
+                    profile = spawn.item.profile
                     dt = draw_tile.copy()
                     if profile.bg is not None:
                         dt.bg(profile.bg)
@@ -238,7 +288,7 @@ class Sitemode(object):
                         dt.goto(viewport_xy).puts(profile.double_icon, wrap=False)
                     else:
                         dt.goto(viewport_xy + V2(1, 0)).puts(profile.icon)
-                        (resource_fg, resource_icon) = item.contributions[
+                        (resource_fg, resource_icon) = spawn.item.contributions[
                             0
                         ].resource.display()
                         dt.goto(viewport_xy).fg(resource_fg).puts(resource_icon)

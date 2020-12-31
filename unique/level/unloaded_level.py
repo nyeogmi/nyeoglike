@@ -1,7 +1,8 @@
 import random
 from enum import Enum
-from typing import Dict, List, NamedTuple, Set
+from typing import Callable, Dict, List, NamedTuple, Set
 
+from ds.code_registry import Ref
 from ds.relational import OneToMany
 from ds.vecs import V2
 
@@ -29,22 +30,25 @@ class UnloadedLevel(object):
         blocks: Dict[V2, Block],
         items: Dict[V2, List[Item]],
         npc_spawns: Dict[SpawnType, Set[V2]],
+        ephemera_source: Ref[Callable[["World", LoadedLevel], None]],
     ):
         assert isinstance(player_start_xy, V2)
         assert isinstance(blocks, dict)
         assert isinstance(items, dict)
         assert isinstance(npc_spawns, dict)
+        assert isinstance(ephemera_source, Ref)
 
         self._player_start_xy = player_start_xy
         self._blocks = blocks
         self._items = items
         self._npc_spawns = npc_spawns
+        self._ephemera_source = ephemera_source
 
     @property
     def player_start_xy(self):
         return self._player_start_xy
 
-    def load(self, spawns: List[SpawnNPC]) -> LoadedLevel:
+    def load(self, world: "World", spawns: List[SpawnNPC]) -> LoadedLevel:
         all_possible_spots = []
         possible_spots = []
         for spawn_type, possible_vs in self._npc_spawns.items():
@@ -95,12 +99,14 @@ class UnloadedLevel(object):
             else:
                 npc_sites.add(found_spot, npc.npc)
 
-        return LoadedLevel(
+        loaded_level = LoadedLevel(
             blocks=dict(self._blocks),
             # TODO: Spawn temporary items?
             items={k: list(v) for k, v in self._items.items()},
             npc_sites=npc_sites,
         )
+        self._ephemera_source.resolve()(world, loaded_level)
+        return loaded_level
 
 
 def spawn_type_compatible(

@@ -1,10 +1,12 @@
 import random
 from io import StringIO
-from typing import Dict, Iterator, List, Optional, Set
+from typing import Callable, Dict, Iterator, List, Optional, Set
 
+from ds.code_registry import Ref
 from ds.relational import OneToMany
 from ds.vecs import V2
 from unique.item import Item
+from unique.level.loaded_level import LoadedLevel
 from unique.level.unloaded_level import UnloadedLevel
 
 from ..block import Block
@@ -105,7 +107,7 @@ class InteriorDesigner(object):
 
         return found
 
-    def to_level(self):
+    def to_level(self, ephemera_source: Ref[Callable[["World", LoadedLevel], None]]):
         carved = {}
         for room, v in self._room_tiles.all():
             carved[v] = room
@@ -158,6 +160,7 @@ class InteriorDesigner(object):
             blocks=blocks,
             items=items,
             npc_spawns=spawns,
+            ephemera_source=ephemera_source,
         )
 
 
@@ -285,3 +288,9 @@ class Room(object):
             return
 
         self._interior._npc_spawns.add(Spawn(spawn_type, loc))
+
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ...world import World

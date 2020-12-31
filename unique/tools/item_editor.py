@@ -148,7 +148,7 @@ def main(io: IO):
 
             with open("dumped_items.ascii", "at") as f:
                 f.write(
-                    """("{}", "\\x{:02x}", IC.{})\n""".format(
+                    """("{}", "\\x{:02x}", fg=IC.{})\n""".format(
                         name, glyph.sel_i, ItemColors.name(ItemColors.ALL[color.sel_i])
                     )
                 )

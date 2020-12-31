@@ -1,3 +1,4 @@
+from . import ephemera
 from .tools import InteriorDesigner, RoomType
 from .unloaded_level import UnloadedLevel
 
@@ -13,7 +14,7 @@ def residence() -> UnloadedLevel:
     for ez in interior.ident_rooms(RoomType.EntryZone):
         ez.fill_with_exits()
 
-    return interior.to_level()
+    return interior.to_level(ephemera.residence)
 
 
 def restaurant() -> UnloadedLevel:
@@ -29,4 +30,4 @@ def restaurant() -> UnloadedLevel:
     for ez in interior.ident_rooms(RoomType.EntryZone):
         ez.fill_with_exits()
 
-    return interior.to_level()
+    return interior.to_level(ephemera.restaurant)

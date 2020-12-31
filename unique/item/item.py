@@ -74,6 +74,7 @@ class Profile(NamedTuple):
 class Item(NamedTuple):
     profile: Profile
     occludes_walk: bool
+    keywords: Tuple[str, ...]
     contributions: Tuple[Contribution, ...]
 
     @classmethod
@@ -81,6 +82,7 @@ class Item(NamedTuple):
         cls,
         profile: Profile,
         occludes_walk: bool = False,
+        keywords: Tuple[str, ...] = (),
         res0: Resource = None,
         n0: int = None,
         res1: Optional[Resource] = None,
@@ -88,6 +90,8 @@ class Item(NamedTuple):
     ):
         assert isinstance(profile, Profile)
         assert isinstance(occludes_walk, bool)
+        assert isinstance(keywords, tuple)
+        assert all(isinstance(i, str) for i in keywords)
         assert isinstance(res0, Resource)
         assert isinstance(n0, int)
 
@@ -95,4 +99,4 @@ class Item(NamedTuple):
         if res1 is not None:
             tup += Contribution.new(res1, n1)
 
-        return Item(profile, occludes_walk, tup)
+        return Item(profile, occludes_walk, keywords, tup)
