@@ -5,6 +5,7 @@ from ..loaded_level import LoadedLevel
 @ref("ephemera/residence")
 def generate(world: "World", ll: LoadedLevel):
     print("generating residence ephemera for {}".format(ll))
+    print(ll.wallpaper.default)
     pass
 
 

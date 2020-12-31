@@ -7,6 +7,7 @@ from ..loaded_level import LoadedLevel
 @ref("ephemera/restaurant")
 def generate(world: "World", ll: LoadedLevel):
     print("generating restaurant ephemera for {}".format(ll))
+    print(ll.wallpaper.default)
 
     # For now, _every_ NPC gets a meal
     for location, npc in ll.npc_sites.all():
