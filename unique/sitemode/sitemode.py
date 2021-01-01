@@ -9,7 +9,7 @@ from ..level import Block
 from ..notifications import NotificationReason
 from ..npc import NPC, NPCHandle, NPCs
 from ..world import World
-from . import fly_screen, fov, inventory_screen
+from . import fly_screen, fov, inventory_screen, shop_screen
 from .npcview import NPCView
 from .targeter import Target, Targeter
 from .window import Window, draw_window
@@ -80,6 +80,9 @@ class Sitemode(object):
 
         elif input.match(Key.new("i")):
             inventory_screen.show(self.io, self.world)
+
+        elif input.match(Key.new("e")):
+            shop_screen.show(self.io, self.world)
 
         elif input.match(Key.new("f")):
             fly_screen.show(self.io, self.world)

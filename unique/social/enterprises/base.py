@@ -119,6 +119,7 @@ class Enterprises(object):
     def get_restaurant(
         self, world: "World", enterprise: EnterpriseHandle
     ) -> Restaurant:
+        assert isinstance(enterprise, EnterpriseHandle)
         return self._all[enterprise].restaurant
 
     def located_at(self, level_handle: LevelHandle) -> EnterpriseHandle:

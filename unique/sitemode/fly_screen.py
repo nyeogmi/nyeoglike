@@ -117,7 +117,6 @@ class Follow(ScrollbarData):
         return V2.new(width, y)
 
     def draw_item(self, npch, draw: Drawer, selected: bool):
-        npc = self.fly.world.npcs.get(npch)
         color = self.fly.world.interest[npch].color()
         if selected:
             draw.bg(

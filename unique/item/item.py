@@ -74,7 +74,7 @@ class Profile(NamedTuple):
 
 class Item(NamedTuple):
     profile: Profile
-    occludes_walk: bool
+    buy_price: int
     keywords: Tuple[str, ...]
     contributions: Tuple[Contribution, ...]
 
@@ -82,7 +82,7 @@ class Item(NamedTuple):
     def new(
         cls,
         profile: Profile,
-        occludes_walk: bool = False,
+        buy_price: int,
         keywords: Tuple[str, ...] = (),
         res0: Resource = None,
         n0: int = None,
@@ -90,7 +90,7 @@ class Item(NamedTuple):
         n1: Optional[int] = None,
     ):
         assert isinstance(profile, Profile)
-        assert isinstance(occludes_walk, bool)
+        assert isinstance(buy_price, int)
         assert isinstance(keywords, tuple)
         assert all(isinstance(i, str) for i in keywords)
         assert isinstance(res0, Resource)
@@ -100,12 +100,12 @@ class Item(NamedTuple):
         if res1 is not None:
             tup += Contribution.new(res1, n1)
 
-        return Item(profile, occludes_walk, tuple(sorted({*keywords})), tup)
+        return Item(profile, buy_price, tuple(sorted({*keywords})), tup)
 
     def plus_keywords(self, keywords: Iterable[str]) -> "Item":
         i2 = Item(
             profile=self.profile,
-            occludes_walk=self.occludes_walk,
+            buy_price=self.buy_price,
             keywords=tuple(sorted({*self.keywords, *keywords})),
             contributions=self.contributions,
         )

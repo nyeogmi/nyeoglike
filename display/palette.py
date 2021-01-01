@@ -62,7 +62,7 @@ class Colors(object):
     TermFG = White0
     TermFGBold = White1
 
-    TermHighlightBG = Fuchsia1
+    TermHighlightBG = Fuchsia0
     TermHighlightBGInactive = Grey1
 
     FadeBG = Black1
