@@ -4,3 +4,5 @@ class DoubleWide(object):
     Bat = 1
     At = 2
     Exit = 3
+    Chair = 4
+    Counter = 5

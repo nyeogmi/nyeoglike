@@ -189,76 +189,42 @@ class Sitemode(object):
             lambda rel: (world_xy + rel) in self.world.level.seen
             and self.world.level.blocks.get(world_xy + rel) == Block.Normal
         )
-        for world_xy, viewport_xy in zip(self.camera_world_rect, viewport_xys):
-            if self.lightmap[world_xy] == 0:
-                draw_tile = (
-                    draw_world.goto(viewport_xy)
-                    .bg(Colors.WorldUnseenBG)
-                    .fg(Colors.WorldUnseenFG)
-                )
-                draw_tile.copy().putdw(DoubleWide.Blank)
-                # don't draw what we can't see
-                # except blocks, if seen before
+        for world_xy_bot, viewport_xy in zip(self.camera_world_rect, viewport_xys):
+            world_xy_back = world_xy_bot + V2.new(0, -1)
 
-                if world_xy in self.world.level.seen:
-                    block = self.world.level.blocks.get(world_xy)
-                    # TODO: Use "memory of seen tiles."
-                    # Right now it's just "if you saw a tile, you know if there's a wall there."
-                    if block == Block.Normal:
-                        self.draw_wallpaper(
-                            draw_tile.copy(),
-                            self.world.level.wallpaper.get(world_xy + V2.new(0, 1)),
-                            seen=self.lightmap[world_xy + V2.new(0, 1)] != 0
-                            and self.world.player_xy.y > world_xy.y,
-                        )
+            # Draw order:
+            # (1) Back of block behind
+            # (2) Items, NPCs, player
+            # (3) Top of this block
+            # (4) Tooltips
 
-                    elif block == Block.Exit:
-                        draw_tile.copy().putdw(DoubleWide.Exit)
+            draw_tile = (
+                draw_world.goto(viewport_xy).bg(Colors.WorldBG).fg(Colors.WorldFG)
+            )
+            draw_tile.copy().putdw(DoubleWide.Blank)
 
-                # if this is right above a wall, draw a (seen) ceiling
-                if (
-                    blocked(V2.new(0, 1))
-                    and (world_xy + V2.new(0, 1)) in self.world.level.seen
-                ):
-                    self.draw_ceiling(
-                        draw_tile.copy(),
-                        self.world.level.wallpaper.default,
-                        # self.world.level.wallpaper.get(world_xy + V2.new(0, 1)),
-                        cutaway=False,
-                        seen=self.lightmap[world_xy + V2.new(0, 1)] > 0,
-                    )
-
+            # == Back of block behind ==
+            if world_xy_back in self.world.level.seen:
+                back = self.world.level.blocks.get(world_xy_back)
             else:
-                draw_tile = (
-                    draw_world.goto(viewport_xy).bg(Colors.WorldBG).fg(Colors.WorldFG)
+                back = None
+
+            if world_xy_bot in self.world.level.seen:
+                top = self.world.level.blocks.get(world_xy_bot)
+            else:
+                top = None
+
+            if back == Block.Normal:
+                self.draw_wallpaper(
+                    draw_tile.copy(),
+                    self.world.level.wallpaper.get(world_xy_back),
+                    cutaway=False,
+                    illum=self.lightmap[world_xy_back] > 0
+                    and self.world.player_xy.y > world_xy_back.y,
                 )
-                draw_tile.copy().putdw(DoubleWide.Blank)
 
-                block = self.world.level.blocks.get(world_xy)
-                if block == Block.Normal:
-                    # inner wall
-                    self.draw_wallpaper(
-                        draw_tile,
-                        self.world.level.wallpaper.get(world_xy),
-                        # check if this side of the wall is unseen
-                        seen=self.lightmap[world_xy + V2.new(0, 1)] != 0
-                        and self.world.player_xy.y > world_xy.y,
-                    )
-
-                elif block == Block.Exit:
-                    draw_tile.copy().putdw(DoubleWide.Exit)
-
-                # if this is right above a wall and is not walkable, draw a (seen) ceiling
-                if blocked(V2.new(0, 1)):
-                    self.draw_ceiling(
-                        draw_tile.copy(),
-                        self.world.level.wallpaper.default,
-                        # self.world.level.wallpaper.get(world_xy + V2.new(0, 1)),
-                        cutaway=not blocked(V2.new(0, 0)),
-                        seen=True,
-                    )
-
-                for spawn in self.world.level.items.view(world_xy):
+            if self.lightmap[world_xy_bot] > 0:
+                for spawn in self.world.level.items.view(world_xy_bot):
                     profile = spawn.item.profile
                     dt = draw_tile.copy()
                     if profile.bg is not None:
@@ -266,8 +232,11 @@ class Sitemode(object):
                     if profile.fg is not None:
                         dt.fg(profile.fg)
 
-                    if profile.double_icon:
-                        dt.goto(viewport_xy).puts(profile.double_icon, wrap=False)
+                    if profile.double_icon is not None:
+                        if isinstance(profile.double_icon, str):
+                            dt.goto(viewport_xy).puts(profile.double_icon, wrap=False)
+                        else:
+                            dt.goto(viewport_xy).putdw(profile.double_icon)
                     else:
                         dt.goto(viewport_xy + V2(1, 0)).puts(profile.icon)
                         (resource_fg, resource_icon) = spawn.item.contributions[
@@ -275,12 +244,12 @@ class Sitemode(object):
                         ].resource.display()
                         dt.goto(viewport_xy).fg(resource_fg).puts(resource_icon)
 
-                    if world_xy == self.world.player_xy:
+                    if world_xy_bot == self.world.player_xy:
                         tooltip_xy = viewport_xy + V2(0, 1)
                         tooltip_lst.append(profile.name)
 
                 npc: NPCHandle
-                for npc in self.world.level.npc_sites.get_bs(world_xy):
+                for npc in self.world.level.npc_sites.get_bs(world_xy_bot):
                     interest = self.world.interest[npc]
                     # npc_sites
                     if npc == self.targets.target:
@@ -292,8 +261,21 @@ class Sitemode(object):
                             DoubleWide.At
                         )
 
-                if world_xy == self.world.player_xy:
+                if world_xy_bot == self.world.player_xy:
                     draw_tile.copy().fg(Colors.Player).putdw(DoubleWide.Bat)
+
+            # if this is right above a wall, draw a (seen) ceiling
+            if top == Block.Normal:
+                self.draw_ceiling(
+                    draw_tile.copy(),
+                    self.world.level.wallpaper.default,
+                    # self.world.level.wallpaper.get(world_xy + V2.new(0, 1)),
+                    cutaway=False,
+                    illum=self.lightmap[world_xy_bot] > 0,
+                )
+
+            elif top == Block.Exit:
+                draw_tile.copy().putdw(DoubleWide.Exit)
 
         # Draw tooltips
         if tooltip_xy is not None and tooltip_lst:
@@ -455,33 +437,36 @@ class Sitemode(object):
 
         window.content.copy().goto(0, 0).puts(txt)
 
-    def draw_wallpaper(self, drawer, walltile, seen: bool):
+    def draw_wallpaper(self, drawer, walltile, cutaway: bool, illum: bool):
+        if cutaway:
+            return
+
         d = drawer.copy()
 
-        if not seen:  # TODO: Reinstate detailed rendering for unseen walls?
+        if not illum:  # TODO: Reinstate detailed rendering for unseen walls?
             d.fg(Colors.WorldUnseenFG).puts("\xb0\xb0", wrap=False)
             return
 
         if walltile.flip:
-            d = d.bg(walltile.fg if seen else Colors.WorldUnseenFG).fg(
-                Colors.WorldBG if seen else Colors.WorldUnseenBG
+            d = d.bg(walltile.fg if illum else Colors.WorldUnseenFG).fg(
+                Colors.WorldBG if illum else Colors.WorldUnseenBG
             )
         else:
-            d = d.fg(walltile.fg if seen else Colors.WorldUnseenFG)
+            d = d.fg(walltile.fg if illum else Colors.WorldUnseenFG)
 
         d.puts(
             walltile.display
-            if seen
+            if illum
             else "\xb0\xb0"
             if walltile.display == "\xdb\xdb"
             else walltile.display,
             wrap=False,
         )
 
-    def draw_ceiling(self, drawer, walltile, cutaway: bool, seen: bool):
+    def draw_ceiling(self, drawer, walltile, cutaway: bool, illum: bool):
         if cutaway:
             return
 
         d = drawer.copy()
-        d.bg(walltile.fg if seen else Colors.WorldUnseenFG)
+        d.bg(walltile.fg if illum else Colors.WorldUnseenFG)
         d.puts("  ", wrap=False)

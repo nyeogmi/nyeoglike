@@ -132,11 +132,12 @@ class ItemColors(object):
 
 class WallColors(object):
     Base = Colors.WorldFG
+    Yellow0 = Colors.YellowGreen0
     Green0 = Colors.Green0
     Red0 = Colors.Red0
     Sky0 = Colors.Sky0
     Fuchsia0 = Colors.Fuchsia0
 
-    ALL = [Base, Green0, Red0, Sky0, Fuchsia0]
-    COLORFUL = [Green0, Red0, Sky0, Fuchsia0]
+    ALL = [Base, Yellow0, Green0, Red0, Sky0, Fuchsia0]
+    COLORFUL = [Yellow0, Green0, Red0, Sky0, Fuchsia0]
     BANAL = [Base]

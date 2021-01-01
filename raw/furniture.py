@@ -1,4 +1,4 @@
-from display import Color, Colors
+from display import Color, Colors, DoubleWide
 from unique.item.item import Item, Profile, Resource
 from unique.item.item_list import ItemList
 
@@ -18,7 +18,7 @@ CHAIR = ALL.add(
     Item.new(
         # TODO: This display is bad
         Profile.new(name="chair", icon="\xd2", fg=Colors.Grey1).with_double_icon(
-            "\xd2 "
+            DoubleWide.Chair
         ),
         occludes_walk=True,
         res0=Resource.Furniture,
@@ -30,7 +30,7 @@ COUNTER = ALL.add(
     Item.new(
         # TODO: This display is bad
         Profile.new(name="counter", icon="\xd1", fg=Colors.Grey1).with_double_icon(
-            "\xcd\xd1"
+            DoubleWide.Counter
         ),
         occludes_walk=True,
         res0=Resource.Furniture,

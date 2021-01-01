@@ -45,7 +45,7 @@ class Contribution(NamedTuple):
 class Profile(NamedTuple):
     name: str
     icon: str  # a string or a double-wide
-    double_icon: Optional[str]
+    double_icon: Optional[Union[str, int]]
     bg: Optional[Color]
     fg: Optional[Color]
 
@@ -65,8 +65,9 @@ class Profile(NamedTuple):
         return Profile(name, icon, None, bg, fg)
 
     def with_double_icon(self, s) -> "Profile":
-        assert isinstance(s, str)
-        assert len(s) == 2
+        assert isinstance(s, str) or isinstance(s, int)
+        if isinstance(s, str):
+            assert len(s) == 2
 
         return self._replace(double_icon=s)
 
