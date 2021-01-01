@@ -92,10 +92,10 @@ class Sitemode(object):
                 if (
                     len(spawns) == 1
                 ):  # TODO: Only autopick the item if it would not be stealing
-                    ix = 0
+                    ix = -1
                 else:
                     # TODO: Let the player pick their item
-                    ix = 0  # item = self.pick_item(items)
+                    ix = -1  # item = self.pick_item(items)
 
                 item = self.world.level.items.take(spawns.pop(ix).handle)
                 self.world.inventory.add(self.world, item)
@@ -225,9 +225,12 @@ class Sitemode(object):
                 )
 
             if self.lightmap[world_xy_bot] > 0:
-                for spawn in self.world.level.items.view(world_xy_bot):
+                for i, spawn in enumerate(self.world.level.items.view(world_xy_bot)):
                     profile = spawn.item.profile
                     dt = draw_tile.copy()
+
+                    if i > 0:
+                        dt.bg(Colors.Grey0)
                     if profile.bg is not None:
                         dt.bg(profile.bg)
                     if profile.fg is not None:
