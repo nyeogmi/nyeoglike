@@ -21,6 +21,21 @@ russian = "russian"
 
 fruit = "fruit"
 
+CUISINES = [
+    american,
+    chinese,
+    german,
+    indian,
+    italian,
+    korean,
+    mediterranean,
+    mexican,
+    thai,
+    vietnamese,
+    russian,
+    fruit,
+]
+
 # much like the Telugu-speaking people of eastern India, we distinguish course by
 # food _type_ rather than by time
 #
@@ -29,7 +44,7 @@ fruit = "fruit"
 breakfast = "breakfast"
 dessert = "dessert"
 
-ALL = ItemList()
+ALL = ItemList("snack")
 
 
 def add(item_kw: dict, culture: Optional[str], course: Optional[str] = None):

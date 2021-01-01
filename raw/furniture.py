@@ -3,7 +3,7 @@ from unique.item.item import Item, Profile, Resource
 from unique.item.item_list import ItemList
 
 
-ALL = ItemList()
+ALL = ItemList("furniture")
 
 BED = ALL.add(
     Item.new(

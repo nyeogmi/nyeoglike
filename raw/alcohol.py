@@ -7,7 +7,7 @@ _DRINK_SMALL = dict(res0=Resource.Snack, n0=10)
 _DRINK_MEDIUM = dict(res0=Resource.Snack, n0=50)
 _DRINK_HUGE = dict(res0=Resource.Snack, n0=100)
 
-ALL = ItemList()
+ALL = ItemList("alcohol")
 
 BEER = ALL.add(
     Item.new(

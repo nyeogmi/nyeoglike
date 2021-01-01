@@ -2,7 +2,7 @@ from display import Color, Colors
 from unique.item.item import Item, Profile, Resource
 from unique.item.item_list import ItemList
 
-ALL = ItemList()
+ALL = ItemList("technology")
 
 LAPTOP = ALL.add(
     Item.new(

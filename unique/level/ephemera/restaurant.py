@@ -2,12 +2,17 @@ from ds.code_registry import ref
 from ds.lists import shuffled
 from raw.snacks import SOUP
 from ..loaded_level import LoadedLevel
+import random
 
 
 @ref("ephemera/restaurant")
 def generate(world: "World", ll: LoadedLevel):
     print("generating restaurant ephemera for {}".format(ll))
     print(ll.wallpaper.default)
+    enterprise = world.enterprises.located_at(ll.ident)
+    restaurant = world.enterprises.get_restaurant(world, enterprise)
+    menu_items = restaurant.menu.items
+    # TODO
 
     # For now, _every_ NPC gets a meal
     for location, npc in ll.npc_sites.all():
@@ -24,7 +29,7 @@ def generate(world: "World", ll: LoadedLevel):
             # no food for this cell
             continue
 
-        food = SOUP  # TODO: Random food
+        food = random.choice(menu_items)  # TODO: Random food
         ll.items.put(xy, food, ephemeral=True)
 
 

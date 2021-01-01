@@ -52,7 +52,13 @@ class UnloadedLevel(object):
     def player_start_xy(self):
         return self._player_start_xy
 
-    def load(self, world: "World", spawns: List[SpawnNPC]) -> LoadedLevel:
+    def load(
+        self, world: "World", ident: "LevelHandle", spawns: List[SpawnNPC]
+    ) -> LoadedLevel:
+        from ..worldmap import LevelHandle
+
+        assert isinstance(ident, LevelHandle)
+
         all_possible_spots = []
         possible_spots = []
         for spawn_type, possible_vs in self._npc_spawns.items():
@@ -104,6 +110,7 @@ class UnloadedLevel(object):
                 npc_sites.add(found_spot, npc.npc)
 
         loaded_level = LoadedLevel(
+            ident=ident,
             wallpaper=self._wallpaper,
             blocks=dict(self._blocks),
             # TODO: Spawn temporary items?
@@ -144,3 +151,4 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..time import ScheduleItem
     from ..world import World
+    from ..worldmap import LevelHandle

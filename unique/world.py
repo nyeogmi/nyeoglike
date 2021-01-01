@@ -94,9 +94,11 @@ class World(object):
                 )
 
         lvl = self.levels.get(level)
-        self._activate_level(lvl, spawns)
+        self._activate_level(level, lvl, spawns)
 
-    def _activate_level(self, level: UnloadedLevel, npcs: List[SpawnNPC]):
+    def _activate_level(
+        self, ident: LevelHandle, level: UnloadedLevel, npcs: List[SpawnNPC]
+    ):
         assert isinstance(level, UnloadedLevel)
 
         if self.level:
@@ -105,7 +107,7 @@ class World(object):
 
         self.camera_xy = level.player_start_xy
         self.player_xy = level.player_start_xy
-        self.level = level.load(self, npcs)
+        self.level = level.load(self, ident, npcs)
 
     def notify(self, event: Event):
         self._notify_queue.append(event)

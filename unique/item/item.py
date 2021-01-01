@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import NamedTuple, Optional, Tuple, Union, runtime_checkable
+from typing import NamedTuple, Optional, Tuple, Union, runtime_checkable, Iterable
 
 from display import Color, Colors
 
@@ -100,4 +100,14 @@ class Item(NamedTuple):
         if res1 is not None:
             tup += Contribution.new(res1, n1)
 
-        return Item(profile, occludes_walk, keywords, tup)
+        return Item(profile, occludes_walk, tuple(sorted({*keywords})), tup)
+
+    def plus_keywords(self, keywords: Iterable[str]) -> "Item":
+        i2 = Item(
+            profile=self.profile,
+            occludes_walk=self.occludes_walk,
+            keywords=tuple(sorted({*self.keywords, *keywords})),
+            contributions=self.contributions,
+        )
+        assert all(isinstance(kw, str) for kw in i2.keywords)
+        return i2

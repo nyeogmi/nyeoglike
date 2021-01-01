@@ -185,10 +185,6 @@ class Sitemode(object):
 
         tooltip_xy = None
         tooltip_lst = []
-        blocked = (
-            lambda rel: (world_xy + rel) in self.world.level.seen
-            and self.world.level.blocks.get(world_xy + rel) == Block.Normal
-        )
         for world_xy_bot, viewport_xy in zip(self.camera_world_rect, viewport_xys):
             world_xy_back = world_xy_bot + V2.new(0, -1)
 
@@ -202,6 +198,11 @@ class Sitemode(object):
                 draw_world.goto(viewport_xy).bg(Colors.WorldBG).fg(Colors.WorldFG)
             )
             draw_tile.copy().putdw(DoubleWide.Blank)
+
+            if self.lightmap[world_xy_bot] == 0:
+                draw_tile.copy().bg(Colors.WorldUnseenBG).fg(
+                    Colors.WorldUnseenFG
+                ).putdw(DoubleWide.Blank)
 
             # == Back of block behind ==
             if world_xy_back in self.world.level.seen:
@@ -275,7 +276,12 @@ class Sitemode(object):
                 )
 
             elif top == Block.Exit:
-                draw_tile.copy().putdw(DoubleWide.Exit)
+                if self.lightmap[world_xy_bot] > 0:
+                    draw_tile.copy().putdw(DoubleWide.Exit)
+                else:
+                    draw_tile.copy().bg(Colors.WorldUnseenBG).fg(
+                        Colors.WorldUnseenFG
+                    ).putdw(DoubleWide.Exit)
 
         # Draw tooltips
         if tooltip_xy is not None and tooltip_lst:

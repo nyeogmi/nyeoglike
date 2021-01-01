@@ -55,11 +55,13 @@ class Items(object):
 class LoadedLevel(object):
     def __init__(
         self,
+        ident: "LevelHandle",
         wallpaper: Wallpaper,
         blocks: Dict[V2, Block],
         items: Dict[V2, List[Item]],
         npc_sites: OneToMany[V2, NPCHandle],
     ):
+        self.ident = ident
         self.wallpaper = wallpaper
         self.blocks: Dict[V2, Block] = blocks
         self.seen: Set[V2] = set()  # every time the player sees a tile, add it to this
@@ -82,3 +84,4 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..world import World
+    from ..worldmap import LevelHandle

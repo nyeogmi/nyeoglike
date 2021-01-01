@@ -113,7 +113,10 @@ class InteriorDesigner(object):
 
         return found
 
-    def to_level(self, ephemera_source: Ref[Callable[["World", LoadedLevel], None]]):
+    def to_level(
+        self,
+        ephemera_source: Ref[Callable[["World", LoadedLevel], None]],
+    ):
         carved = {}
         for room, v in self._room_tiles.all():
             carved[v] = room
@@ -311,3 +314,4 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ...world import World
+    from ...worldmap import LevelHandle

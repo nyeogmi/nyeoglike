@@ -5,8 +5,9 @@ from typing import Dict, Iterator, List, NamedTuple, Optional
 from ds.gensym import Gensym, Sym
 from ds.relational import OneToMany, OneToOne
 
-from ..npc import NPCHandle
-from ..worldmap import Demand, LevelHandle, ZoneType
+from .restaurant import Restaurant
+from ...npc import NPCHandle
+from ...worldmap import Demand, LevelHandle, ZoneType
 
 
 class EnterpriseHandle(NamedTuple):
@@ -25,7 +26,7 @@ class Shift(Enum):
     DawnEvening = 3
 
     def active_at(self, time_of_day: "TimeOfDay"):
-        from ..time import TimeOfDay
+        from ...time import TimeOfDay
 
         if self == Shift.EveningDusk:
             return time_of_day == TimeOfDay.Evening or time_of_day == TimeOfDay.Dusk
@@ -41,14 +42,23 @@ class Shift(Enum):
 
 class Enterprise(object):
     def __init__(
-        self, ident: EnterpriseHandle, zone_type: ZoneType, shifts: List[Shift]
+        self,
+        ident: EnterpriseHandle,
+        zone_type: ZoneType,
+        shifts: List[Shift],
+        # Populating any of these makes this enterprise an instance of that type
+        restaurant: Optional[Restaurant] = None,
     ):
         assert isinstance(ident, EnterpriseHandle)
         assert isinstance(zone_type, ZoneType)
         assert isinstance(shifts, list)
+        assert restaurant is None or isinstance(restaurant, Restaurant)
+
         self._ident: EnterpriseHandle = ident
         self._zone_type: ZoneType = zone_type
         self._shifts: List[Shift] = shifts
+
+        self.restaurant = restaurant
 
     @property
     def name(self):
@@ -70,7 +80,11 @@ class Enterprise(object):
             ]
         )
 
-        return Enterprise(ident, zone_type, way_of_operation * needed_at_once)
+        restaurant = Restaurant.generate() if zone_type == ZoneType.Restaurant else None
+        enterprise = Enterprise(
+            ident, zone_type, way_of_operation * needed_at_once, restaurant=restaurant
+        )
+        return enterprise
 
     def all_shifts(self) -> List[ShiftHandle]:
         return [ShiftHandle(self._ident, i) for i, shift in enumerate(self._shifts)]
@@ -85,7 +99,7 @@ class Enterprises(object):
         self._located_at: OneToOne[EnterpriseHandle, LevelHandle] = OneToOne()
 
     def generate(self, world: "World", zone_type: ZoneType) -> EnterpriseHandle:
-        from ..world import World
+        from ...world import World
 
         assert isinstance(world, World)
         assert isinstance(zone_type, ZoneType)
@@ -102,8 +116,18 @@ class Enterprises(object):
         assert isinstance(enterprise, EnterpriseHandle)
         return self._all[enterprise].name
 
+    def get_restaurant(
+        self, world: "World", enterprise: EnterpriseHandle
+    ) -> Restaurant:
+        return self._all[enterprise].restaurant
+
+    def located_at(self, level_handle: LevelHandle) -> EnterpriseHandle:
+        assert isinstance(level_handle, LevelHandle)
+
+        return self._located_at.get_a(level_handle)
+
     def get_site(self, world: "World", enterprise: EnterpriseHandle) -> LevelHandle:
-        from ..world import World
+        from ...world import World
 
         assert isinstance(world, World)
         assert isinstance(enterprise, EnterpriseHandle)
@@ -166,5 +190,5 @@ class Enterprises(object):
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..time import TimeOfDay
-    from ..world import World
+    from ...time import TimeOfDay
+    from ...world import World
