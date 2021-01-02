@@ -7,6 +7,7 @@ from ds.vecs import V2
 from . import namegen
 from .event import Event, Verbs
 from .eventmonitor import Done, EventMonitor, QuestOutcome, QuestStatus
+from typing import Dict, Set
 
 
 class NPCHandle(NamedTuple):
@@ -15,12 +16,14 @@ class NPCHandle(NamedTuple):
 
 class NPCs(object):
     def __init__(self):
-        self._all = {}
+        self._all: Dict[NPCHandle, NPC] = {}
         self._sym = Gensym("NPC")
+        self._used_names = set()
 
     def generate(self) -> NPCHandle:
         handle = NPCHandle(self._sym.gen())
-        self._all[handle] = NPC.generate(handle)
+        self._all[handle] = NPC.generate(handle, self._used_names)
+        self._used_names.add(self._all[handle].name)
         return handle
 
     def all(self) -> List[NPCHandle]:
@@ -70,11 +73,11 @@ class NPC(object):
         return self._ident
 
     @classmethod
-    def generate(cls, ident):
+    def generate(cls, ident, used_names: Set[str]):
         # TODO: Name tools
         return NPC(
             ident=ident,
-            name=namegen.generate(),
+            name=namegen.generate(used_names),
         )
 
     def notify(self, world: "World", me: Me, event: Event):

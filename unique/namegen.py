@@ -1,5 +1,6 @@
 import random
 import unicodedata
+from typing import Set
 
 
 def strip_accents(s):
@@ -131,7 +132,17 @@ def vietnamese_last():
     return multi_pick(VIETNAMESE_LAST)
 
 
-def generate() -> str:
+def generate(used_names: Set[str]) -> str:
+    assert isinstance(used_names, set)
+    for try_ in range(100):
+        name = _generate()
+        if name in used_names:
+            continue
+        return name
+    return _generate()
+
+
+def _generate() -> str:
     if random.choice([False, True]):
         american_first = american_masculine_first
         spanish_first = spanish_masculine_first
@@ -188,7 +199,8 @@ def generate() -> str:
     if pct in range(0, 10):
         first = objects_first()
 
-    return "{} {}".format(first, last)
+    # NOTE: Don't use last names rn
+    return first  # "{} {}".format(first, last)
 
 
 FOREIGN_FIRST = load("foreign_first")
