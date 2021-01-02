@@ -72,6 +72,7 @@ class FetchQuest(EventMonitor):
                 oneliner="Get {} for {}".format(self._item_name, npc_name),
                 outcome=QuestOutcome.InProgress,
                 assigner=self._npc,
+                is_challenge=False,
             )
 
         elif state == _FQState.NotReturned:
@@ -83,6 +84,7 @@ class FetchQuest(EventMonitor):
                 oneliner="Bring {} to {}".format(self._item_name, npc_name),
                 outcome=QuestOutcome.InProgress,
                 assigner=self._npc,
+                is_challenge=False,
             )
 
         else:
@@ -92,6 +94,7 @@ class FetchQuest(EventMonitor):
                 oneliner="You did it",
                 outcome=QuestOutcome.Succeeded,
                 assigner=self._npc,
+                is_challenge=False,
             )
 
     def key(self):

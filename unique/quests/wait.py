@@ -30,6 +30,7 @@ class WaitQuest(EventMonitor):
             oneliner="Wait {} ticks".format(self._ticks) if self._ticks else "You win!",
             outcome=QuestOutcome.InProgress if self._ticks else QuestOutcome.Succeeded,
             assigner=self._npc,
+            is_challenge=False,
         )
 
     def key(self):

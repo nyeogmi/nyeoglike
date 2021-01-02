@@ -24,7 +24,6 @@ class Inventory(object):
 
         if not claim_box.taken:
             self.liquidate(item)
-        # TODO: Allow quests to earmark this before I go on
 
     def liquidate(self, item: Item):
         for c in item.contributions:

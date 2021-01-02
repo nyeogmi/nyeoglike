@@ -83,9 +83,11 @@ class Sitemode(object):
 
         elif input.match(Key.new("e")):
             shop_screen.show(self, self.io, self.world)
+            # TODO: Tick if anything was bought
 
         elif input.match(Key.new("f")):
             fly_screen.show(self.io, self.world)
+            # TODO: Tick if flight was done
 
         elif input.match(Key.new("g")):
             spawns = self.world.level.items.view(self.world.player_xy)
@@ -102,6 +104,8 @@ class Sitemode(object):
 
                 item = self.world.level.items.take(spawns.pop(ix).handle)
                 self.world.inventory.add(self.world, item)
+
+            self.world.tick()
 
         # move the player
         moves = [
@@ -136,7 +140,7 @@ class Sitemode(object):
                         self.world.camera_xy += move
 
                 # actually moving is worth a tick
-                self.world.notify(Event.new(Verbs.Tick, ()))
+                self.world.tick()
 
     def recalculate_visibility(self):
         self.lightmap = fov.fov(
@@ -384,8 +388,9 @@ class Sitemode(object):
             ]
             marked_quests.sort(
                 key=lambda q: (
+                    1 if q[1].assigner is None else 0,  # put world quests on top
                     q[1].outcome != QuestOutcome.InProgress,
-                    self.world.interest[q[1].assigner],
+                    self.world.interest[q[1].assigner] if q[1].assigner else None,
                     q[0],
                 )
             )
@@ -402,19 +407,27 @@ class Sitemode(object):
 
                 if quest.outcome == QuestOutcome.Succeeded:
                     color = Colors.QuestSucceeded
+                    bullet = "\xf9 "
                 elif quest.outcome == QuestOutcome.Failed:
                     color = Colors.QuestFailed
+                    bullet = "\xf9 "
                 elif quest.assigner is None:
-                    color = Colors.MSGSystem
+                    if quest.is_challenge:
+                        color = Colors.YellowGreen0
+                        bullet = "! "
+                    else:
+                        color = Colors.MSGSystem
+                        bullet = "\xf9 "
                 else:
                     color = self.world.interest[quest.assigner].color()
+                    bullet = "\xf9 "
 
                 dq2 = (
                     draw_quests_ui.copy()
                     .goto(52, y)
                     .bg(Colors.TermBG)
                     .fg(color)
-                    .puts("\xf9 ")
+                    .puts(bullet)
                     .fg(Colors.TermFG)
                 )
                 start_x = dq2.xy.x

@@ -45,7 +45,7 @@ class EventMonitors(object):
         em = constructor(handle)
 
         if em.key() in self._active_keys:
-            return
+            return  # TODO: Return existing handle instead?
 
         assert isinstance(em, EventMonitor)
         self._active[handle] = em
@@ -53,9 +53,13 @@ class EventMonitors(object):
 
         quest_status = self._active[handle].quest_status(world)
         if quest_status:
-            world.notifications.send(
-                handle, NotificationReason.AnnounceQuest, quest_status.assigner
-            )
+            if quest_status.is_challenge:
+                # skip the notification, always accepted
+                pass
+            else:
+                world.notifications.send(
+                    handle, NotificationReason.AnnounceQuest, quest_status.assigner
+                )
             self._accepted_quests.append(handle)
 
             self._most_recent_status[handle] = quest_status
@@ -143,7 +147,10 @@ class EventMonitors(object):
     def send_finalize_quest(
         self, world: "World", handle: EMHandle, quest_status: "QuestStatus"
     ):
-        if (
+        if quest_status.is_challenge:
+            # do nothing, the Challenges object handles finalization
+            pass
+        elif (
             handle in self._accepted_quests
             or quest_status.outcome == QuestOutcome.Succeeded
         ):
@@ -189,6 +196,7 @@ class QuestStatus(NamedTuple):
     oneliner: str
     outcome: QuestOutcome
     assigner: Optional["NPCHandle"]
+    is_challenge: bool
     # TODO: The item the quest is about, if it has one?
 
 

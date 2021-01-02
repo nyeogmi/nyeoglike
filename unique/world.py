@@ -5,6 +5,7 @@ from typing import List, Optional
 from ds.vecs import V2
 
 from .biology import Rhythms
+from .challenges import Challenges
 from .event import Event, Verbs
 from .eventmonitor import EventMonitor, EventMonitors
 from .interest import InterestTracker
@@ -24,6 +25,7 @@ N_HOUSEHOLD_NPCS = (1, 5)
 
 class World(object):
     def __init__(self):
+        self.challenges = Challenges()
         self.clock = Clock()
         self.enterprises = Enterprises()
         self.eventmonitors = EventMonitors()
@@ -110,6 +112,10 @@ class World(object):
         self.camera_xy = level.player_start_xy
         self.player_xy = level.player_start_xy
         self.level = level.load(self, ident, npcs)
+        self.challenges.scan(self)  # using the level
+
+    def tick(self):
+        return self.notify(Event.new(Verbs.Tick, ()))
 
     def notify(self, event: Event):
         self._notify_queue.append(event)

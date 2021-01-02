@@ -19,6 +19,16 @@ class Spawn(NamedTuple):
     handle: SpawnHandle
     item: Item
     ephemeral: bool
+    is_junk: bool
+
+    @classmethod
+    def new(cls, handle: SpawnHandle, item: Item, ephemeral: bool) -> "Spawn":
+        assert isinstance(handle, SpawnHandle)
+        assert isinstance(item, Item)
+        assert isinstance(ephemeral, bool)
+
+        is_junk = ephemeral and "junk" in item.keywords
+        return Spawn(handle, item, ephemeral, is_junk)
 
 
 class Items(object):
@@ -27,11 +37,16 @@ class Items(object):
         self._values: Dict[SpawnHandle, Spawn] = {}
         self._placement: OneToMany[V2, SpawnHandle] = OneToMany()
 
+        self._junk_left = 0
+
     def put(self, at: V2, item: Item, ephemeral: bool) -> SpawnHandle:
         handle = SpawnHandle(self._sym.gen())
 
-        self._values[handle] = Spawn(handle, item, ephemeral)
+        self._values[handle] = Spawn.new(handle, item, ephemeral)
         self._placement.add(at, handle)
+
+        if self._values[handle].is_junk:
+            self._junk_left += 1
 
         return handle
 
@@ -43,6 +58,10 @@ class Items(object):
         spawn = self._values[sh]
         self._placement.remove_b(sh)
         del self._values[sh]
+
+        if spawn.is_junk:
+            self._junk_left -= 1
+
         return spawn.item
 
     def view(self, at: V2) -> List[Spawn]:
@@ -50,6 +69,10 @@ class Items(object):
             self._values[sh]
             for sh in sorted(self._placement.get_bs(at), key=lambda sh: sh.ident)
         ]
+
+    @property
+    def junk_left(self):
+        return self._junk_left
 
 
 class LoadedLevel(object):
