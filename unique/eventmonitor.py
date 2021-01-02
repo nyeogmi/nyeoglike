@@ -89,6 +89,20 @@ class EventMonitors(object):
     def accepted_quests(self) -> List["EMHandle"]:
         return list(self._accepted_quests)
 
+    def who_wants(self, world: "World", item: "Item") -> Optional["NPCHandle"]:
+        from .item import Item
+        from .inventory import ClaimBox, HypotheticalClaimException
+
+        assert isinstance(item, Item)
+
+        claim_box = ClaimBox(world.inventory.claims, item, hypothetical=True)
+        try:
+            self.notify(world, Event.new(Verbs.Claim, (claim_box,)))
+            return None
+        except HypotheticalClaimException as hce:
+            assert isinstance(hce.claimant, EMHandle)
+            return self._active[hce.claimant].quest_status(world).assigner
+
     def notify(self, world: "World", event: "Event"):
         from .inventory import ClaimBox
         from .world import World
@@ -202,5 +216,6 @@ class QuestStatus(NamedTuple):
 
 # -- Typechecking --
 if TYPE_CHECKING:
+    from .item import Item
     from .npc import NPCHandle
     from .world import World

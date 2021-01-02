@@ -17,12 +17,13 @@ def show(sitemode, io: IO, world: World):
 
 
 class ItemToBuy(object):
-    def __init__(self, item: Item, count: int):
+    def __init__(self, item: Item, count: int, who_wants: Optional[NPCHandle]):
         assert isinstance(item, Item)
         assert isinstance(count, int)
 
         self.item = item
         self.count = count
+        self.who_wants = who_wants
 
     @property
     def buy_price(self):
@@ -53,7 +54,12 @@ class ShopScreen(object):
         if enterprise:
             restaurant = self.world.enterprises.get_restaurant(self.world, enterprise)
             if restaurant:
-                all_items.extend(ItemToBuy(item, 0) for item in restaurant.menu.items)
+                all_items.extend(
+                    ItemToBuy(
+                        item, 0, self.world.eventmonitors.who_wants(self.world, item)
+                    )
+                    for item in restaurant.menu.items
+                )
                 verbs.append("Order")
 
         self.shop_items = Scrollbar(all_items, Shop(self))
@@ -153,15 +159,20 @@ class Shop(ScrollbarData):
         # TODO: Info about the price and whether the item will complete a quest
         return (
             i2b.item.profile.name,
-            "1",
+            ("for {}" + self.shop.world.npcs.get(i2b.who_wants).name)
+            if i2b.who_wants
+            else None,
         )  # we don't use the second line here so it doesn't matter
 
     def measure_item(self, i2b: ItemToBuy, width: int) -> V2:
         # TODO: Measure NPC name
         line_1, line_2 = self.text(i2b)
-        y1 = measure_wrap(line_1, width - 1)  # bullet point
-        y2 = measure_wrap(line_2, width - 3)  # Always
-        return V2.new(width, y1 + y2)
+        y1 = measure_wrap(line_1, width - 2)  # bullet point
+        y2 = (
+            0 if i2b.who_wants is None else measure_wrap(line_2, width - 2)
+        )  # who wants it
+        y3 = 1  # price line
+        return V2.new(width, y1 + y2 + y3)
 
     def draw_item(self, i2b: ItemToBuy, draw: Drawer, selected: bool):
         #  color = self.fly.world.interest[npch].color()
@@ -177,6 +188,13 @@ class Shop(ScrollbarData):
             draw.fg(Colors.TermFGBold).puts("{:<2d}".format(i2b.count))
 
         draw.fg(Colors.TermFG).puts(line_1, wrap=True)
+
+        if i2b.who_wants:
+            draw.goto(2, draw.xy.y + 1)  # who wants it
+            draw.fg(Colors.TermFG).puts("for ")
+            draw.fg(self.shop.world.interest[i2b.who_wants].color()).puts(
+                self.shop.world.npcs.get(i2b.who_wants).name
+            )
 
         draw.goto(2, draw.xy.y + 1)
         draw.bg(Colors.TermBG)

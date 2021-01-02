@@ -19,7 +19,7 @@ class Inventory(object):
         assert isinstance(world, World)
         assert isinstance(item, Item)
 
-        claim_box = ClaimBox(self.claims, item)
+        claim_box = ClaimBox(self.claims, item, hypothetical=False)
         world.notify(Event.new(Verbs.Claim, (claim_box,)))
 
         if not claim_box.taken:
@@ -77,13 +77,15 @@ class Claims(object):
 
 
 class ClaimBox(object):
-    def __init__(self, claims, item):
+    def __init__(self, claims, item, hypothetical):
         assert isinstance(claims, Claims)
         assert isinstance(item, Item)
+        assert isinstance(hypothetical, bool)
 
         self._claims = claims
         self._item = item
         self._taken: bool = False
+        self._hypothetical = hypothetical
 
     @property
     def taken(self) -> bool:
@@ -94,9 +96,18 @@ class ClaimBox(object):
         return self._item
 
     def claim(self, quest: EMHandle) -> ClaimHandle:
+        if self._hypothetical:
+            raise HypotheticalClaimException(quest)
+
         handle = self._claims.claim(quest, self._item)
         self._taken = True
         return handle
+
+
+class HypotheticalClaimException(Exception):
+    def __init__(self, quest):
+        Exception.__init__(self)
+        self.claimant = quest
 
 
 from typing import TYPE_CHECKING
