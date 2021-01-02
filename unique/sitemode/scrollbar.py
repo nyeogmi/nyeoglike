@@ -27,6 +27,9 @@ class Scrollbar(object):
         self._i += 1
         self._wrap()
 
+    def all_items(self):
+        return list(self._data)
+
     def get_selected(self):
         if self._i is None:
             return None

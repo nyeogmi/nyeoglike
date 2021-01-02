@@ -12,6 +12,7 @@ from .inventory import Inventory
 from .level import LoadedLevel, SpawnNPC, UnloadedLevel
 from .notifications import Notification, Notifications
 from .npc import NPC, NPCHandle, NPCs
+from .player import Player
 from .scene_flags import SceneFlags
 from .social import Enterprises, Friendships, HouseholdHandle, Households
 from .time import Clock, Schedules
@@ -32,6 +33,7 @@ class World(object):
         self.levels = Levels()
         self.notifications = Notifications()
         self.npcs = NPCs()
+        self.player = Player()
         self.rhythms = Rhythms()
         self.scene_flags = SceneFlags()
         self.schedules = Schedules()

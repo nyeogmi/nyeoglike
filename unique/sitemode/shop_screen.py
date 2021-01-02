@@ -12,15 +12,29 @@ from .scrollbar import Scrollbar, ScrollbarData
 from .window import draw_window
 
 
-def show(io: IO, world: World):
-    ShopScreen(io, world).run()
+def show(sitemode, io: IO, world: World):
+    ShopScreen(sitemode, io, world).run()
+
+
+class ItemToBuy(object):
+    def __init__(self, item: Item, count: int):
+        assert isinstance(item, Item)
+        assert isinstance(count, int)
+
+        self.item = item
+        self.count = count
+
+    @property
+    def buy_price(self):
+        return self.item.buy_price
 
 
 class ShopScreen(object):
-    def __init__(self, io: IO, world: World):
+    def __init__(self, sitemode, io: IO, world: World):
         assert isinstance(io, IO)
         assert isinstance(world, World)
 
+        self.sitemode = sitemode
         self.io = io
         self.world = world
         self.done = False
@@ -29,7 +43,7 @@ class ShopScreen(object):
         self.shop_items = Scrollbar([], Shop(self))
 
     def calculate_lists(self):
-        all_items: List[Item] = []
+        all_items: List[ItemToBuy] = []
 
         level: LevelHandle = self.world.level.ident
         verbs = []
@@ -39,7 +53,7 @@ class ShopScreen(object):
         if enterprise:
             restaurant = self.world.enterprises.get_restaurant(self.world, enterprise)
             if restaurant:
-                all_items.extend(restaurant.menu.items)
+                all_items.extend(ItemToBuy(item, 0) for item in restaurant.menu.items)
                 verbs.append("Order")
 
         self.shop_items = Scrollbar(all_items, Shop(self))
@@ -74,6 +88,21 @@ class ShopScreen(object):
         if input.match(Key.new(Keycodes.Down)):
             self.shop_items.down()
 
+        sel = self.shop_items.get_selected()
+        if sel:
+            if input.match(Key.new(Keycodes.Left)):
+                sel.count -= 1
+                if sel.count < 0:
+                    sel.count = 0
+            if input.match(Key.new(Keycodes.Right)):
+                sel.count += 1
+                if sel.count > 9:
+                    sel.count = 9
+            if input.match(Key.new(Keycodes.Left, shift=True)):
+                sel.count = 0
+            if input.match(Key.new(Keycodes.Right, shift=True)):
+                sel.count = 9
+
         if input.match(Key.new(Keycodes.Enter)):
             selected = self.shop_items.get_selected()
             if selected:
@@ -83,20 +112,35 @@ class ShopScreen(object):
                 # self.done = True
 
     def draw(self):
-        window = draw_window(
+        self.sitemode.draw_my_hud()
+
+        main_window = draw_window(
             self.io.draw().goto(4, 7).box(26, 25), fg=Colors.MSGSystem, double=True
         )
-        # TODO: Have the text depend on whether we're in a restaurant or what
-        window.title_bar.copy().fg(Colors.TermFGBold).puts(self.verb)
+        main_window.title_bar.copy().fg(Colors.TermFGBold).puts(self.verb)
+
+        total_count = sum([i.count for i in self.shop_items.all_items()])
+        total_price = sum([i.count * i.buy_price for i in self.shop_items.all_items()])
 
         # TODO: Make space/use space at the bottom?
-        window.content.copy().goto(0, 0).fg(Colors.TermFGBold).puts("Items")
+        main_window.content.copy().goto(0, 0).fg(Colors.TermFGBold).puts("Items")
         self.shop_items.draw(
-            window.content.copy()
+            main_window.content.copy()
             .goto(0, 1)
-            .box(window.content.bounds.size.x, window.content.bounds.size.y)
+            .box(main_window.content.bounds.size.x, 18 if total_count == 0 else 15)
         )
-        window.button_bar.fg(Colors.TermFGBold).puts(
+
+        if total_count > 0:
+            main_window.content.copy().goto(0, 15).fg(Colors.TermFGBold).puts("Total")
+            draw = main_window.content.copy().goto(0, 16)
+            draw.fg(Colors.TermFGBold).puts("{:>3d}".format(total_count))
+            draw.fg(Colors.TermFG).puts(" items")
+
+            draw.goto(draw.bounds.size.x - 10, draw.xy.y).fg(Colors.TermFG).puts(
+                "{:10,.2f}".format(total_price / 100)
+            )
+
+        main_window.button_bar.fg(Colors.TermFGBold).puts(
             "Enter - {}".format("Buy" if self.verb == "Shop" else self.verb)
         )
 
@@ -105,25 +149,43 @@ class Shop(ScrollbarData):
     def __init__(self, shop: ShopScreen):
         self.shop = shop
 
-    def text(self, item):
+    def text(self, i2b: ItemToBuy):
         # TODO: Info about the price and whether the item will complete a quest
-        return item.profile.name, "${:,.2f}".format(item.buy_price / 100)
+        return (
+            i2b.item.profile.name,
+            "1",
+        )  # we don't use the second line here so it doesn't matter
 
-    def measure_item(self, item, width: int) -> V2:
+    def measure_item(self, i2b: ItemToBuy, width: int) -> V2:
         # TODO: Measure NPC name
-        line_1, line_2 = self.text(item)
-        y1 = measure_wrap(line_1, width - 2)  # bullet point
-        y2 = measure_wrap(line_2, width - 3)
+        line_1, line_2 = self.text(i2b)
+        y1 = measure_wrap(line_1, width - 1)  # bullet point
+        y2 = measure_wrap(line_2, width - 3)  # Always
         return V2.new(width, y1 + y2)
 
-    def draw_item(self, item, draw: Drawer, selected: bool):
+    def draw_item(self, i2b: ItemToBuy, draw: Drawer, selected: bool):
         #  color = self.fly.world.interest[npch].color()
-        color = Colors.TermFG
         if selected:
             draw.bg(Colors.TermHighlightBG)
 
-        line_1, line_2 = self.text(item)
-        draw.goto(0, 0).fg(color).puts("\xf9 ").fg(Colors.TermFG).puts(
-            line_1, wrap=True
-        )
-        draw.goto(3, draw.xy.y + 1).fg(Colors.TermFG).puts(line_2, wrap=True)
+        line_1, _ = self.text(i2b)
+        "${:,.2f}".format(i2b.buy_price / 100)
+        draw.goto(0, 0)
+        if i2b.count == 0:
+            draw.fg(Colors.MSGSystem).puts("\xf9 ")
+        else:
+            draw.fg(Colors.TermFGBold).puts("{:<2d}".format(i2b.count))
+
+        draw.fg(Colors.TermFG).puts(line_1, wrap=True)
+
+        draw.goto(2, draw.xy.y + 1)
+        draw.bg(Colors.TermBG)
+        # draw.fg(Colors.TermFG).puts("1")
+        # draw.fg(Colors.MSGSystem).puts(" x")
+        # draw.fg(Colors.TermFGBold).puts("$")
+        draw.fg(Colors.TermFG).puts("{:,.2f}".format(i2b.buy_price / 100))
+
+        if i2b.count > 0:
+            draw.goto(draw.bounds.size.x - 10, draw.xy.y).fg(Colors.TermFG).puts(
+                "{:10,.2f}".format(i2b.count * i2b.buy_price / 100)
+            )

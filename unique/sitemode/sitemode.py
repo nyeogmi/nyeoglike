@@ -82,7 +82,7 @@ class Sitemode(object):
             inventory_screen.show(self.io, self.world)
 
         elif input.match(Key.new("e")):
-            shop_screen.show(self.io, self.world)
+            shop_screen.show(self, self.io, self.world)
 
         elif input.match(Key.new("f")):
             fly_screen.show(self.io, self.world)
@@ -428,8 +428,7 @@ class Sitemode(object):
             self.io.draw().goto(4, 2).box(26, 5), double=True, fg=Colors.MSGSystem
         )
 
-        window.title_bar.copy().fg(Colors.TermFGBold).puts("Fivey Fox")
-        # window.title_bar.copy().fg(Colors.TermFGBold).puts("Nyeogmi Choi")
+        window.title_bar.copy().fg(Colors.TermFGBold).puts(self.world.player.name)
 
         window.content.copy().goto(0, 0).puts("$").fg(Colors.TermFGBold).puts(
             "{:,.2f}".format(self.world.inventory.get(Resource.Money) / 100)
