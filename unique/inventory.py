@@ -10,7 +10,8 @@ from .item import Item, Resource
 
 class Inventory(object):
     def __init__(self):
-        self.resources: Dict[Resource, int] = {}
+        # TODO: Don't hardcode the amount of money
+        self.resources: Dict[Resource, int] = {Resource.Money: 10000}
         self.claims = Claims()
 
     def add(self, world: "World", item: Item):

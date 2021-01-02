@@ -110,23 +110,33 @@ class ShopScreen(object):
                 sel.count = 9
 
         if input.match(Key.new(Keycodes.Enter)):
+            count, price, budget = self.total_count_price_budget()
+
             selected = self.shop_items.get_selected()
             if selected:
-                pass  # TODO, Actually buy it
-                # self.world.follow_npc(selected)
-                # self.world.advance_time()
-                # self.done = True
+                if price <= budget:
+                    self.world.inventory.take(Resource.Money, price)
+                    for i2b in self.shop_items.all_items():
+                        i2b: ItemToBuy
+                        for i in range(i2b.count):
+                            self.world.inventory.add(self.world, i2b.item)
+                    self.done = True
+
+    def total_count_price_budget(self):
+        total_count = sum([i.count for i in self.shop_items.all_items()])
+        total_price = sum([i.count * i.buy_price for i in self.shop_items.all_items()])
+        budget = self.world.inventory.get(Resource.Money)
+        return total_count, total_price, budget
 
     def draw(self):
+        total_count, total_price, budget = self.total_count_price_budget()
+
         self.sitemode.draw_my_hud()
 
         main_window = draw_window(
             self.io.draw().goto(4, 7).box(26, 25), fg=Colors.MSGSystem, double=True
         )
         main_window.title_bar.copy().fg(Colors.TermFGBold).puts(self.verb)
-
-        total_count = sum([i.count for i in self.shop_items.all_items()])
-        total_price = sum([i.count * i.buy_price for i in self.shop_items.all_items()])
 
         # TODO: Make space/use space at the bottom?
         main_window.content.copy().goto(0, 0).fg(Colors.TermFGBold).puts("Items")
@@ -142,13 +152,16 @@ class ShopScreen(object):
             draw.fg(Colors.TermFGBold).puts("{:>3d}".format(total_count))
             draw.fg(Colors.TermFG).puts(" items")
 
-            draw.goto(draw.bounds.size.x - 10, draw.xy.y).fg(Colors.TermFG).puts(
-                "{:10,.2f}".format(total_price / 100)
-            )
+            draw.goto(draw.bounds.size.x - 10, draw.xy.y).fg(
+                Colors.Red0 if total_price > budget else Colors.TermFG
+            ).puts("{:10,.2f}".format(total_price / 100))
 
-        main_window.button_bar.fg(Colors.TermFGBold).puts(
-            "Enter - {}".format("Buy" if self.verb == "Shop" else self.verb)
-        )
+        if total_count == 0:
+            main_window.button_bar.fg(Colors.TermFGBold).puts("\x1d - Add")
+        else:
+            main_window.button_bar.fg(
+                Colors.Red0 if total_price > budget else Colors.TermFGBold
+            ).puts("Enter - {}".format("Buy" if self.verb == "Shop" else self.verb))
 
 
 class Shop(ScrollbarData):
