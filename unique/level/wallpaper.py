@@ -7,12 +7,14 @@ import random
 class WallTile(NamedTuple):
     display: Union[str, int]
     fg: Color
+    cap: Color
     flip: bool
 
     @classmethod
-    def new(cls, display: Union[str, int], fg: Color, flip: bool = False):
+    def new(cls, display: Union[str, int], fg: Color, cap: Color, flip: bool = False):
         assert isinstance(display, (str, int))
         assert isinstance(fg, Color)
+        assert isinstance(cap, Color)
         assert isinstance(flip, bool)
 
         if isinstance(display, str):
@@ -20,11 +22,11 @@ class WallTile(NamedTuple):
         elif isinstance(display, int):
             pass
 
-        return WallTile(display, fg, flip)
+        return WallTile(display, fg, cap, flip)
 
     @classmethod
     def default(cls) -> "WallTile":
-        return cls.new(display="\xb0\xb0", fg=Colors.WorldFG)
+        return cls.new(display="\xb0\xb0", fg=Colors.WorldFG, cap=Colors.WorldFG)
 
     @classmethod
     def generate_wallpaper(cls) -> "WallTile":
@@ -35,7 +37,9 @@ class WallTile(NamedTuple):
                 ("\xb1\xb1", False),
             ]
         )
-        return WallTile.new(disp, random.choice(WallColors.ALL), flip)
+        return WallTile.new(
+            disp, random.choice(WallColors.ALL), random.choice(WallColors.ALL), flip
+        )
 
     @classmethod
     def generate_paneling(cls) -> "WallTile":
@@ -48,7 +52,12 @@ class WallTile(NamedTuple):
                 ("\xcb\xcb", True),
             ]
         )
-        return WallTile.new(disp, random.choice(WallColors.COLORFUL), flip)
+        return WallTile.new(
+            disp,
+            random.choice(WallColors.COLORFUL),
+            random.choice(WallColors.ALL),
+            flip,
+        )
 
     @classmethod
     def generate_tile(cls) -> "WallTile":
@@ -57,7 +66,12 @@ class WallTile(NamedTuple):
                 ("\xb2\xb2", False),
             ]
         )
-        return WallTile.new(disp, random.choice(WallColors.COLORFUL), flip)
+        return WallTile.new(
+            disp,
+            random.choice(WallColors.COLORFUL),
+            random.choice(WallColors.ALL),
+            flip,
+        )
 
     @classmethod
     def generate_bathroom_tile(cls) -> "WallTile":
@@ -66,7 +80,9 @@ class WallTile(NamedTuple):
                 ("\xb2\xb2", False),
             ]
         )
-        return WallTile.new(disp, random.choice(WallColors.BANAL), flip)
+        return WallTile.new(
+            disp, random.choice(WallColors.BANAL), random.choice(WallColors.BANAL), flip
+        )
 
 
 class Wallpaper(object):

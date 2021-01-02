@@ -12,6 +12,7 @@ ALL = ItemList("alcohol")
 BEER = ALL.add(
     Item.new(
         Profile.new(name="beer", icon="\x97", fg=Colors.YellowGreen0),
+        occludes_npc_spawn=False,
         buy_price=450,
         **_DRINK_MEDIUM,
     )
@@ -20,6 +21,7 @@ BEER = ALL.add(
 CIDER = ALL.add(
     Item.new(
         Profile.new(name="cider", icon="\x95", fg=Colors.YellowGreen0),
+        occludes_npc_spawn=False,
         buy_price=550,
         **_DRINK_MEDIUM,
     )
@@ -28,6 +30,7 @@ CIDER = ALL.add(
 VODKA = ALL.add(
     Item.new(
         Profile.new(name="vodka", icon="\xa7", fg=Colors.White1),
+        occludes_npc_spawn=False,
         buy_price=550,
         **_DRINK_HUGE,
     )

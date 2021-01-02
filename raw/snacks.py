@@ -57,7 +57,13 @@ def add(
 
     def _adder(*args, **kw) -> Item:
         return ALL.add(
-            Item.new(Profile.new(*args, **kw), buy_price, keywords=keywords, **item_kw)
+            Item.new(
+                Profile.new(*args, **kw),
+                occludes_npc_spawn=False,
+                buy_price=buy_price,
+                keywords=keywords,
+                **item_kw
+            )
         )
 
     return _adder

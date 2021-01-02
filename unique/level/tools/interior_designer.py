@@ -129,6 +129,7 @@ class InteriorDesigner(object):
             mx_x = max(xy.x for xy in carved)
             mx_y = max(xy.y for xy in carved)
 
+        in_bounds = set()
         blocks = {}
         items = {}
         spawns = {}
@@ -137,9 +138,12 @@ class InteriorDesigner(object):
                 xy = V2.new(x, y)
 
                 if xy in self._exits:
+                    in_bounds.add(xy)
                     blocks[xy] = Block.Exit
 
                 elif self._room_tiles.get_a(xy):
+                    in_bounds.add(xy)
+
                     # This is a room, so leave it carved out
                     # TODO: Items, spawns
                     if xy in self._cell_objects:
@@ -153,12 +157,13 @@ class InteriorDesigner(object):
                                 needed = True
 
                     if needed:
+                        in_bounds.add(xy)
                         blocks[xy] = Block.Normal
 
         for spawn in self._npc_spawns:
             if spawn.location not in carved:
                 continue
-            if any(i.occludes_walk for i in items.get(spawn.location, [])):
+            if any(i.occludes_npc_spawn for i in items.get(spawn.location, [])):
                 continue
 
             spawns[spawn.spawn_type] = spawns.get(spawn.spawn_type, set())
@@ -167,6 +172,7 @@ class InteriorDesigner(object):
         return UnloadedLevel(
             wallpaper=self._wallpaper,
             player_start_xy=self._player_start_xy,
+            in_bounds=in_bounds,
             blocks=blocks,
             items=items,
             npc_spawns=spawns,

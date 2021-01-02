@@ -57,12 +57,14 @@ class LoadedLevel(object):
         self,
         ident: "LevelHandle",
         wallpaper: Wallpaper,
+        in_bounds: Set[V2],
         blocks: Dict[V2, Block],
         items: Dict[V2, List[Item]],
         npc_sites: OneToMany[V2, NPCHandle],
     ):
         self.ident = ident
         self.wallpaper = wallpaper
+        self.in_bounds: Set[V2] = in_bounds
         self.blocks: Dict[V2, Block] = blocks
         self.seen: Set[V2] = set()  # every time the player sees a tile, add it to this
         self.items: Items = Items()

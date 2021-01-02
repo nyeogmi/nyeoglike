@@ -88,7 +88,7 @@ def main(io: IO):
                     )
 
     # TODO: Allow resource selection
-    resource = Resource.Snack
+    resource = Resource.Junk  # Resource.Snack
     color = ColorSelector()
     glyph = GlyphSelector()
 

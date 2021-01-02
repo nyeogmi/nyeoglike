@@ -11,6 +11,7 @@ class Resource(Enum):
 
     Snack = 3
     Furniture = 4
+    Junk = 5
 
     def display(self) -> Tuple[Color, str]:
         if self == Resource.Money:
@@ -24,6 +25,8 @@ class Resource(Enum):
             return Colors.ResourceGeneric, "%"
         if self == Resource.Furniture:
             return Colors.ResourceGeneric, "\xe9"
+        if self == Resource.Junk:
+            return Colors.ResourceGeneric, "\xa8"
         return Colors.Grey0, "?"
 
 
@@ -74,6 +77,7 @@ class Profile(NamedTuple):
 
 class Item(NamedTuple):
     profile: Profile
+    occludes_npc_spawn: bool
     buy_price: int
     keywords: Tuple[str, ...]
     contributions: Tuple[Contribution, ...]
@@ -82,6 +86,7 @@ class Item(NamedTuple):
     def new(
         cls,
         profile: Profile,
+        occludes_npc_spawn: bool,
         buy_price: int,
         keywords: Tuple[str, ...] = (),
         res0: Resource = None,
@@ -90,6 +95,7 @@ class Item(NamedTuple):
         n1: Optional[int] = None,
     ):
         assert isinstance(profile, Profile)
+        assert isinstance(occludes_npc_spawn, bool)
         assert isinstance(buy_price, int)
         assert isinstance(keywords, tuple)
         assert all(isinstance(i, str) for i in keywords)
@@ -100,11 +106,14 @@ class Item(NamedTuple):
         if res1 is not None:
             tup += Contribution.new(res1, n1)
 
-        return Item(profile, buy_price, tuple(sorted({*keywords})), tup)
+        return Item(
+            profile, occludes_npc_spawn, buy_price, tuple(sorted({*keywords})), tup
+        )
 
     def plus_keywords(self, keywords: Iterable[str]) -> "Item":
         i2 = Item(
             profile=self.profile,
+            occludes_npc_spawn=self.occludes_npc_spawn,
             buy_price=self.buy_price,
             keywords=tuple(sorted({*self.keywords, *keywords})),
             contributions=self.contributions,

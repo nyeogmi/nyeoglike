@@ -228,11 +228,12 @@ class Sitemode(object):
                 )
 
             if self.lightmap[world_xy_bot] > 0:
-                for i, spawn in enumerate(self.world.level.items.view(world_xy_bot)):
-                    profile = spawn.item.profile
+                things_drawn = 0
+                for spawn in self.world.level.items.view(world_xy_bot):
                     dt = draw_tile.copy()
+                    profile = spawn.item.profile
 
-                    if i > 0:
+                    if things_drawn > 0:
                         dt.bg(Colors.Grey0)
                     if profile.bg is not None:
                         dt.bg(profile.bg)
@@ -251,6 +252,8 @@ class Sitemode(object):
                         ].resource.display()
                         dt.goto(viewport_xy).fg(resource_fg).puts(resource_icon)
 
+                    things_drawn += 1
+
                     if world_xy_bot == self.world.player_xy:
                         tooltip_xy = viewport_xy + V2(0, 1)
                         tooltip_lst.append(profile.name)
@@ -264,12 +267,15 @@ class Sitemode(object):
                             DoubleWide.At
                         )
                     else:
-                        draw_tile.copy().bg(Colors.WorldBG).fg(interest.color()).putdw(
-                            DoubleWide.At
-                        )
+                        draw_tile.copy().bg(
+                            Colors.WorldBG if things_drawn == 0 else Colors.Grey0
+                        ).fg(interest.color()).putdw(DoubleWide.At)
+                    things_drawn += 1
 
                 if world_xy_bot == self.world.player_xy:
-                    draw_tile.copy().fg(Colors.Player).putdw(DoubleWide.Bat)
+                    draw_tile.copy().bg(
+                        Colors.WorldBG if things_drawn == 0 else Colors.Grey0
+                    ).fg(Colors.Player).putdw(DoubleWide.Bat)
 
             # if this is right above a wall, draw a (seen) ceiling
             if top == Block.Normal:
@@ -480,5 +486,5 @@ class Sitemode(object):
             return
 
         d = drawer.copy()
-        d.bg(walltile.fg if illum else Colors.WorldUnseenFG)
-        d.puts("  ", wrap=False)
+        d.fg(walltile.cap if illum else Colors.WorldUnseenFG)
+        d.puts("\xdb\xdb", wrap=False)

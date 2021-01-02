@@ -29,6 +29,7 @@ class UnloadedLevel(object):
         self,
         player_start_xy: V2,
         wallpaper: Wallpaper,
+        in_bounds: Set[V2],
         blocks: Dict[V2, Block],
         items: Dict[V2, List[Item]],
         npc_spawns: Dict[SpawnType, Set[V2]],
@@ -36,6 +37,7 @@ class UnloadedLevel(object):
     ):
         assert isinstance(player_start_xy, V2)
         assert isinstance(wallpaper, Wallpaper)
+        assert isinstance(in_bounds, set)
         assert isinstance(blocks, dict)
         assert isinstance(items, dict)
         assert isinstance(npc_spawns, dict)
@@ -43,6 +45,7 @@ class UnloadedLevel(object):
 
         self._player_start_xy = player_start_xy
         self._wallpaper = wallpaper
+        self._in_bounds = in_bounds
         self._blocks = blocks
         self._items = items
         self._npc_spawns = npc_spawns
@@ -112,6 +115,7 @@ class UnloadedLevel(object):
         loaded_level = LoadedLevel(
             ident=ident,
             wallpaper=self._wallpaper,
+            in_bounds=set(self._in_bounds),
             blocks=dict(self._blocks),
             # TODO: Spawn temporary items?
             items={k: list(v) for k, v in self._items.items()},

@@ -1,6 +1,5 @@
 from ds.code_registry import ref
 from ds.lists import shuffled
-from raw.snacks import SOUP
 from ..loaded_level import LoadedLevel
 import random
 
