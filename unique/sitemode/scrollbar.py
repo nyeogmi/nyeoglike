@@ -33,6 +33,8 @@ class Scrollbar(object):
     def get_selected(self):
         if self._i is None:
             return None
+        if self._i >= len(self._data) or len(self._data) == 0:
+            return None
         return self._data[self._i]
 
     def _wrap(self):

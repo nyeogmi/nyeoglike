@@ -9,6 +9,7 @@ class Challenges(object):
         self.descan(world)
 
         junk_left = world.level.items.junk_left
+        print("adding clean junk challenge? {}".format(junk_left))
         if junk_left > 0:
             assert self._clean_junk_challenge is None
             self._clean_junk_challenge = world.eventmonitors.add(

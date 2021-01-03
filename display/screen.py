@@ -28,6 +28,7 @@ class Cell(NamedTuple):
 
 class Screen(object):
     def __init__(self, size: V2):
+        self.is_day = False  # settable!
         self._cells: Grid[Cell] = Grid(R2.new(V2.zero(), size), default_cell, is_cell)
         self._cursor = V2.new(0, 0)
 
@@ -106,6 +107,15 @@ class Drawer(object):
     @property
     def bounds(self):
         return self._bounds
+
+    @property
+    def is_day(self):
+        return self._screen.is_day
+
+    @is_day.setter
+    def is_day(self, v: bool):
+        assert isinstance(v, bool)
+        self._screen.is_day = v
 
     def copy(self) -> "Drawer":
         d = Drawer(

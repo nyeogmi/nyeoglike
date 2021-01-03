@@ -8,6 +8,7 @@ from ..item import Resource
 from ..level import Block
 from ..notifications import NotificationReason
 from ..npc import NPC, NPCHandle, NPCs
+from ..time import TimeOfDay
 from ..world import World
 from . import fly_screen, fov, inventory_screen, shop_screen
 from .npcview import NPCView
@@ -173,6 +174,10 @@ class Sitemode(object):
         self.npc_view.select(self.targets.target)
 
     def draw(self):
+        self.io.draw().is_day = self.world.clock.time_of_day not in [
+            TimeOfDay.Dusk,
+            TimeOfDay.Midnight,
+        ]
         self.draw_grid()
         self.draw_targeted_user()
         self.draw_notifications()

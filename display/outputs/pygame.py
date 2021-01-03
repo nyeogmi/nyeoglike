@@ -1,6 +1,6 @@
 import os.path
 import time
-from typing import Optional
+from typing import Optional, List, Tuple
 
 import pygame
 import pygame.image
@@ -14,11 +14,19 @@ from ..palette import Colors
 
 
 class Font(object):
-    def __init__(self, font_images, tile_size: V2, res_in_tiles: V2):
+    def __init__(
+        self,
+        swatch: List[Tuple[int, int, int]],
+        font_images,
+        tile_size: V2,
+        res_in_tiles: V2,
+    ):
+        assert isinstance(swatch, list) and len(swatch) == Colors.N
         assert isinstance(font_images, list) and len(font_images) == Colors.N
         assert isinstance(tile_size, V2)
         assert isinstance(res_in_tiles, V2)
 
+        self._swatch = swatch
         self._font_images = font_images
         self._tile_size = tile_size
         self._res_in_tiles = res_in_tiles
@@ -29,7 +37,7 @@ class Font(object):
         return self._tile_size
 
     @classmethod
-    def load(cls, filename: str, tile_size: V2):
+    def load(cls, filename: str, swatch: List[Tuple[int, int, int]], tile_size: V2):
         assert isinstance(filename, str)
         assert isinstance(tile_size, V2)
 
@@ -46,12 +54,12 @@ class Font(object):
 
         font_images = [font_image.convert_alpha() for i in range(Colors.N)]
         for i in range(Colors.N):
-            font_images[i].fill(
-                (*Colors.SWATCH[i], 255), special_flags=pygame.BLEND_MULT
-            )
+            font_images[i].fill((*swatch[i], 255), special_flags=pygame.BLEND_MULT)
             font_images[i] = font_images[i].convert_alpha()
 
-        return Font(font_images, tile_size, V2.new(width_in_tiles, height_in_tiles))
+        return Font(
+            swatch, font_images, tile_size, V2.new(width_in_tiles, height_in_tiles)
+        )
 
     def draw(self, screen, xy: V2, bg: int, fg: int, character: str):
         assert 0 <= bg < Colors.N
@@ -67,7 +75,7 @@ class Font(object):
 
             src = [*xy0_src, *self._tile_size]
             dest = [*xy0_dest, *self._tile_size]
-            screen.fill(Colors.SWATCH[bg], dest)
+            screen.fill(self._swatch[bg], dest)
             screen.blit(self._font_images[fg], dest, area=src)
 
 
@@ -82,22 +90,25 @@ def start(interactor: Interactor):
     pygame_screen = pygame.display.set_mode(
         list(screen.bounds.size * tile_size), flags=pygame.SCALED
     )
-    font = Font.load("vga_8x16.png", tile_size)
+    font_night = Font.load("vga_8x16.png", Colors.SWATCH_NIGHT, tile_size)
+    font_day = Font.load("vga_8x16.png", Colors.SWATCH_DAY, tile_size)
 
     interactor.mark_updated()
+    new_is_day = False
+    old_cells = {}
     while not interactor.should_quit():
         screen, changed = interactor.view()
+        old_is_day, new_is_day = new_is_day, screen.is_day
 
-        old_cells = {}
-        if changed:  # TODO: For now, always redraw
+        if changed:
             with screen.lock():
                 for xy in screen.bounds:
                     new_cell = screen[xy]
                     old_cell = old_cells.get(xy)
                     old_cells[xy] = new_cell
-                    if old_cell != new_cell:
+                    if (old_cell, old_is_day) != (new_cell, new_is_day):
                         # pygame_screen.fill(Colors.SWATCH[Colors.TermBG.color])
-                        font.draw(
+                        (font_day if new_is_day else font_night).draw(
                             pygame_screen,
                             xy,
                             new_cell.bg,

@@ -27,10 +27,12 @@ def load_swatch(swatch_name):
 
 
 class Colors(object):
-    SWATCH = load_swatch("palette")
-    N = len(SWATCH)
+    SWATCH_NIGHT = load_swatch("palette_night")
+    SWATCH_DAY = load_swatch("palette_day")
+    N = len(SWATCH_NIGHT)
 
     assert N == 16  # for now
+    assert len(SWATCH_NIGHT) == len(SWATCH_DAY)
 
     Black0 = Color(0)
     Black1 = Color(1)
